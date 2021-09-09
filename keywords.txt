@@ -1,9 +1,9 @@
 #######################################
 # Data types (KEYWORD1)
 #######################################
-TinyGsm	KEYWORD1
-TinyGsmClient	KEYWORD1
-TinyGsmClientSecure	KEYWORD1
+SimpleNBIOT	KEYWORD1
+SimpleNBIOTClient	KEYWORD1
+SimpleNBIOTClientSecure	KEYWORD1
 
 SerialAT	KEYWORD1
 SerialMon	KEYWORD1
@@ -27,3 +27,4 @@ factoryReset	KEYWORD2
 DATE_FULL	LITERAL1
 DATE_TIME	LITERAL1
 DATE_DATE	LITERAL1
+SimpleNBIOT
