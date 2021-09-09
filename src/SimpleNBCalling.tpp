@@ -1,20 +1,20 @@
 /**
- * @file       TinyGsmCalling.tpp
+ * @file       SimpleNBCalling.tpp
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMCALLING_H_
-#define SRC_TINYGSMCALLING_H_
+#ifndef SIMPLE_NB_CALLING_H_
+#define SIMPLE_NB_CALLING_H_
 
-#include "TinyGsmCommon.h"
+#include "SimpleNBCommon.h"
 
-#define TINY_GSM_MODEM_HAS_CALLING
+#define SIMPLE_NB_SUPPORT_CALLING
 
 template <class modemType>
-class TinyGsmCalling {
+class SimpleNBCalling {
  public:
   /*
    * Phone Call functions
@@ -87,4 +87,4 @@ class TinyGsmCalling {
   }
 };
 
-#endif  // SRC_TINYGSMCALLING_H_
+#endif  // SIMPLE_NB_CALLING_H_

@@ -1,5 +1,5 @@
 /**
- * @file       TinyGsmClientXBee.h
+ * @file       SimpleNBClientXBee.h
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy, XBee module by Sara
@@ -7,32 +7,32 @@
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMCLIENTXBEE_H_
-#define SRC_TINYGSMCLIENTXBEE_H_
-// #pragma message("TinyGSM:  TinyGsmClientXBee")
+#ifndef SRC_SIMPLE_NB_CLIENTXBEE_H_
+#define SRC_SIMPLE_NB_CLIENTXBEE_H_
+// #pragma message("SimpleNB:  SimpleNBClientXBee")
 
-// #define TINY_GSM_DEBUG Serial
+// #define SIMPLE_NB_DEBUG Serial
 
 // XBee's do not support multi-plexing in transparent/command mode
 // The much more complicated API mode is needed for multi-plexing
-#define TINY_GSM_MUX_COUNT 1
-#define TINY_GSM_NO_MODEM_BUFFER
+#define SIMPLE_NB_MUX_COUNT 1
+#define SIMPLE_NB_NO_MODEM_BUFFER
 // XBee's have a default guard time of 1 second (1000ms, 10 extra for safety
 // here)
-#define TINY_GSM_XBEE_GUARD_TIME 1010
+#define SIMPLE_NB_XBEE_GUARD_TIME 1010
 
-#include "TinyGsmBattery.tpp"
-#include "TinyGsmGPRS.tpp"
-#include "TinyGsmModem.tpp"
-#include "TinyGsmSMS.tpp"
-#include "TinyGsmSSL.tpp"
-#include "TinyGsmTCP.tpp"
-#include "TinyGsmTemperature.tpp"
-#include "TinyGsmWifi.tpp"
+#include "SimpleNBBattery.tpp"
+#include "SimpleNBGPRS.tpp"
+#include "SimpleNBModem.tpp"
+#include "SimpleNBSMS.tpp"
+#include "SimpleNBSSL.tpp"
+#include "SimpleNBTCP.tpp"
+#include "SimpleNBTemperature.tpp"
+#include "SimpleNBWifi.tpp"
 
-#define GSM_NL "\r"
-static const char GSM_OK[] TINY_GSM_PROGMEM    = "OK" GSM_NL;
-static const char GSM_ERROR[] TINY_GSM_PROGMEM = "ERROR" GSM_NL;
+#define ACK_NL "\r"
+static const char ACK_OK[] SIMPLE_NB_PROGMEM    = "OK" ACK_NL;
+static const char ACK_ERROR[] SIMPLE_NB_PROGMEM = "ERROR" ACK_NL;
 
 // Use this to avoid too many entrances and exits from command mode.
 // The cellular Bee's often freeze up and won't respond when attempting
@@ -66,38 +66,38 @@ enum XBeeType {
   XBEE3_LTEM_ATT = 0xB08,  // Digi XBee3 Cellular LTE-M
 };
 
-class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
-                    public TinyGsmGPRS<TinyGsmXBee>,
-                    public TinyGsmWifi<TinyGsmXBee>,
-                    public TinyGsmTCP<TinyGsmXBee, TINY_GSM_MUX_COUNT>,
-                    public TinyGsmSSL<TinyGsmXBee>,
-                    public TinyGsmSMS<TinyGsmXBee>,
-                    public TinyGsmBattery<TinyGsmXBee>,
-                    public TinyGsmTemperature<TinyGsmXBee> {
-  friend class TinyGsmModem<TinyGsmXBee>;
-  friend class TinyGsmGPRS<TinyGsmXBee>;
-  friend class TinyGsmWifi<TinyGsmXBee>;
-  friend class TinyGsmTCP<TinyGsmXBee, TINY_GSM_MUX_COUNT>;
-  friend class TinyGsmSSL<TinyGsmXBee>;
-  friend class TinyGsmSMS<TinyGsmXBee>;
-  friend class TinyGsmBattery<TinyGsmXBee>;
-  friend class TinyGsmTemperature<TinyGsmXBee>;
+class SimpleNBXBee : public SimpleNBModem<SimpleNBXBee>,
+                    public SimpleNBGPRS<SimpleNBXBee>,
+                    public SimpleNBWifi<SimpleNBXBee>,
+                    public SimpleNBTCP<SimpleNBXBee, SIMPLE_NB_MUX_COUNT>,
+                    public SimpleNBSSL<SimpleNBXBee>,
+                    public SimpleNBSMS<SimpleNBXBee>,
+                    public SimpleNBBattery<SimpleNBXBee>,
+                    public SimpleNBTemperature<SimpleNBXBee> {
+  friend class SimpleNBModem<SimpleNBXBee>;
+  friend class SimpleNBGPRS<SimpleNBXBee>;
+  friend class SimpleNBWifi<SimpleNBXBee>;
+  friend class SimpleNBTCP<SimpleNBXBee, SIMPLE_NB_MUX_COUNT>;
+  friend class SimpleNBSSL<SimpleNBXBee>;
+  friend class SimpleNBSMS<SimpleNBXBee>;
+  friend class SimpleNBBattery<SimpleNBXBee>;
+  friend class SimpleNBTemperature<SimpleNBXBee>;
 
   /*
    * Inner Client
    */
  public:
   class GsmClientXBee : public GsmClient {
-    friend class TinyGsmXBee;
+    friend class SimpleNBXBee;
 
    public:
     GsmClientXBee() {}
 
-    explicit GsmClientXBee(TinyGsmXBee& modem, uint8_t mux = 0) {
+    explicit GsmClientXBee(SimpleNBXBee& modem, uint8_t mux = 0) {
       init(&modem, mux);
     }
 
-    bool init(TinyGsmXBee* modem, uint8_t = 0) {
+    bool init(SimpleNBXBee* modem, uint8_t = 0) {
       this->at       = modem;
       this->mux      = 0;
       sock_connected = false;
@@ -155,7 +155,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
     }
 
     size_t write(const uint8_t* buf, size_t size) override {
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       return at->modemSend(buf, size, mux);
     }
 
@@ -169,7 +169,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
     }
 
     int available() override {
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       return at->stream.available();
       /*
       if (!rx.size() || at->stream.available()) {
@@ -180,13 +180,13 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
     }
 
     int read(uint8_t* buf, size_t size) override {
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       return at->stream.readBytes(reinterpret_cast<char*>(buf), size);
       /*
       size_t cnt = 0;
       uint32_t _startMillis = millis();
       while (cnt < size && millis() - _startMillis < _timeout) {
-        size_t chunk = TinyGsmMin(size-cnt, rx.size());
+        size_t chunk = SimpleNBMin(size-cnt, rx.size());
         if (chunk > 0) {
           rx.get(buf, chunk);
           buf += chunk;
@@ -203,7 +203,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
     }
 
     int read() override {
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       return at->stream.read();
       /*
       uint8_t c;
@@ -242,7 +242,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
      * Extended API
      */
 
-    String remoteIP() TINY_GSM_ATTR_NOT_IMPLEMENTED;
+    String remoteIP() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
   };
 
   /*
@@ -253,7 +253,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
    public:
     GsmClientSecureXBee() {}
 
-    explicit GsmClientSecureXBee(TinyGsmXBee& modem, uint8_t mux = 0)
+    explicit GsmClientSecureXBee(SimpleNBXBee& modem, uint8_t mux = 0)
         : GsmClientXBee(modem, mux) {}
 
    public:
@@ -285,9 +285,9 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
    * Constructor
    */
  public:
-  explicit TinyGsmXBee(Stream& stream)
+  explicit SimpleNBXBee(Stream& stream)
       : stream(stream),
-        guardTime(TINY_GSM_XBEE_GUARD_TIME),
+        guardTime(SIMPLE_NB_XBEE_GUARD_TIME),
         beeType(XBEE_UNKNOWN),
         resetPin(-1),
         savedIP(IPAddress(0, 0, 0, 0)),
@@ -301,9 +301,9 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
     memset(sockets, 0, sizeof(sockets));
   }
 
-  TinyGsmXBee(Stream& stream, int8_t resetPin)
+  SimpleNBXBee(Stream& stream, int8_t resetPin)
       : stream(stream),
-        guardTime(TINY_GSM_XBEE_GUARD_TIME),
+        guardTime(SIMPLE_NB_XBEE_GUARD_TIME),
         beeType(XBEE_UNKNOWN),
         resetPin(resetPin),
         savedIP(IPAddress(0, 0, 0, 0)),
@@ -321,8 +321,8 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
    */
 
   bool initImpl(const char* pin = NULL) {
-    DBG(GF("### TinyGSM Version:"), TINYGSM_VERSION);
-    DBG(GF("### TinyGSM Compiled Module:  TinyGsmClientXBee"));
+    DBG(GF("### SimpleNB Version:"), SIMPLENB_VERSION);
+    DBG(GF("### SimpleNB Compiled Module:  SimpleNBClientXBee"));
 
     if (resetPin >= 0) {
       pinMode(resetPin, OUTPUT);
@@ -427,7 +427,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
   void maintainImpl() {
     // this only happens OUTSIDE command mode, so if we're getting characters
     // they should be data received from the TCP connection
-    // TINY_GSM_YIELD();
+    // SIMPLE_NB_YIELD();
     // if (!inCommandMode) {
     //   while (stream.available()) {
     //     char c = stream.read();
@@ -592,10 +592,10 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
     return success;
   }
 
-  bool sleepEnableImpl(bool enable = true) TINY_GSM_ATTR_NOT_IMPLEMENTED;
+  bool sleepEnableImpl(bool enable = true) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 
   bool setPhoneFunctionalityImpl(uint8_t fun, bool reset = false)
-      TINY_GSM_ATTR_NOT_IMPLEMENTED;
+      SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 
   /*
    * Generic network functions
@@ -900,7 +900,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
    * Messaging functions
    */
  protected:
-  String sendUSSDImpl(const String& code) TINY_GSM_ATTR_NOT_AVAILABLE;
+  String sendUSSDImpl(const String& code) SIMPLE_NB_ATTR_NOT_AVAILABLE;
 
   bool sendSMSImpl(const String& number, const String& text) {
     bool changesMade = false;
@@ -967,8 +967,8 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
     return intRes;
   }
 
-  int8_t  getBattPercentImpl() TINY_GSM_ATTR_NOT_AVAILABLE;
-  uint8_t getBattChargeStateImpl() TINY_GSM_ATTR_NOT_AVAILABLE;
+  int8_t  getBattPercentImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
+  uint8_t getBattChargeStateImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
 
   bool getBattStatsImpl(uint8_t& chargeState, int8_t& percent,
                         uint16_t& milliVolts) {
@@ -1020,7 +1020,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
     XBEE_COMMAND_END_DECORATOR
 
     if (strIP != "" && strIP != GF("ERROR")) {
-      return TinyGsmIpFromString(strIP);
+      return SimpleNBIpFromString(strIP);
     } else {
       return IPAddress(0, 0, 0, 0);
     }
@@ -1040,7 +1040,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
     while ((millis() - startMillis) < timeout_ms) {
       sendAT(GF("LA"), host);
       while (stream.available() < 4 && (millis() - startMillis < timeout_ms)) {
-        TINY_GSM_YIELD()
+        SIMPLE_NB_YIELD()
       }
       strIP = stream.readStringUntil('\r');  // read result
       strIP.trim();
@@ -1054,7 +1054,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
     XBEE_COMMAND_END_DECORATOR
 
     if (gotIP) {
-      return TinyGsmIpFromString(strIP);
+      return SimpleNBIpFromString(strIP);
     } else {
       return IPAddress(0, 0, 0, 0);
     }
@@ -1270,7 +1270,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
             // // Ask for information about any open sockets
             // sendAT(GF("SI"));
             // String open_socks = stream.readStringUntil('\r');
-            // open_socks.replace(GSM_NL, "");
+            // open_socks.replace(ACK_NL, "");
             // open_socks.trim();
             // if (open_socks != "") {
             //   // In transparent mode, only socket 0 should be possible
@@ -1334,7 +1334,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
   void streamClear(void) {
     while (stream.available()) {
       stream.read();
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
     }
   }
 
@@ -1343,8 +1343,8 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
   // waiting for requested responses.  The XBee has no unsoliliced responses
   // (URC's) when in command mode.
   int8_t waitResponse(uint32_t timeout_ms, String& data,
-                      GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR), GsmConstStr r3 = NULL,
+                      GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR), GsmConstStr r3 = NULL,
                       GsmConstStr r4 = NULL, GsmConstStr r5 = NULL) {
     /*String r1s(r1); r1s.trim();
     String r2s(r2); r2s.trim();
@@ -1356,9 +1356,9 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
     int8_t   index       = 0;
     uint32_t startMillis = millis();
     do {
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       while (stream.available() > 0) {
-        TINY_GSM_YIELD();
+        SIMPLE_NB_YIELD();
         int8_t a = stream.read();
         if (a <= 0) continue;  // Skip 0x00 bytes, just in case
         data += static_cast<char>(a);
@@ -1383,8 +1383,8 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
   finish:
     if (!index) {
       data.trim();
-      data.replace(GSM_NL GSM_NL, GSM_NL);
-      data.replace(GSM_NL, "\r\n    ");
+      data.replace(ACK_NL ACK_NL, ACK_NL);
+      data.replace(ACK_NL, "\r\n    ");
       if (data.length()) {
         DBG("### Unhandled:", data, "\r\n");
       } else {
@@ -1392,23 +1392,23 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
       }
     } else {
       data.trim();
-      data.replace(GSM_NL GSM_NL, GSM_NL);
-      data.replace(GSM_NL, "\r\n    ");
+      data.replace(ACK_NL ACK_NL, ACK_NL);
+      data.replace(ACK_NL, "\r\n    ");
     }
-    // data.replace(GSM_NL, "/");
+    // data.replace(ACK_NL, "/");
     // DBG('<', index, '>', data);
     return index;
   }
 
-  int8_t waitResponse(uint32_t timeout_ms, GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR), GsmConstStr r3 = NULL,
+  int8_t waitResponse(uint32_t timeout_ms, GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR), GsmConstStr r3 = NULL,
                       GsmConstStr r4 = NULL, GsmConstStr r5 = NULL) {
     String data;
     return waitResponse(timeout_ms, data, r1, r2, r3, r4, r5);
   }
 
-  int8_t waitResponse(GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR), GsmConstStr r3 = NULL,
+  int8_t waitResponse(GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR), GsmConstStr r3 = NULL,
                       GsmConstStr r4 = NULL, GsmConstStr r5 = NULL) {
     return waitResponse(1000, r1, r2, r3, r4, r5);
   }
@@ -1478,7 +1478,7 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
   }
 
   String readResponseString(uint32_t timeout_ms = 1000) {
-    TINY_GSM_YIELD();
+    SIMPLE_NB_YIELD();
     uint32_t startMillis = millis();
     while (!stream.available() && millis() - startMillis < timeout_ms) {}
     String res =
@@ -1546,8 +1546,8 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
   Stream& stream;
 
  protected:
-  GsmClientXBee* sockets[TINY_GSM_MUX_COUNT];
-  const char*    gsmNL = GSM_NL;
+  GsmClientXBee* sockets[SIMPLE_NB_MUX_COUNT];
+  const char*    gsmNL = ACK_NL;
   int16_t        guardTime;
   XBeeType       beeType;
   int8_t         resetPin;
@@ -1559,4 +1559,4 @@ class TinyGsmXBee : public TinyGsmModem<TinyGsmXBee>,
   uint32_t       lastCommandModeMillis;
 };
 
-#endif  // SRC_TINYGSMCLIENTXBEE_H_
+#endif  // SRC_SIMPLE_NB_CLIENTXBEE_H_

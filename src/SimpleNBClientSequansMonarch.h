@@ -1,34 +1,34 @@
 /**
- * @file       TinyGsmClientSequansMonarch.h
+ * @file       SimpleNBClientSequansMonarch.h
  * @author     Michael Krumpus
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2019 Michael Krumpus
  * @date       Jan 2019
  */
 
-#ifndef SRC_TINYGSMCLIENTSEQUANSMONARCH_H_
-#define SRC_TINYGSMCLIENTSEQUANSMONARCH_H_
+#ifndef SRC_SIMPLE_NB_CLIENTSEQUANSMONARCH_H_
+#define SRC_SIMPLE_NB_CLIENTSEQUANSMONARCH_H_
 
-// #define TINY_GSM_DEBUG Serial
+// #define SIMPLE_NB_DEBUG Serial
 
-#define TINY_GSM_MUX_COUNT 6
-#define TINY_GSM_BUFFER_READ_AND_CHECK_SIZE
+#define SIMPLE_NB_MUX_COUNT 6
+#define SIMPLE_NB_BUFFER_READ_AND_CHECK_SIZE
 
-#include "TinyGsmCalling.tpp"
-#include "TinyGsmGPRS.tpp"
-#include "TinyGsmModem.tpp"
-#include "TinyGsmSMS.tpp"
-#include "TinyGsmSSL.tpp"
-#include "TinyGsmTCP.tpp"
-#include "TinyGsmTemperature.tpp"
-#include "TinyGsmTime.tpp"
+#include "SimpleNBCalling.tpp"
+#include "SimpleNBGPRS.tpp"
+#include "SimpleNBModem.tpp"
+#include "SimpleNBSMS.tpp"
+#include "SimpleNBSSL.tpp"
+#include "SimpleNBTCP.tpp"
+#include "SimpleNBTemperature.tpp"
+#include "SimpleNBTime.tpp"
 
-#define GSM_NL "\r\n"
-static const char GSM_OK[] TINY_GSM_PROGMEM    = "OK" GSM_NL;
-static const char GSM_ERROR[] TINY_GSM_PROGMEM = "ERROR" GSM_NL;
-#if defined       TINY_GSM_DEBUG
-static const char GSM_CME_ERROR[] TINY_GSM_PROGMEM = GSM_NL "+CME ERROR:";
-static const char GSM_CMS_ERROR[] TINY_GSM_PROGMEM = GSM_NL "+CMS ERROR:";
+#define ACK_NL "\r\n"
+static const char ACK_OK[] SIMPLE_NB_PROGMEM    = "OK" ACK_NL;
+static const char ACK_ERROR[] SIMPLE_NB_PROGMEM = "ERROR" ACK_NL;
+#if defined       SIMPLE_NB_DEBUG
+static const char ACK_CME_ERROR[] SIMPLE_NB_PROGMEM = ACK_NL "+CME ERROR:";
+static const char ACK_CMS_ERROR[] SIMPLE_NB_PROGMEM = ACK_NL "+CMS ERROR:";
 #endif
 
 enum RegStatus {
@@ -51,40 +51,40 @@ enum SocketStatus {
   SOCK_OPENING                = 6,
 };
 
-class TinyGsmSequansMonarch
-    : public TinyGsmModem<TinyGsmSequansMonarch>,
-      public TinyGsmGPRS<TinyGsmSequansMonarch>,
-      public TinyGsmTCP<TinyGsmSequansMonarch, TINY_GSM_MUX_COUNT>,
-      public TinyGsmSSL<TinyGsmSequansMonarch>,
-      public TinyGsmCalling<TinyGsmSequansMonarch>,
-      public TinyGsmSMS<TinyGsmSequansMonarch>,
-      public TinyGsmTime<TinyGsmSequansMonarch>,
-      public TinyGsmTemperature<TinyGsmSequansMonarch> {
-  friend class TinyGsmModem<TinyGsmSequansMonarch>;
-  friend class TinyGsmGPRS<TinyGsmSequansMonarch>;
-  friend class TinyGsmTCP<TinyGsmSequansMonarch, TINY_GSM_MUX_COUNT>;
-  friend class TinyGsmSSL<TinyGsmSequansMonarch>;
-  friend class TinyGsmCalling<TinyGsmSequansMonarch>;
-  friend class TinyGsmSMS<TinyGsmSequansMonarch>;
-  friend class TinyGsmTime<TinyGsmSequansMonarch>;
-  friend class TinyGsmTemperature<TinyGsmSequansMonarch>;
+class SimpleNBSequansMonarch
+    : public SimpleNBModem<SimpleNBSequansMonarch>,
+      public SimpleNBGPRS<SimpleNBSequansMonarch>,
+      public SimpleNBTCP<SimpleNBSequansMonarch, SIMPLE_NB_MUX_COUNT>,
+      public SimpleNBSSL<SimpleNBSequansMonarch>,
+      public SimpleNBCalling<SimpleNBSequansMonarch>,
+      public SimpleNBSMS<SimpleNBSequansMonarch>,
+      public SimpleNBTime<SimpleNBSequansMonarch>,
+      public SimpleNBTemperature<SimpleNBSequansMonarch> {
+  friend class SimpleNBModem<SimpleNBSequansMonarch>;
+  friend class SimpleNBGPRS<SimpleNBSequansMonarch>;
+  friend class SimpleNBTCP<SimpleNBSequansMonarch, SIMPLE_NB_MUX_COUNT>;
+  friend class SimpleNBSSL<SimpleNBSequansMonarch>;
+  friend class SimpleNBCalling<SimpleNBSequansMonarch>;
+  friend class SimpleNBSMS<SimpleNBSequansMonarch>;
+  friend class SimpleNBTime<SimpleNBSequansMonarch>;
+  friend class SimpleNBTemperature<SimpleNBSequansMonarch>;
 
   /*
    * Inner Client
    */
  public:
   class GsmClientSequansMonarch : public GsmClient {
-    friend class TinyGsmSequansMonarch;
+    friend class SimpleNBSequansMonarch;
 
    public:
     GsmClientSequansMonarch() {}
 
-    explicit GsmClientSequansMonarch(TinyGsmSequansMonarch& modem,
+    explicit GsmClientSequansMonarch(SimpleNBSequansMonarch& modem,
                                      uint8_t                mux = 1) {
       init(&modem, mux);
     }
 
-    bool init(TinyGsmSequansMonarch* modem, uint8_t mux = 1) {
+    bool init(SimpleNBSequansMonarch* modem, uint8_t mux = 1) {
       this->at       = modem;
       sock_available = 0;
       prev_check     = 0;
@@ -93,12 +93,12 @@ class TinyGsmSequansMonarch
 
       // adjust for zero indexed socket array vs Sequans' 1 indexed mux numbers
       // using modulus will force 6 back to 0
-      if (mux >= 1 && mux <= TINY_GSM_MUX_COUNT) {
+      if (mux >= 1 && mux <= SIMPLE_NB_MUX_COUNT) {
         this->mux = mux;
       } else {
-        this->mux = (mux % TINY_GSM_MUX_COUNT) + 1;
+        this->mux = (mux % SIMPLE_NB_MUX_COUNT) + 1;
       }
-      at->sockets[this->mux % TINY_GSM_MUX_COUNT] = this;
+      at->sockets[this->mux % SIMPLE_NB_MUX_COUNT] = this;
 
       return true;
     }
@@ -106,12 +106,12 @@ class TinyGsmSequansMonarch
    public:
     virtual int connect(const char* host, uint16_t port, int timeout_s) {
       if (sock_connected) stop();
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       rx.clear();
       sock_connected = at->modemConnect(host, port, mux, false, timeout_s);
       return sock_connected;
     }
-    TINY_GSM_CLIENT_CONNECT_OVERRIDES
+    SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
 
     void stop(uint32_t maxWaitMs) {
       dumpModemBuffer(maxWaitMs);
@@ -127,7 +127,7 @@ class TinyGsmSequansMonarch
      * Extended API
      */
 
-    String remoteIP() TINY_GSM_ATTR_NOT_IMPLEMENTED;
+    String remoteIP() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
   };
 
   /*
@@ -138,7 +138,7 @@ class TinyGsmSequansMonarch
    public:
     GsmClientSecureSequansMonarch() {}
 
-    explicit GsmClientSecureSequansMonarch(TinyGsmSequansMonarch& modem,
+    explicit GsmClientSecureSequansMonarch(SimpleNBSequansMonarch& modem,
                                            uint8_t                mux = 1)
         : GsmClientSequansMonarch(modem, mux) {}
 
@@ -148,7 +148,7 @@ class TinyGsmSequansMonarch
    public:
     int connect(const char* host, uint16_t port, int timeout_s) override {
       stop();
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       rx.clear();
 
       // configure security profile 1 with parameters:
@@ -172,7 +172,7 @@ class TinyGsmSequansMonarch
       sock_connected = at->modemConnect(host, port, mux, true, timeout_s);
       return sock_connected;
     }
-    TINY_GSM_CLIENT_CONNECT_OVERRIDES
+    SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
 
     void setStrictSSL(bool strict) {
       strictSSL = strict;
@@ -183,7 +183,7 @@ class TinyGsmSequansMonarch
    * Constructor
    */
  public:
-  explicit TinyGsmSequansMonarch(Stream& stream) : stream(stream) {
+  explicit SimpleNBSequansMonarch(Stream& stream) : stream(stream) {
     memset(sockets, 0, sizeof(sockets));
   }
 
@@ -192,15 +192,15 @@ class TinyGsmSequansMonarch
    */
  protected:
   bool initImpl(const char* pin = NULL) {
-    DBG(GF("### TinyGSM Version:"), TINYGSM_VERSION);
-    DBG(GF("### TinyGSM Compiled Module:  TinyGsmClientSequansMonarch"));
+    DBG(GF("### SimpleNB Version:"), SIMPLENB_VERSION);
+    DBG(GF("### SimpleNB Compiled Module:  SimpleNBClientSequansMonarch"));
 
     if (!testAT()) { return false; }
 
     sendAT(GF("E0"));  // Echo Off
     if (waitResponse() != 1) { return false; }
 
-#ifdef TINY_GSM_DEBUG
+#ifdef SIMPLE_NB_DEBUG
     sendAT(GF("+CMEE=2"));  // turn on verbose error codes
 #else
     sendAT(GF("+CMEE=0"));  // turn off error codes
@@ -267,8 +267,8 @@ class TinyGsmSequansMonarch
   }
 
   void maintainImpl() {
-    for (int mux = 1; mux <= TINY_GSM_MUX_COUNT; mux++) {
-      GsmClientSequansMonarch* sock = sockets[mux % TINY_GSM_MUX_COUNT];
+    for (int mux = 1; mux <= SIMPLE_NB_MUX_COUNT; mux++) {
+      GsmClientSequansMonarch* sock = sockets[mux % SIMPLE_NB_MUX_COUNT];
       if (sock && sock->got_data) {
         sock->got_data       = false;
         sock->sock_available = modemGetAvailable(mux);
@@ -287,12 +287,12 @@ class TinyGsmSequansMonarch
     if (!testAT()) { return false; }
 
     sendAT(GF("+CFUN=0"));
-    int8_t res = waitResponse(20000L, GFP(GSM_OK), GFP(GSM_ERROR),
+    int8_t res = waitResponse(20000L, GFP(ACK_OK), GFP(ACK_ERROR),
                               GF("+SYSSTART"));
     if (res != 1 && res != 3) { return false; }
 
     sendAT(GF("+CFUN=1,1"));
-    res = waitResponse(20000L, GF("+SYSSTART"), GFP(GSM_ERROR));
+    res = waitResponse(20000L, GF("+SYSSTART"), GFP(ACK_ERROR));
     if (res != 1 && res != 3) { return false; }
     delay(1000);
     return init(pin);
@@ -317,7 +317,7 @@ class TinyGsmSequansMonarch
   }
 
   bool setPhoneFunctionality(uint8_t fun,
-                             bool reset = false) TINY_GSM_ATTR_NOT_IMPLEMENTED;
+                             bool reset = false) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 
   /*
    * Generic network functions
@@ -386,7 +386,7 @@ class TinyGsmSequansMonarch
  protected:
   String getSimCCIDImpl() {
     sendAT(GF("+SQNCCID"));
-    if (waitResponse(GF(GSM_NL "+SQNCCID:")) != 1) { return ""; }
+    if (waitResponse(GF(ACK_NL "+SQNCCID:")) != 1) { return ""; }
     String res = stream.readStringUntil('\n');
     waitResponse();
     res.trim();
@@ -397,9 +397,9 @@ class TinyGsmSequansMonarch
    * Phone Call functions
    */
  protected:
-  bool callAnswerImpl() TINY_GSM_ATTR_NOT_AVAILABLE;
+  bool callAnswerImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
   bool dtmfSendImpl(char cmd,
-                    int  duration_ms = 100) TINY_GSM_ATTR_NOT_AVAILABLE;
+                    int  duration_ms = 100) SIMPLE_NB_ATTR_NOT_AVAILABLE;
 
   /*
    * Messaging functions
@@ -485,8 +485,8 @@ class TinyGsmSequansMonarch
     // <acceptAnyRemote> = Applies to UDP only
     sendAT(GF("+SQNSD="), mux, ",0,", port, ',', GF("\""), host, GF("\""),
            ",0,0,1");
-    rsp = waitResponse((timeout_ms - (millis() - startMillis)), GFP(GSM_OK),
-                       GFP(GSM_ERROR), GF("NO CARRIER" GSM_NL));
+    rsp = waitResponse((timeout_ms - (millis() - startMillis)), GFP(ACK_OK),
+                       GFP(ACK_ERROR), GF("NO CARRIER" ACK_NL));
 
     // creation of socket failed immediately.
     if (rsp != 1) { return false; }
@@ -501,13 +501,13 @@ class TinyGsmSequansMonarch
   }
 
   int modemSend(const void* buff, size_t len, uint8_t mux) {
-    if (sockets[mux % TINY_GSM_MUX_COUNT]->sock_connected == false) {
+    if (sockets[mux % SIMPLE_NB_MUX_COUNT]->sock_connected == false) {
       DBG("### Sock closed, cannot send data!");
       return 0;
     }
 
     sendAT(GF("+SQNSSENDEXT="), mux, ',', (uint16_t)len);
-    waitResponse(10000L, GF(GSM_NL "> "));
+    waitResponse(10000L, GF(ACK_NL "> "));
     // Translate bytes into char to be able to send them as an hex string
     char char_command[2];
     for (int i=0; i<len; i++) {
@@ -526,7 +526,7 @@ class TinyGsmSequansMonarch
     // bool gotPrompt = false;
     // while (nAttempts > 0 && !gotPrompt) {
     //   sendAT(GF("+SQNSSEND="), mux);
-    //   if (waitResponse(5000, GF(GSM_NL "> ")) == 1) {
+    //   if (waitResponse(5000, GF(ACK_NL "> ")) == 1) {
     //     gotPrompt = true;
     //   }
     //   nAttempts--;
@@ -554,15 +554,15 @@ class TinyGsmSequansMonarch
       uint32_t startMillis = millis();
       while (!stream.available() &&
              ((millis() - startMillis) <
-              sockets[mux % TINY_GSM_MUX_COUNT]->_timeout)) {
-        TINY_GSM_YIELD();
+              sockets[mux % SIMPLE_NB_MUX_COUNT]->_timeout)) {
+        SIMPLE_NB_YIELD();
       }
       char c = stream.read();
-      sockets[mux % TINY_GSM_MUX_COUNT]->rx.put(c);
+      sockets[mux % SIMPLE_NB_MUX_COUNT]->rx.put(c);
     }
     // DBG("### READ:", len, "from", mux);
     waitResponse();
-    sockets[mux % TINY_GSM_MUX_COUNT]->sock_available = modemGetAvailable(mux);
+    sockets[mux % SIMPLE_NB_MUX_COUNT]->sock_available = modemGetAvailable(mux);
     return len;
   }
 
@@ -584,8 +584,8 @@ class TinyGsmSequansMonarch
     // This single command always returns the connection status of all
     // six possible sockets.
     sendAT(GF("+SQNSS"));
-    for (int muxNo = 1; muxNo <= TINY_GSM_MUX_COUNT; muxNo++) {
-      if (waitResponse(GFP(GSM_OK), GF(GSM_NL "+SQNSS: ")) != 2) { break; }
+    for (int muxNo = 1; muxNo <= SIMPLE_NB_MUX_COUNT; muxNo++) {
+      if (waitResponse(GFP(ACK_OK), GF(ACK_NL "+SQNSS: ")) != 2) { break; }
       uint8_t status = 0;
       // if (streamGetIntBefore(',') != muxNo) { // check the mux no
       //   DBG("### Warning: misaligned mux numbers!");
@@ -602,7 +602,7 @@ class TinyGsmSequansMonarch
       // SOCK_LISTENING              = 4,
       // SOCK_INCOMING               = 5,
       // SOCK_OPENING                = 6,
-      GsmClientSequansMonarch* sock = sockets[muxNo % TINY_GSM_MUX_COUNT];
+      GsmClientSequansMonarch* sock = sockets[muxNo % SIMPLE_NB_MUX_COUNT];
       if (sock) {
         sock->sock_connected = ((status != SOCK_CLOSED) &&
                                 (status != SOCK_INCOMING) &&
@@ -610,7 +610,7 @@ class TinyGsmSequansMonarch
       }
     }
     waitResponse();  // Should be an OK at the end
-    return sockets[mux % TINY_GSM_MUX_COUNT]->sock_connected;
+    return sockets[mux % SIMPLE_NB_MUX_COUNT]->sock_connected;
   }
 
   /*
@@ -619,11 +619,11 @@ class TinyGsmSequansMonarch
  public:
   // TODO(vshymanskyy): Optimize this!
   int8_t waitResponse(uint32_t timeout_ms, String& data,
-                      GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+                      GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined SIMPLE_NB_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -638,9 +638,9 @@ class TinyGsmSequansMonarch
     uint8_t  index       = 0;
     uint32_t startMillis = millis();
     do {
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       while (stream.available() > 0) {
-        TINY_GSM_YIELD();
+        SIMPLE_NB_YIELD();
         int8_t a = stream.read();
         if (a <= 0) continue;  // Skip 0x00 bytes, just in case
         data += static_cast<char>(a);
@@ -651,8 +651,8 @@ class TinyGsmSequansMonarch
           index = 2;
           goto finish;
         } else if (r3 && data.endsWith(r3)) {
-#if defined TINY_GSM_DEBUG
-          if (r3 == GFP(GSM_CME_ERROR)) {
+#if defined SIMPLE_NB_DEBUG
+          if (r3 == GFP(ACK_CME_ERROR)) {
             streamSkipUntil('\n');  // Read out the error
           }
 #endif
@@ -664,21 +664,21 @@ class TinyGsmSequansMonarch
         } else if (r5 && data.endsWith(r5)) {
           index = 5;
           goto finish;
-        } else if (data.endsWith(GF(GSM_NL "+SQNSRING:"))) {
+        } else if (data.endsWith(GF(ACK_NL "+SQNSRING:"))) {
           int8_t  mux = streamGetIntBefore(',');
           int16_t len = streamGetIntBefore('\n');
-          if (mux >= 0 && mux < TINY_GSM_MUX_COUNT &&
-              sockets[mux % TINY_GSM_MUX_COUNT]) {
-            sockets[mux % TINY_GSM_MUX_COUNT]->got_data       = true;
-            sockets[mux % TINY_GSM_MUX_COUNT]->sock_available = len;
+          if (mux >= 0 && mux < SIMPLE_NB_MUX_COUNT &&
+              sockets[mux % SIMPLE_NB_MUX_COUNT]) {
+            sockets[mux % SIMPLE_NB_MUX_COUNT]->got_data       = true;
+            sockets[mux % SIMPLE_NB_MUX_COUNT]->sock_available = len;
           }
           data = "";
           DBG("### URC Data Received:", len, "on", mux);
         } else if (data.endsWith(GF("SQNSH: "))) {
           int8_t mux = streamGetIntBefore('\n');
-          if (mux >= 0 && mux < TINY_GSM_MUX_COUNT &&
-              sockets[mux % TINY_GSM_MUX_COUNT]) {
-            sockets[mux % TINY_GSM_MUX_COUNT]->sock_connected = false;
+          if (mux >= 0 && mux < SIMPLE_NB_MUX_COUNT &&
+              sockets[mux % SIMPLE_NB_MUX_COUNT]) {
+            sockets[mux % SIMPLE_NB_MUX_COUNT]->sock_connected = false;
           }
           data = "";
           DBG("### URC Sock Closed: ", mux);
@@ -691,16 +691,16 @@ class TinyGsmSequansMonarch
       if (data.length()) { DBG("### Unhandled:", data); }
       data = "";
     }
-    // data.replace(GSM_NL, "/");
+    // data.replace(ACK_NL, "/");
     // DBG('<', index, '>', data);
     return index;
   }
 
-  int8_t waitResponse(uint32_t timeout_ms, GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+  int8_t waitResponse(uint32_t timeout_ms, GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined SIMPLE_NB_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -709,11 +709,11 @@ class TinyGsmSequansMonarch
     return waitResponse(timeout_ms, data, r1, r2, r3, r4, r5);
   }
 
-  int8_t waitResponse(GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+  int8_t waitResponse(GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined SIMPLE_NB_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -725,9 +725,9 @@ class TinyGsmSequansMonarch
   Stream& stream;
 
  protected:
-  GsmClientSequansMonarch* sockets[TINY_GSM_MUX_COUNT];
-  // GSM_NL (\r\n) is not accepted with SQNSSENDEXT in data mode so use \n
+  GsmClientSequansMonarch* sockets[SIMPLE_NB_MUX_COUNT];
+  // ACK_NL (\r\n) is not accepted with SQNSSENDEXT in data mode so use \n
   const char*              gsmNL = "\n";
 };
 
-#endif  // SRC_TINYGSMCLIENTSEQUANSMONARCH_H_
+#endif  // SRC_SIMPLE_NB_CLIENTSEQUANSMONARCH_H_

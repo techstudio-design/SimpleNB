@@ -1,20 +1,20 @@
 /**
- * @file       TinyGsmGSMLocation.h
+ * @file       SimpleNBGSMLocation.h
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMGSMLOCATION_H_
-#define SRC_TINYGSMGSMLOCATION_H_
+#ifndef SRC_SIMPLE_NB_GSMLOCATION_H_
+#define SRC_SIMPLE_NB_GSMLOCATION_H_
 
-#include "TinyGsmCommon.h"
+#include "SimpleNBCommon.h"
 
-#define TINY_GSM_MODEM_HAS_GSM_LOCATION
+#define SIMPLE_NB_SUPPORT_GSM_LOCATION
 
 template <class modemType>
-class TinyGsmGSMLocation {
+class SimpleNBGSMLocation {
  public:
   /*
    * GSM Location functions
@@ -146,4 +146,4 @@ class TinyGsmGSMLocation {
   }
 };
 
-#endif  // SRC_TINYGSMGSMLOCATION_H_
+#endif  // SRC_SIMPLE_NB_GSMLOCATION_H_

@@ -1,32 +1,32 @@
 /**
- * @file       TinyGsmClientSIM70xx.h
+ * @file       SimpleNBClientSIM70xx.h
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMCLIENTSIM70XX_H_
-#define SRC_TINYGSMCLIENTSIM70XX_H_
+#ifndef SRC_SIMPLE_NB_CLIENTSIM70XX_H_
+#define SRC_SIMPLE_NB_CLIENTSIM70XX_H_
 
-// #define TINY_GSM_DEBUG Serial
-// #define TINY_GSM_USE_HEX
+// #define TINY_ACK_DEBUG Serial
+// #define TINY_ACK_USE_HEX
 
-#include "TinyGsmBattery.tpp"
-#include "TinyGsmGPRS.tpp"
-#include "TinyGsmGPS.tpp"
-#include "TinyGsmModem.tpp"
-#include "TinyGsmSMS.tpp"
-#include "TinyGsmTime.tpp"
-#include "TinyGsmNTP.tpp"
-#include "TinyGsmGSMLocation.tpp"
+#include "SimpleNBBattery.tpp"
+#include "SimpleNBGPRS.tpp"
+#include "SimpleNBGPS.tpp"
+#include "SimpleNBModem.tpp"
+#include "SimpleNBSMS.tpp"
+#include "SimpleNBTime.tpp"
+#include "SimpleNBNTP.tpp"
+#include "SimpleNBGSMLocation.tpp"
 
-#define GSM_NL "\r\n"
-static const char GSM_OK[] TINY_GSM_PROGMEM    = "OK" GSM_NL;
-static const char GSM_ERROR[] TINY_GSM_PROGMEM = "ERROR" GSM_NL;
-#if defined       TINY_GSM_DEBUG
-static const char GSM_CME_ERROR[] TINY_GSM_PROGMEM = GSM_NL "+CME ERROR:";
-static const char GSM_CMS_ERROR[] TINY_GSM_PROGMEM = GSM_NL "+CMS ERROR:";
+#define ACK_NL "\r\n"
+static const char ACK_OK[] TINY_ACK_PROGMEM    = "OK" ACK_NL;
+static const char ACK_ERROR[] TINY_ACK_PROGMEM = "ERROR" ACK_NL;
+#if defined       TINY_ACK_DEBUG
+static const char ACK_CME_ERROR[] TINY_ACK_PROGMEM = ACK_NL "+CME ERROR:";
+static const char ACK_CMS_ERROR[] TINY_ACK_PROGMEM = ACK_NL "+CMS ERROR:";
 #endif
 
 enum RegStatus {
@@ -40,22 +40,22 @@ enum RegStatus {
 };
 
 template <class modemType>
-class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
-                       public TinyGsmGPRS<TinyGsmSim70xx<modemType>>,
-                       public TinyGsmSMS<TinyGsmSim70xx<modemType>>,
-                       public TinyGsmGPS<TinyGsmSim70xx<modemType>>,
-                       public TinyGsmTime<TinyGsmSim70xx<modemType>>,
-                       public TinyGsmNTP<TinyGsmSim70xx<modemType>>,
-                       public TinyGsmBattery<TinyGsmSim70xx<modemType>>,
-                       public TinyGsmGSMLocation<TinyGsmSim70xx<modemType>> {
-  friend class TinyGsmModem<TinyGsmSim70xx<modemType>>;
-  friend class TinyGsmGPRS<TinyGsmSim70xx<modemType>>;
-  friend class TinyGsmSMS<TinyGsmSim70xx<modemType>>;
-  friend class TinyGsmGPS<TinyGsmSim70xx<modemType>>;
-  friend class TinyGsmTime<TinyGsmSim70xx<modemType>>;
-  friend class TinyGsmNTP<TinyGsmSim70xx<modemType>>;
-  friend class TinyGsmBattery<TinyGsmSim70xx<modemType>>;
-  friend class TinyGsmGSMLocation<TinyGsmSim70xx<modemType>>;
+class SimpleNBSim70xx : public SimpleNBModem<SimpleNBSim70xx<modemType>>,
+                       public SimpleNBGPRS<SimpleNBSim70xx<modemType>>,
+                       public SimpleNBSMS<SimpleNBSim70xx<modemType>>,
+                       public SimpleNBGPS<SimpleNBSim70xx<modemType>>,
+                       public SimpleNBTime<SimpleNBSim70xx<modemType>>,
+                       public SimpleNBNTP<SimpleNBSim70xx<modemType>>,
+                       public SimpleNBBattery<SimpleNBSim70xx<modemType>>,
+                       public SimpleNBGSMLocation<SimpleNBSim70xx<modemType>> {
+  friend class SimpleNBModem<SimpleNBSim70xx<modemType>>;
+  friend class SimpleNBGPRS<SimpleNBSim70xx<modemType>>;
+  friend class SimpleNBSMS<SimpleNBSim70xx<modemType>>;
+  friend class SimpleNBGPS<SimpleNBSim70xx<modemType>>;
+  friend class SimpleNBTime<SimpleNBSim70xx<modemType>>;
+  friend class SimpleNBNTP<SimpleNBSim70xx<modemType>>;
+  friend class SimpleNBBattery<SimpleNBSim70xx<modemType>>;
+  friend class SimpleNBGSMLocation<SimpleNBSim70xx<modemType>>;
 
   /*
    * CRTP Helper
@@ -72,7 +72,7 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
    * Constructor
    */
  public:
-  explicit TinyGsmSim70xx(Stream& stream) : stream(stream) {}
+  explicit SimpleNBSim70xx(Stream& stream) : stream(stream) {}
 
   /*
    * Basic functions
@@ -88,7 +88,7 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
     thisModem().sendAT(GF("+GMM"));
     String res2;
     if (thisModem().waitResponse(5000L, res2) != 1) { return name; }
-    res2.replace(GSM_NL "OK" GSM_NL, "");
+    res2.replace(ACK_NL "OK" ACK_NL, "");
     res2.replace("_", " ");
     res2.trim();
 
@@ -170,7 +170,7 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
   String getNetworkModes() {
     // Get the help string, not the setting value
     thisModem().sendAT(GF("+CNMP=?"));
-    if (thisModem().waitResponse(GF(GSM_NL "+CNMP:")) != 1) { return ""; }
+    if (thisModem().waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return ""; }
     String res = stream.readStringUntil('\n');
     thisModem().waitResponse();
     return res;
@@ -178,7 +178,7 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
 
   int16_t getNetworkMode() {
     thisModem().sendAT(GF("+CNMP?"));
-    if (thisModem().waitResponse(GF(GSM_NL "+CNMP:")) != 1) { return false; }
+    if (thisModem().waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return false; }
     int16_t mode = thisModem().streamGetIntBefore('\n');
     thisModem().waitResponse();
     return mode;
@@ -196,7 +196,7 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
   String getPreferredModes() {
     // Get the help string, not the setting value
     thisModem().sendAT(GF("+CMNB=?"));
-    if (thisModem().waitResponse(GF(GSM_NL "+CMNB:")) != 1) { return ""; }
+    if (thisModem().waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return ""; }
     String res = stream.readStringUntil('\n');
     thisModem().waitResponse();
     return res;
@@ -204,7 +204,7 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
 
   int16_t getPreferredMode() {
     thisModem().sendAT(GF("+CMNB?"));
-    if (thisModem().waitResponse(GF(GSM_NL "+CMNB:")) != 1) { return false; }
+    if (thisModem().waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return false; }
     int16_t mode = thisModem().streamGetIntBefore('\n');
     thisModem().waitResponse();
     return mode;
@@ -222,7 +222,7 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
     // n: whether to automatically report the system mode info
     // stat: the current service. 0 if it not connected
     thisModem().sendAT(GF("+CNSMOD?"));
-    if (thisModem().waitResponse(GF(GSM_NL "+CNSMOD:")) != 1) { return false; }
+    if (thisModem().waitResponse(GF(ACK_NL "+CNSMOD:")) != 1) { return false; }
     n    = thisModem().streamGetIntBefore(',') != 0;
     stat = thisModem().streamGetIntBefore('\n');
     thisModem().waitResponse();
@@ -260,7 +260,7 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
   // Doesn't return the "+CCID" before the number
   String getSimCCIDImpl() {
     thisModem().sendAT(GF("+CCID"));
-    if (thisModem().waitResponse(GF(GSM_NL)) != 1) { return ""; }
+    if (thisModem().waitResponse(GF(ACK_NL)) != 1) { return ""; }
     String res = stream.readStringUntil('\n');
     thisModem().waitResponse();
     res.trim();
@@ -293,7 +293,7 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
   // get the RAW GPS output
   String getGPSrawImpl() {
     thisModem().sendAT(GF("+CGNSINF"));
-    if (thisModem().waitResponse(10000L, GF(GSM_NL "+CGNSINF:")) != 1) {
+    if (thisModem().waitResponse(10000L, GF(ACK_NL "+CGNSINF:")) != 1) {
       return "";
     }
     String res = stream.readStringUntil('\n');
@@ -308,7 +308,7 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
                   int* year = 0, int* month = 0, int* day = 0, int* hour = 0,
                   int* minute = 0, int* second = 0) {
     thisModem().sendAT(GF("+CGNSINF"));
-    if (thisModem().waitResponse(10000L, GF(GSM_NL "+CGNSINF:")) != 1) {
+    if (thisModem().waitResponse(10000L, GF(ACK_NL "+CGNSINF:")) != 1) {
       return false;
     }
 
@@ -412,11 +412,11 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
  public:
   // should implement in sub-classes
   int8_t waitResponse(uint32_t timeout_ms, String& data,
-                      GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+                      GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined TINY_ACK_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -424,11 +424,11 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
     return thisModem().waitResponse(timeout_ms, data, r1, r2, r3, r4, r5);
   }
 
-  int8_t waitResponse(uint32_t timeout_ms, GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+  int8_t waitResponse(uint32_t timeout_ms, GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined TINY_ACK_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -437,11 +437,11 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
     return thisModem().waitResponse(timeout_ms, data, r1, r2, r3, r4, r5);
   }
 
-  int8_t waitResponse(GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+  int8_t waitResponse(GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined TINY_ACK_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -453,7 +453,7 @@ class TinyGsmSim70xx : public TinyGsmModem<TinyGsmSim70xx<modemType>>,
   Stream& stream;
 
  protected:
-  const char* gsmNL = GSM_NL;
+  const char* gsmNL = ACK_NL;
 };
 
-#endif  // SRC_TINYGSMCLIENTSIM70XX_H_
+#endif  // SRC_SIMPLE_NB_CLIENTSIM70XX_H_

@@ -1,17 +1,17 @@
-/**
- * @file       TinyGsmGPRS.tpp
+SIMPLE_NB_/**
+ * @file       SimpleNBGPRS.tpp
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMGPRS_H_
-#define SRC_TINYGSMGPRS_H_
+#ifndef SRC_SIMPLE_NB_GPRS_H_
+#define SRC_SIMPLE_NB_GPRS_H_
 
-#include "TinyGsmCommon.h"
+#include "SimpleNBCommon.h"
 
-#define TINY_GSM_MODEM_HAS_GPRS
+#define SIMPLE_NB_SUPPORT_GPRS
 
 enum SimStatus {
   SIM_ERROR            = 0,
@@ -21,7 +21,7 @@ enum SimStatus {
 };
 
 template <class modemType>
-class TinyGsmGPRS {
+class SimpleNBGPRS {
  public:
   /*
    * SIM card functions
@@ -168,4 +168,4 @@ class TinyGsmGPRS {
   }
 };
 
-#endif  // SRC_TINYGSMGPRS_H_
+#endif  // SRC_SIMPLE_NB_GPRS_H_

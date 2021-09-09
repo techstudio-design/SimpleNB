@@ -1,37 +1,37 @@
 /**
- * @file       TinyGsmClientBG96.h
+ * @file       SimpleNBClientBG96.h
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @date       Apr 2018
  */
 
-#ifndef SRC_TINYGSMCLIENTBG96_H_
-#define SRC_TINYGSMCLIENTBG96_H_
-// #pragma message("TinyGSM:  TinyGsmClientBG96")
+#ifndef SRC_SIMPLE_NB_CLIENTBG96_H_
+#define SRC_SIMPLE_NB_CLIENTBG96_H_
+// #pragma message("SimpleNB:  SimpleNBClientBG96")
 
-// #define TINY_GSM_DEBUG Serial
+// #define SIMPLE_NB_DEBUG Serial
 
-#define TINY_GSM_MUX_COUNT 12
-#define TINY_GSM_BUFFER_READ_AND_CHECK_SIZE
+#define SIMPLE_NB_MUX_COUNT 12
+#define SIMPLE_NB_BUFFER_READ_AND_CHECK_SIZE
 
-#include "TinyGsmBattery.tpp"
-#include "TinyGsmCalling.tpp"
-#include "TinyGsmGPRS.tpp"
-#include "TinyGsmGPS.tpp"
-#include "TinyGsmModem.tpp"
-#include "TinyGsmSMS.tpp"
-#include "TinyGsmTCP.tpp"
-#include "TinyGsmTemperature.tpp"
-#include "TinyGsmTime.tpp"
-#include "TinyGsmNTP.tpp"
+#include "SimpleNBBattery.tpp"
+#include "SimpleNBCalling.tpp"
+#include "SimpleNBGPRS.tpp"
+#include "SimpleNBGPS.tpp"
+#include "SimpleNBModem.tpp"
+#include "SimpleNBSMS.tpp"
+#include "SimpleNBTCP.tpp"
+#include "SimpleNBTemperature.tpp"
+#include "SimpleNBTime.tpp"
+#include "SimpleNBNTP.tpp"
 
-#define GSM_NL "\r\n"
-static const char GSM_OK[] TINY_GSM_PROGMEM    = "OK" GSM_NL;
-static const char GSM_ERROR[] TINY_GSM_PROGMEM = "ERROR" GSM_NL;
-#if defined       TINY_GSM_DEBUG
-static const char GSM_CME_ERROR[] TINY_GSM_PROGMEM = GSM_NL "+CME ERROR:";
-static const char GSM_CMS_ERROR[] TINY_GSM_PROGMEM = GSM_NL "+CMS ERROR:";
+#define ACK_NL "\r\n"
+static const char ACK_OK[] SIMPLE_NB_PROGMEM    = "OK" ACK_NL;
+static const char ACK_ERROR[] SIMPLE_NB_PROGMEM = "ERROR" ACK_NL;
+#if defined       SIMPLE_NB_DEBUG
+static const char ACK_CME_ERROR[] SIMPLE_NB_PROGMEM = ACK_NL "+CME ERROR:";
+static const char ACK_CMS_ERROR[] SIMPLE_NB_PROGMEM = ACK_NL "+CMS ERROR:";
 #endif
 
 enum RegStatus {
@@ -44,52 +44,52 @@ enum RegStatus {
   REG_UNKNOWN      = 4,
 };
 
-class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
-                    public TinyGsmGPRS<TinyGsmBG96>,
-                    public TinyGsmTCP<TinyGsmBG96, TINY_GSM_MUX_COUNT>,
-                    public TinyGsmCalling<TinyGsmBG96>,
-                    public TinyGsmSMS<TinyGsmBG96>,
-                    public TinyGsmTime<TinyGsmBG96>,
-                    public TinyGsmNTP<TinyGsmBG96>,
-                    public TinyGsmGPS<TinyGsmBG96>,
-                    public TinyGsmBattery<TinyGsmBG96>,
-                    public TinyGsmTemperature<TinyGsmBG96> {
-  friend class TinyGsmModem<TinyGsmBG96>;
-  friend class TinyGsmGPRS<TinyGsmBG96>;
-  friend class TinyGsmTCP<TinyGsmBG96, TINY_GSM_MUX_COUNT>;
-  friend class TinyGsmCalling<TinyGsmBG96>;
-  friend class TinyGsmSMS<TinyGsmBG96>;
-  friend class TinyGsmTime<TinyGsmBG96>;
-  friend class TinyGsmNTP<TinyGsmBG96>;
-  friend class TinyGsmGPS<TinyGsmBG96>;
-  friend class TinyGsmBattery<TinyGsmBG96>;
-  friend class TinyGsmTemperature<TinyGsmBG96>;
+class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
+                    public SimpleNBGPRS<SimpleNBBG96>,
+                    public SimpleNBTCP<SimpleNBBG96, SIMPLE_NB_MUX_COUNT>,
+                    public SimpleNBCalling<SimpleNBBG96>,
+                    public SimpleNBSMS<SimpleNBBG96>,
+                    public SimpleNBTime<SimpleNBBG96>,
+                    public SimpleNBNTP<SimpleNBBG96>,
+                    public SimpleNBGPS<SimpleNBBG96>,
+                    public SimpleNBBattery<SimpleNBBG96>,
+                    public SimpleNBTemperature<SimpleNBBG96> {
+  friend class SimpleNBModem<SimpleNBBG96>;
+  friend class SimpleNBGPRS<SimpleNBBG96>;
+  friend class SimpleNBTCP<SimpleNBBG96, SIMPLE_NB_MUX_COUNT>;
+  friend class SimpleNBCalling<SimpleNBBG96>;
+  friend class SimpleNBSMS<SimpleNBBG96>;
+  friend class SimpleNBTime<SimpleNBBG96>;
+  friend class SimpleNBNTP<SimpleNBBG96>;
+  friend class SimpleNBGPS<SimpleNBBG96>;
+  friend class SimpleNBBattery<SimpleNBBG96>;
+  friend class SimpleNBTemperature<SimpleNBBG96>;
 
   /*
    * Inner Client
    */
  public:
   class GsmClientBG96 : public GsmClient {
-    friend class TinyGsmBG96;
+    friend class SimpleNBBG96;
 
    public:
     GsmClientBG96() {}
 
-    explicit GsmClientBG96(TinyGsmBG96& modem, uint8_t mux = 0) {
+    explicit GsmClientBG96(SimpleNBBG96& modem, uint8_t mux = 0) {
       init(&modem, mux);
     }
 
-    bool init(TinyGsmBG96* modem, uint8_t mux = 0) {
+    bool init(SimpleNBBG96* modem, uint8_t mux = 0) {
       this->at       = modem;
       sock_available = 0;
       prev_check     = 0;
       sock_connected = false;
       got_data       = false;
 
-      if (mux < TINY_GSM_MUX_COUNT) {
+      if (mux < SIMPLE_NB_MUX_COUNT) {
         this->mux = mux;
       } else {
-        this->mux = (mux % TINY_GSM_MUX_COUNT);
+        this->mux = (mux % SIMPLE_NB_MUX_COUNT);
       }
       at->sockets[this->mux] = this;
 
@@ -99,12 +99,12 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
    public:
     virtual int connect(const char* host, uint16_t port, int timeout_s) {
       stop();
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       rx.clear();
       sock_connected = at->modemConnect(host, port, mux, false, timeout_s);
       return sock_connected;
     }
-    TINY_GSM_CLIENT_CONNECT_OVERRIDES
+    SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
 
     void stop(uint32_t maxWaitMs) {
       uint32_t startMillis = millis();
@@ -121,7 +121,7 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
      * Extended API
      */
 
-    String remoteIP() TINY_GSM_ATTR_NOT_IMPLEMENTED;
+    String remoteIP() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
   };
 
   /*
@@ -134,7 +134,7 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
   public:
     GsmClientSecure() {}
 
-    GsmClientSecure(TinyGsmBG96& modem, uint8_t mux = 0)
+    GsmClientSecure(SimpleNBBG96& modem, uint8_t mux = 0)
      : public GsmClient(modem, mux)
     {}
 
@@ -142,12 +142,12 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
   public:
     int connect(const char* host, uint16_t port, int timeout_s) override {
       stop();
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       rx.clear();
       sock_connected = at->modemConnect(host, port, mux, true, timeout_s);
       return sock_connected;
     }
-    TINY_GSM_CLIENT_CONNECT_OVERRIDES
+    SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
   };
   */
 
@@ -155,7 +155,7 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
    * Constructor
    */
  public:
-  explicit TinyGsmBG96(Stream& stream) : stream(stream) {
+  explicit SimpleNBBG96(Stream& stream) : stream(stream) {
     memset(sockets, 0, sizeof(sockets));
   }
 
@@ -164,15 +164,15 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
    */
  protected:
   bool initImpl(const char* pin = NULL) {
-    DBG(GF("### TinyGSM Version:"), TINYGSM_VERSION);
-    DBG(GF("### TinyGSM Compiled Module:  TinyGsmClientBG96"));
+    DBG(GF("### SimpleNB Version:"), SIMPLENB_VERSION);
+    DBG(GF("### SimpleNB Compiled Module:  SimpleNBClientBG96"));
 
     if (!testAT()) { return false; }
 
     sendAT(GF("E0"));  // Echo Off
     if (waitResponse() != 1) { return false; }
 
-#ifdef TINY_GSM_DEBUG
+#ifdef SIMPLE_NB_DEBUG
     sendAT(GF("+CMEE=2"));  // turn on verbose error codes
 #else
     sendAT(GF("+CMEE=0"));  // turn off error codes
@@ -293,7 +293,7 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
  protected:
   String getSimCCIDImpl() {
     sendAT(GF("+QCCID"));
-    if (waitResponse(GF(GSM_NL "+QCCID:")) != 1) { return ""; }
+    if (waitResponse(GF(ACK_NL "+QCCID:")) != 1) { return ""; }
     String res = stream.readStringUntil('\n');
     waitResponse();
     res.trim();
@@ -341,7 +341,7 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
   // get the RAW GPS output
   String getGPSrawImpl() {
     sendAT(GF("+QGPSLOC=2"));
-    if (waitResponse(10000L, GF(GSM_NL "+QGPSLOC:")) != 1) { return ""; }
+    if (waitResponse(10000L, GF(ACK_NL "+QGPSLOC:")) != 1) { return ""; }
     String res = stream.readStringUntil('\n');
     waitResponse();
     res.trim();
@@ -354,7 +354,7 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
                   int* year = 0, int* month = 0, int* day = 0, int* hour = 0,
                   int* minute = 0, int* second = 0) {
     sendAT(GF("+QGPSLOC=2"));
-    if (waitResponse(10000L, GF(GSM_NL "+QGPSLOC:")) != 1) {
+    if (waitResponse(10000L, GF(ACK_NL "+QGPSLOC:")) != 1) {
       // NOTE:  Will return an error if the position isn't fixed
       return false;
     }
@@ -419,7 +419,7 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
    * Time functions
    */
  protected:
-  String getGSMDateTimeImpl(TinyGSMDateTimeFormat format) {
+  String getGSMDateTimeImpl(SimpleNBDateTimeFormat format) {
     sendAT(GF("+QLTS=2"));
     if (waitResponse(2000L, GF("+QLTS: \"")) != 1) { return ""; }
 
@@ -492,14 +492,14 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
       String result = stream.readStringUntil(',');
       streamSkipUntil('\n');
       result.trim();
-      if (TinyGsmIsValidNumber(result)) { return result.toInt(); }
+      if (SimpleNBIsValidNumber(result)) { return result.toInt(); }
     } else {
       return -1;
     }
     return -1;
   }
 
-  String ShowNTPErrorImpl(byte error) TINY_GSM_ATTR_NOT_IMPLEMENTED;
+  String ShowNTPErrorImpl(byte error) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 
   /*
    * Battery functions
@@ -514,7 +514,7 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
   // get temperature in degree celsius
   uint16_t getTemperatureImpl() {
     sendAT(GF("+QTEMP"));
-    if (waitResponse(GF(GSM_NL "+QTEMP:")) != 1) { return 0; }
+    if (waitResponse(GF(ACK_NL "+QTEMP:")) != 1) { return 0; }
     // return temperature in C
     uint16_t res =
         streamGetIntBefore(',');  // read PMIC (primary ic) temperature
@@ -542,7 +542,7 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
            GF("\","), port, GF(",0,0"));
     waitResponse();
 
-    if (waitResponse(timeout_ms, GF(GSM_NL "+QIOPEN:")) != 1) { return false; }
+    if (waitResponse(timeout_ms, GF(ACK_NL "+QIOPEN:")) != 1) { return false; }
 
     if (streamGetIntBefore(',') != mux) { return false; }
     // Read status
@@ -554,7 +554,7 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
     if (waitResponse(GF(">")) != 1) { return 0; }
     stream.write(reinterpret_cast<const uint8_t*>(buff), len);
     stream.flush();
-    if (waitResponse(GF(GSM_NL "SEND OK")) != 1) { return 0; }
+    if (waitResponse(GF(ACK_NL "SEND OK")) != 1) { return 0; }
     // TODO(?): Wait for ACK? AT+QISEND=id,0
     return len;
   }
@@ -612,11 +612,11 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
  public:
   // TODO(vshymanskyy): Optimize this!
   int8_t waitResponse(uint32_t timeout_ms, String& data,
-                      GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+                      GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined SIMPLE_NB_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -631,9 +631,9 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
     uint8_t  index       = 0;
     uint32_t startMillis = millis();
     do {
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       while (stream.available() > 0) {
-        TINY_GSM_YIELD();
+        SIMPLE_NB_YIELD();
         int8_t a = stream.read();
         if (a <= 0) continue;  // Skip 0x00 bytes, just in case
         data += static_cast<char>(a);
@@ -644,8 +644,8 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
           index = 2;
           goto finish;
         } else if (r3 && data.endsWith(r3)) {
-#if defined TINY_GSM_DEBUG
-          if (r3 == GFP(GSM_CME_ERROR)) {
+#if defined SIMPLE_NB_DEBUG
+          if (r3 == GFP(ACK_CME_ERROR)) {
             streamSkipUntil('\n');  // Read out the error
           }
 #endif
@@ -657,20 +657,20 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
         } else if (r5 && data.endsWith(r5)) {
           index = 5;
           goto finish;
-        } else if (data.endsWith(GF(GSM_NL "+QIURC:"))) {
+        } else if (data.endsWith(GF(ACK_NL "+QIURC:"))) {
           streamSkipUntil('\"');
           String urc = stream.readStringUntil('\"');
           streamSkipUntil(',');
           if (urc == "recv") {
             int8_t mux = streamGetIntBefore('\n');
             DBG("### URC RECV:", mux);
-            if (mux >= 0 && mux < TINY_GSM_MUX_COUNT && sockets[mux]) {
+            if (mux >= 0 && mux < SIMPLE_NB_MUX_COUNT && sockets[mux]) {
               sockets[mux]->got_data = true;
             }
           } else if (urc == "closed") {
             int8_t mux = streamGetIntBefore('\n');
             DBG("### URC CLOSE:", mux);
-            if (mux >= 0 && mux < TINY_GSM_MUX_COUNT && sockets[mux]) {
+            if (mux >= 0 && mux < SIMPLE_NB_MUX_COUNT && sockets[mux]) {
               sockets[mux]->sock_connected = false;
             }
           } else {
@@ -686,16 +686,16 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
       if (data.length()) { DBG("### Unhandled:", data); }
       data = "";
     }
-    // data.replace(GSM_NL, "/");
+    // data.replace(ACK_NL, "/");
     // DBG('<', index, '>', data);
     return index;
   }
 
-  int8_t waitResponse(uint32_t timeout_ms, GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+  int8_t waitResponse(uint32_t timeout_ms, GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined SIMPLE_NB_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -704,11 +704,11 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
     return waitResponse(timeout_ms, data, r1, r2, r3, r4, r5);
   }
 
-  int8_t waitResponse(GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+  int8_t waitResponse(GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined SIMPLE_NB_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -720,8 +720,8 @@ class TinyGsmBG96 : public TinyGsmModem<TinyGsmBG96>,
   Stream& stream;
 
  protected:
-  GsmClientBG96* sockets[TINY_GSM_MUX_COUNT];
-  const char*    gsmNL = GSM_NL;
+  GsmClientBG96* sockets[SIMPLE_NB_MUX_COUNT];
+  const char*    gsmNL = ACK_NL;
 };
 
-#endif  // SRC_TINYGSMCLIENTBG96_H_
+#endif  // SRC_SIMPLE_NB_CLIENTBG96_H_

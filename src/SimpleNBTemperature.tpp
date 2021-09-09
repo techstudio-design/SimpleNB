@@ -1,20 +1,20 @@
 /**
- * @file       TinyGsmTemperature.tpp
+ * @file       SimpleNBTemperature.tpp
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMTEMPERATURE_H_
-#define SRC_TINYGSMTEMPERATURE_H_
+#ifndef SRC_SIMPLE_NB_TEMPERATURE_H_
+#define SRC_SIMPLE_NB_TEMPERATURE_H_
 
-#include "TinyGsmCommon.h"
+#include "SimpleNBCommon.h"
 
-#define TINY_GSM_MODEM_HAS_TEMPERATURE
+#define SIMPLE_NB_SUPPORT_TEMPERATURE
 
 template <class modemType>
-class TinyGsmTemperature {
+class SimpleNBTemperature {
  public:
   /*
    * Temperature functions
@@ -34,7 +34,7 @@ class TinyGsmTemperature {
     return static_cast<modemType&>(*this);
   }
 
-  float getTemperatureImpl() TINY_GSM_ATTR_NOT_IMPLEMENTED;
+  float getTemperatureImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 };
 
-#endif  // SRC_TINYGSMTEMPERATURE_H_
+#endif  // SRC_SIMPLE_NB_TEMPERATURE_H_

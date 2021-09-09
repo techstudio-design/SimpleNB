@@ -6,12 +6,12 @@
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMBATTERY_H_
-#define SRC_TINYGSMBATTERY_H_
+#ifndef SRC_SIMPLE_NB_BATTERY_H_
+#define SRC_SIMPLE_NB_BATTERY_H_
 
-#include "TinyGsmCommon.h"
+#include "SimpleNBCommon.h"
 
-#define TINY_GSM_MODEM_HAS_BATTERY
+#define SIMPLE_NB_SUPPORT_BATTERY
 
 template <class modemType>
 class TinyGsmBattery {
@@ -95,4 +95,4 @@ class TinyGsmBattery {
   }
 };
 
-#endif  // SRC_TINYGSMBATTERY_H_
+#endif  // SRC_SIMPLE_NB_BATTERY_H_

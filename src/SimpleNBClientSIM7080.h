@@ -1,56 +1,56 @@
 /**
- * @file       TinyGsmClientSim7080.h
+ * @file       SimpleNBClientSim7080.h
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMCLIENTSIM7080_H_
-#define SRC_TINYGSMCLIENTSIM7080_H_
+#ifndef SRC_SIMPLE_NB_CLIENTSIM7080_H_
+#define SRC_SIMPLE_NB_CLIENTSIM7080_H_
 
-// #define TINY_GSM_DEBUG Serial
-// #define TINY_GSM_USE_HEX
+// #define SIMPLE_NB_DEBUG Serial
+// #define SIMPLE_NB_USE_HEX
 
-#define TINY_GSM_MUX_COUNT 12
-#define TINY_GSM_BUFFER_READ_AND_CHECK_SIZE
+#define SIMPLE_NB_MUX_COUNT 12
+#define SIMPLE_NB_BUFFER_READ_AND_CHECK_SIZE
 
-#include "TinyGsmClientSIM70xx.h"
-#include "TinyGsmTCP.tpp"
-#include "TinyGsmSSL.tpp"
+#include "SimpleNBClientSIM70xx.h"
+#include "SimpleNBTCP.tpp"
+#include "SimpleNBSSL.tpp"
 
-class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
-                       public TinyGsmTCP<TinyGsmSim7080, TINY_GSM_MUX_COUNT>,
-                       public TinyGsmSSL<TinyGsmSim7080> {
-  friend class TinyGsmSim70xx<TinyGsmSim7080>;
-  friend class TinyGsmTCP<TinyGsmSim7080, TINY_GSM_MUX_COUNT>;
-  friend class TinyGsmSSL<TinyGsmSim7080>;
+class SimpleNBSim7080 : public SimpleNBSim70xx<SimpleNBSim7080>,
+                       public SimpleNBTCP<SimpleNBSim7080, SIMPLE_NB_MUX_COUNT>,
+                       public SimpleNBSSL<SimpleNBSim7080> {
+  friend class SimpleNBSim70xx<SimpleNBSim7080>;
+  friend class SimpleNBTCP<SimpleNBSim7080, SIMPLE_NB_MUX_COUNT>;
+  friend class SimpleNBSSL<SimpleNBSim7080>;
 
   /*
    * Inner Client
    */
  public:
   class GsmClientSim7080 : public GsmClient {
-    friend class TinyGsmSim7080;
+    friend class SimpleNBSim7080;
 
    public:
     GsmClientSim7080() {}
 
-    explicit GsmClientSim7080(TinyGsmSim7080& modem, uint8_t mux = 0) {
+    explicit GsmClientSim7080(SimpleNBSim7080& modem, uint8_t mux = 0) {
       init(&modem, mux);
     }
 
-    bool init(TinyGsmSim7080* modem, uint8_t mux = 0) {
+    bool init(SimpleNBSim7080* modem, uint8_t mux = 0) {
       this->at       = modem;
       sock_available = 0;
       prev_check     = 0;
       sock_connected = false;
       got_data       = false;
 
-      if (mux < TINY_GSM_MUX_COUNT) {
+      if (mux < SIMPLE_NB_MUX_COUNT) {
         this->mux = mux;
       } else {
-        this->mux = (mux % TINY_GSM_MUX_COUNT);
+        this->mux = (mux % SIMPLE_NB_MUX_COUNT);
       }
       at->sockets[this->mux] = this;
 
@@ -60,12 +60,12 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
    public:
     virtual int connect(const char* host, uint16_t port, int timeout_s) {
       stop();
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       rx.clear();
       sock_connected = at->modemConnect(host, port, mux, false, timeout_s);
       return sock_connected;
     }
-    TINY_GSM_CLIENT_CONNECT_OVERRIDES
+    SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
 
     void stop(uint32_t maxWaitMs) {
       dumpModemBuffer(maxWaitMs);
@@ -81,7 +81,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
      * Extended API
      */
 
-    String remoteIP() TINY_GSM_ATTR_NOT_IMPLEMENTED;
+    String remoteIP() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
   };
 
   /*
@@ -92,7 +92,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
    public:
     GsmClientSecureSIM7080() {}
 
-    explicit GsmClientSecureSIM7080(TinyGsmSim7080& modem, uint8_t mux = 0)
+    explicit GsmClientSecureSIM7080(SimpleNBSim7080& modem, uint8_t mux = 0)
         : GsmClientSim7080(modem, mux) {}
 
    public:
@@ -103,20 +103,20 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
     virtual int connect(const char* host, uint16_t port,
                         int timeout_s) override {
       stop();
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       rx.clear();
       sock_connected = at->modemConnect(host, port, mux, true, timeout_s);
       return sock_connected;
     }
-    TINY_GSM_CLIENT_CONNECT_OVERRIDES
+    SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
   };
 
   /*
    * Constructor
    */
  public:
-  explicit TinyGsmSim7080(Stream& stream)
-      : TinyGsmSim70xx<TinyGsmSim7080>(stream),
+  explicit SimpleNBSim7080(Stream& stream)
+      : SimpleNBSim70xx<SimpleNBSim7080>(stream),
         certificates() {
     memset(sockets, 0, sizeof(sockets));
   }
@@ -126,15 +126,15 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
    */
  protected:
   bool initImpl(const char* pin = NULL) {
-    DBG(GF("### TinyGSM Version:"), TINYGSM_VERSION);
-    DBG(GF("### TinyGSM Compiled Module:  TinyGsmClientSIM7080"));
+    DBG(GF("### SimpleNB Version:"), SIMPLENB_VERSION);
+    DBG(GF("### SimpleNB Compiled Module:  SimpleNBClientSIM7080"));
 
     if (!testAT()) { return false; }
 
     sendAT(GF("E0"));  // Echo Off
     if (waitResponse() != 1) { return false; }
 
-#ifdef TINY_GSM_DEBUG
+#ifdef SIMPLE_NB_DEBUG
     sendAT(GF("+CMEE=2"));  // turn on verbose error codes
 #else
     sendAT(GF("+CMEE=0"));  // turn off error codes
@@ -167,7 +167,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
     // Keep listening for modem URC's and proactively iterate through
     // sockets asking if any data is avaiable
     bool check_socks = false;
-    for (int mux = 0; mux < TINY_GSM_MUX_COUNT; mux++) {
+    for (int mux = 0; mux < SIMPLE_NB_MUX_COUNT; mux++) {
       GsmClientSim7080* sock = sockets[mux];
       if (sock && sock->got_data) {
         sock->got_data = false;
@@ -192,7 +192,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
  protected:
   String getLocalIPImpl() {
     sendAT(GF("+CNACT?"));
-    if (waitResponse(GF(GSM_NL "+CNACT:")) != 1) { return ""; }
+    if (waitResponse(GF(ACK_NL "+CNACT:")) != 1) { return ""; }
     streamSkipUntil('\"');
     String res = stream.readStringUntil('\"');
     waitResponse();
@@ -204,7 +204,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
    */
  protected:
   bool setCertificate(const String& certificateName, const uint8_t mux = 0) {
-    if (mux >= TINY_GSM_MUX_COUNT) return false;
+    if (mux >= SIMPLE_NB_MUX_COUNT) return false;
     certificates[mux] = certificateName;
     return true;
   }
@@ -270,8 +270,8 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
     int  ntries = 0;
     while (!res && ntries < 5) {
       sendAT(GF("+CNACT=0,1"));
-      res = waitResponse(60000L, GF(GSM_NL "+APP PDP: 0,ACTIVE"),
-                         GF(GSM_NL "+APP PDP: 0,DEACTIVE"));
+      res = waitResponse(60000L, GF(ACK_NL "+APP PDP: 0,ACTIVE"),
+                         GF(ACK_NL "+APP PDP: 0,DEACTIVE"));
       waitResponse();
       ntries++;
     }
@@ -401,7 +401,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
     //                "recv",<id>,<length>,<remoteIP>,<remote_port><CR><LF><data>
     // NOTE:  including the <recv_mode> fails
     sendAT(GF("+CAOPEN="), mux, GF(",0,\"TCP\",\""), host, GF("\","), port);
-    if (waitResponse(timeout_ms, GF(GSM_NL "+CAOPEN:")) != 1) { return 0; }
+    if (waitResponse(timeout_ms, GF(ACK_NL "+CAOPEN:")) != 1) { return 0; }
     // returns OK/r/n/r/n+CAOPEN: <cid>,<result>
     // <result> 0: Success
     //          1: Socket error
@@ -476,7 +476,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
       uint32_t startMillis = millis();
       while (!stream.available() &&
              (millis() - startMillis < sockets[mux]->_timeout)) {
-        TINY_GSM_YIELD();
+        SIMPLE_NB_YIELD();
       }
       char c = stream.read();
       sockets[mux]->rx.put(c);
@@ -493,9 +493,9 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
     // NOTE: This gets how many characters are available on all connections that
     // have data.  It does not return all the connections, just those with data.
     sendAT(GF("+CARECV?"));
-    for (int muxNo = 0; muxNo < TINY_GSM_MUX_COUNT; muxNo++) {
+    for (int muxNo = 0; muxNo < SIMPLE_NB_MUX_COUNT; muxNo++) {
       // after the last connection, there's an ok, so we catch it right away
-      int res = waitResponse(3000, GF("+CARECV:"), GFP(GSM_OK), GFP(GSM_ERROR));
+      int res = waitResponse(3000, GF("+CARECV:"), GFP(ACK_OK), GFP(ACK_ERROR));
       // if we get the +CARECV: response, read the mux number and the number of
       // characters available
       if (res == 1) {
@@ -515,7 +515,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
       } else if (res == 2) {
         // if we get an OK, we've reached the last socket with available data
         // so we set any we haven't gotten to yet to 0
-        for (int extra_mux = muxNo; extra_mux < TINY_GSM_MUX_COUNT;
+        for (int extra_mux = muxNo; extra_mux < SIMPLE_NB_MUX_COUNT;
              extra_mux++) {
           GsmClientSim7080* isock = sockets[extra_mux];
           if (isock) { isock->sock_available = 0; }
@@ -528,7 +528,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
       // Should be a final OK at the end.
       // If every connection was returned, catch the OK here.
       // If only a portion were returned, catch it above.
-      if (muxNo == TINY_GSM_MUX_COUNT - 1) { waitResponse(); }
+      if (muxNo == SIMPLE_NB_MUX_COUNT - 1) { waitResponse(); }
     }
     modemGetConnected(mux);  // check the state of all connections
     if (!sockets[mux]) { return 0; }
@@ -540,10 +540,10 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
     // since the last connection
     sendAT(GF("+CASTATE?"));
 
-    for (int muxNo = 0; muxNo < TINY_GSM_MUX_COUNT; muxNo++) {
+    for (int muxNo = 0; muxNo < SIMPLE_NB_MUX_COUNT; muxNo++) {
       // after the last connection, there's an ok, so we catch it right away
-      int res = waitResponse(3000, GF("+CASTATE:"), GFP(GSM_OK),
-                             GFP(GSM_ERROR));
+      int res = waitResponse(3000, GF("+CASTATE:"), GFP(ACK_OK),
+                             GFP(ACK_ERROR));
       // if we get the +CASTATE: response, read the mux number and the status
       if (res == 1) {
         int    ret_mux = streamGetIntBefore(',');
@@ -565,7 +565,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
       } else if (res == 2) {
         // if we get an OK, we've reached the last socket with available data
         // so we set any we haven't gotten to yet to 0
-        for (int extra_mux = muxNo; extra_mux < TINY_GSM_MUX_COUNT;
+        for (int extra_mux = muxNo; extra_mux < SIMPLE_NB_MUX_COUNT;
              extra_mux++) {
           GsmClientSim7080* isock = sockets[extra_mux];
           if (isock) { isock->sock_connected = false; }
@@ -578,7 +578,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
       // Should be a final OK at the end.
       // If every connection was returned, catch the OK here.
       // If only a portion were returned, catch it above.
-      if (muxNo == TINY_GSM_MUX_COUNT - 1) { waitResponse(); }
+      if (muxNo == SIMPLE_NB_MUX_COUNT - 1) { waitResponse(); }
     }
     return sockets[mux]->sock_connected;
   }
@@ -589,11 +589,11 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
  public:
   // TODO(vshymanskyy): Optimize this!
   int8_t waitResponse(uint32_t timeout_ms, String& data,
-                      GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+                      GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined SIMPLE_NB_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -608,9 +608,9 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
     uint8_t  index       = 0;
     uint32_t startMillis = millis();
     do {
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       while (stream.available() > 0) {
-        TINY_GSM_YIELD();
+        SIMPLE_NB_YIELD();
         int8_t a = stream.read();
         if (a <= 0) continue;  // Skip 0x00 bytes, just in case
         data += static_cast<char>(a);
@@ -621,8 +621,8 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
           index = 2;
           goto finish;
         } else if (r3 && data.endsWith(r3)) {
-#if defined TINY_GSM_DEBUG
-          if (r3 == GFP(GSM_CME_ERROR)) {
+#if defined SIMPLE_NB_DEBUG
+          if (r3 == GFP(ACK_CME_ERROR)) {
             streamSkipUntil('\n');  // Read out the error
           }
 #endif
@@ -637,7 +637,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
         } else if (data.endsWith(GF("+CARECV:"))) {
           int8_t  mux = streamGetIntBefore(',');
           int16_t len = streamGetIntBefore('\n');
-          if (mux >= 0 && mux < TINY_GSM_MUX_COUNT && sockets[mux]) {
+          if (mux >= 0 && mux < SIMPLE_NB_MUX_COUNT && sockets[mux]) {
             sockets[mux]->got_data = true;
             if (len >= 0 && len <= 1024) { sockets[mux]->sock_available = len; }
           }
@@ -645,7 +645,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
           DBG("### Got Data:", len, "on", mux);
         } else if (data.endsWith(GF("+CADATAIND:"))) {
           int8_t mux = streamGetIntBefore('\n');
-          if (mux >= 0 && mux < TINY_GSM_MUX_COUNT && sockets[mux]) {
+          if (mux >= 0 && mux < SIMPLE_NB_MUX_COUNT && sockets[mux]) {
             sockets[mux]->got_data = true;
           }
           data = "";
@@ -653,7 +653,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
         } else if (data.endsWith(GF("+CASTATE:"))) {
           int8_t mux   = streamGetIntBefore(',');
           int8_t state = streamGetIntBefore('\n');
-          if (mux >= 0 && mux < TINY_GSM_MUX_COUNT && sockets[mux]) {
+          if (mux >= 0 && mux < SIMPLE_NB_MUX_COUNT && sockets[mux]) {
             if (state != 1) {
               sockets[mux]->sock_connected = false;
               DBG("### Closed: ", mux);
@@ -677,7 +677,7 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
               '\n');  // Refresh Network Daylight Saving Time by network
           data = "";
           DBG("### Daylight savings time state updated.");
-        } else if (data.endsWith(GF(GSM_NL "SMS Ready" GSM_NL))) {
+        } else if (data.endsWith(GF(ACK_NL "SMS Ready" ACK_NL))) {
           data = "";
           DBG("### Unexpected module reset!");
           init();
@@ -691,16 +691,16 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
       if (data.length()) { DBG("### Unhandled:", data); }
       data = "";
     }
-    // data.replace(GSM_NL, "/");
+    // data.replace(ACK_NL, "/");
     // DBG('<', index, '>', data);
     return index;
   }
 
-  int8_t waitResponse(uint32_t timeout_ms, GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+  int8_t waitResponse(uint32_t timeout_ms, GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined SIMPLE_NB_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -709,11 +709,11 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
     return waitResponse(timeout_ms, data, r1, r2, r3, r4, r5);
   }
 
-  int8_t waitResponse(GsmConstStr r1 = GFP(GSM_OK),
-                      GsmConstStr r2 = GFP(GSM_ERROR),
-#if defined TINY_GSM_DEBUG
-                      GsmConstStr r3 = GFP(GSM_CME_ERROR),
-                      GsmConstStr r4 = GFP(GSM_CMS_ERROR),
+  int8_t waitResponse(GsmConstStr r1 = GFP(ACK_OK),
+                      GsmConstStr r2 = GFP(ACK_ERROR),
+#if defined SIMPLE_NB_DEBUG
+                      GsmConstStr r3 = GFP(ACK_CME_ERROR),
+                      GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
                       GsmConstStr r3 = NULL, GsmConstStr r4 = NULL,
 #endif
@@ -722,8 +722,8 @@ class TinyGsmSim7080 : public TinyGsmSim70xx<TinyGsmSim7080>,
   }
 
  protected:
-  GsmClientSim7080* sockets[TINY_GSM_MUX_COUNT];
-  String            certificates[TINY_GSM_MUX_COUNT];
+  GsmClientSim7080* sockets[SIMPLE_NB_MUX_COUNT];
+  String            certificates[SIMPLE_NB_MUX_COUNT];
 };
 
-#endif  // SRC_TINYGSMCLIENTSIM7080_H_
+#endif  // SRC_SIMPLE_NB_CLIENTSIM7080_H_

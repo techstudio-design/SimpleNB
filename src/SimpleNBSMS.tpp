@@ -1,20 +1,20 @@
 /**
- * @file       TinyGsmSMS.tpp
+ * @file       SimpleNBSMS.tpp
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMSMS_H_
-#define SRC_TINYGSMSMS_H_
+#ifndef SRC_SIMPLE_NB_SMS_H_
+#define SRC_SIMPLE_NB_SMS_H_
 
-#include "TinyGsmCommon.h"
+#include "SimpleNBCommon.h"
 
-#define TINY_GSM_MODEM_HAS_SMS
+#define SIMPLE_NB_SUPPORT_SMS
 
 template <class modemType>
-class TinyGsmSMS {
+class SimpleNBSMS {
  public:
   /*
    * Messaging functions
@@ -44,7 +44,7 @@ class TinyGsmSMS {
    * Messaging functions
    */
  protected:
-  static inline String TinyGsmDecodeHex7bit(String& instr) {
+  static inline String SimpleNBDecodeHex7bit(String& instr) {
     String result;
     byte   reminder = 0;
     int8_t bitstate = 7;
@@ -71,7 +71,7 @@ class TinyGsmSMS {
     return result;
   }
 
-  static inline String TinyGsmDecodeHex8bit(String& instr) {
+  static inline String SimpleNBDecodeHex8bit(String& instr) {
     String result;
     for (uint16_t i = 0; i < instr.length(); i += 2) {
       char buf[4] = {
@@ -85,7 +85,7 @@ class TinyGsmSMS {
     return result;
   }
 
-  static inline String TinyGsmDecodeHex16bit(String& instr) {
+  static inline String SimpleNBDecodeHex16bit(String& instr) {
     String result;
     for (uint16_t i = 0; i < instr.length(); i += 4) {
       char buf[4] = {
@@ -95,7 +95,7 @@ class TinyGsmSMS {
       buf[1] = instr[i + 1];
       char b = strtol(buf, NULL, 16);
       if (b) {  // If high byte is non-zero, we can't handle it ;(
-#if defined(TINY_GSM_UNICODE_TO_HEX)
+#if defined(SIMPLE_NB_UNICODE_TO_HEX)
         result += "\\x";
         result += instr.substring(i, i + 4);
 #else
@@ -128,9 +128,9 @@ class TinyGsmSMS {
     int8_t dcs = thisModem().streamGetIntBefore('\n');
 
     if (dcs == 15) {
-      return TinyGsmDecodeHex8bit(hex);
+      return SimpleNBDecodeHex8bit(hex);
     } else if (dcs == 72) {
-      return TinyGsmDecodeHex16bit(hex);
+      return SimpleNBDecodeHex16bit(hex);
     } else {
       return hex;
     }
@@ -221,4 +221,4 @@ class TinyGsmSMS {
   }
 };
 
-#endif  // SRC_TINYGSMSMS_H_
+#endif  // SRC_SIMPLE_NB_SMS_H_

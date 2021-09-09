@@ -1,18 +1,18 @@
 /**
- * @file       TinyGsmModem.tpp
+ * @file       SimpleNBModem.tpp
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMMODEM_H_
-#define SRC_TINYGSMMODEM_H_
+#ifndef SRC_SIMPLE_NB_MODEM_H_
+#define SRC_SIMPLE_NB_MODEM_H_
 
-#include "TinyGsmCommon.h"
+#include "SimpleNBCommon.h"
 
 template <class modemType>
-class TinyGsmModem {
+class SimpleNBModem {
  public:
   /*
    * Basic functions
@@ -27,7 +27,7 @@ class TinyGsmModem {
   inline void sendAT(Args... cmd) {
     thisModem().streamWrite("AT", cmd..., thisModem().gsmNL);
     thisModem().stream.flush();
-    TINY_GSM_YIELD(); /* DBG("### AT:", cmd...); */
+    SIMPLE_NB_YIELD(); /* DBG("### AT:", cmd...); */
   }
   void setBaud(uint32_t baud) {
     thisModem().setBaudImpl(baud);
@@ -88,7 +88,7 @@ class TinyGsmModem {
     return thisModem().getLocalIPImpl();
   }
   IPAddress localIP() {
-    return thisModem().TinyGsmIpFromString(thisModem().getLocalIP());
+    return thisModem().SimpleNBIpFromString(thisModem().getLocalIP());
   }
 
   /*
@@ -172,10 +172,10 @@ class TinyGsmModem {
     return true;
   }
 
-  bool sleepEnableImpl(bool enable = true) TINY_GSM_ATTR_NOT_IMPLEMENTED;
+  bool sleepEnableImpl(bool enable = true) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 
   bool setPhoneFunctionalityImpl(uint8_t fun, bool reset = false)
-      TINY_GSM_ATTR_NOT_IMPLEMENTED;
+      SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 
   /*
    * Generic network functions
@@ -225,7 +225,7 @@ class TinyGsmModem {
     return res;
   }
 
-  static inline IPAddress TinyGsmIpFromString(const String& strIP) {
+  static inline IPAddress SimpleNBIpFromString(const String& strIP) {
     int Parts[4] = {
         0,
     };
@@ -277,7 +277,7 @@ class TinyGsmModem {
     uint32_t startMillis   = millis();
     while (millis() - startMillis < timeout_ms &&
            (numCharsReady = thisModem().stream.available()) < numChars) {
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
     }
 
     if (numCharsReady >= numChars) {
@@ -343,7 +343,7 @@ class TinyGsmModem {
     while (millis() - startMillis < timeout_ms) {
       while (millis() - startMillis < timeout_ms &&
              !thisModem().stream.available()) {
-        TINY_GSM_YIELD();
+        SIMPLE_NB_YIELD();
       }
       if (thisModem().stream.read() == c) { return true; }
     }
@@ -351,4 +351,4 @@ class TinyGsmModem {
   }
 };
 
-#endif  // SRC_TINYGSMMODEM_H_
+#endif  // SRC_SIMPLE_NB_MODEM_H_

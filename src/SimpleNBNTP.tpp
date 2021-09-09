@@ -1,27 +1,27 @@
 /**
- * @file       TinyGsmNTP.tpp
+ * @file       SimpleNBNTP.tpp
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMNTP_H_
-#define SRC_TINYGSMNTP_H_
+#ifndef SRC_SIMPLE_NB_NTP_H_
+#define SRC_SIMPLE_NB_NTP_H_
 
-#include "TinyGsmCommon.h"
+#include "SimpleNBCommon.h"
 
-#define TINY_GSM_MODEM_HAS_NTP
+#define SIMPLE_NB_SUPPORT_NTP
 
 template <class modemType>
-class TinyGsmNTP {
+class SimpleNBNTP {
  public:
   /*
    * NTP server functions
    */
 
  public:
-  bool TinyGsmIsValidNumber(String str) {
+  bool SimpleNBIsValidNumber(String str) {
     if (!(str.charAt(0) == '+' || str.charAt(0) == '-' ||
           isDigit(str.charAt(0))))
       return false;
@@ -69,7 +69,7 @@ class TinyGsmNTP {
     if (thisModem().waitResponse(10000L, GF("+CNTP:"))) {
       String result = thisModem().stream.readStringUntil('\n');
       result.trim();
-      if (TinyGsmIsValidNumber(result)) { return result.toInt(); }
+      if (SimpleNBIsValidNumber(result)) { return result.toInt(); }
     } else {
       return -1;
     }
@@ -89,4 +89,4 @@ class TinyGsmNTP {
   }
 };
 
-#endif  // SRC_TINYGSMNTP_H_
+#endif  // SRC_SIMPLE_NB_NTP_H_

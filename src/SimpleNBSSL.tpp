@@ -1,21 +1,21 @@
 /**
- * @file       TinyGsmSSL.tpp
+ * @file       SimpleNBSSL.tpp
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @date       Nov 2016
  */
 
-#ifndef SRC_TINYGSMSSL_H_
-#define SRC_TINYGSMSSL_H_
+#ifndef SRC_SIMPLE_NB_SSL_H_
+#define SRC_SIMPLE_NB_SSL_H_
 
-#include "TinyGsmCommon.h"
+#include "SimpleNBCommon.h"
 
-#define TINY_GSM_MODEM_HAS_SSL
+#define SIMPLE_NB_SUPPORT_SSL
 
 
 template <class modemType>
-class TinyGsmSSL {
+class SimpleNBSSL {
  public:
   /*
    * SSL functions
@@ -47,13 +47,13 @@ class TinyGsmSSL {
    public:
     GsmClientSecureSim800() {}
 
-    explicit GsmClientSecureSim800(TinyGsmSim800& modem, uint8_t mux = 0)
+    explicit GsmClientSecureSim800(SimpleNBSim800& modem, uint8_t mux = 0)
         : GsmClientSim800(modem, mux) {}
 
    public:
     int connect(const char* host, uint16_t port, int timeout_s) overide {
       stop();
-      TINY_GSM_YIELD();
+      SIMPLE_NB_YIELD();
       rx.clear();
       sock_connected = at->modemConnect(host, port, mux, true, timeout_s);
       return sock_connected;
@@ -64,8 +64,8 @@ class TinyGsmSSL {
    * SSL functions
    */
  protected:
-  bool addCertificateImpl(const char* filename) TINY_GSM_ATTR_NOT_IMPLEMENTED;
-  bool deleteCertificateImpl() TINY_GSM_ATTR_NOT_IMPLEMENTED;
+  bool addCertificateImpl(const char* filename) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
+  bool deleteCertificateImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 };
 
-#endif  // SRC_TINYGSMSSL_H_
+#endif  // SRC_SIMPLE_NB_SSL_H_
