@@ -1,6 +1,8 @@
 ## SimpleNBIOT
 
-This is an Arduino library for communicating with NB-IoT/CAT-M1 modules that using AT command interface, such as such as SIMCOM SIM70XX series, Quectel BG96, uBlox SARA-R410M. This library is based on the works of TinyGSM which try to be all-things-AT-commands. What make this library different from the TinyGSM is that this library stripped out all the legacy GSM modules and unrelated WiFi modules and focus only on NB-IoT/CAT-M1 modules, to make the library easier to setup and focus on the development of new features and functionalities related to NB-IoT/CAT-M1 technologies.
+This is an Arduino library for communicating with NB-IoT/CAT-M1 modules that using AT command interface, such as such as SIMCOM SIM70XX series, Quectel BG96, uBlox SARA-R410M.
+
+This library is based on the works of [TinyGSM](https://github.com/vshymanskyy/TinyGSM) which try to be all-things-AT-commands. What make this library different from the TinyGSM is that this library stripped out the supports of all the legacy GSM modules and unrelated WiFi modules and focus only on NB-IoT/CAT-M1 modules, to make the library easier to setup and add new new features and functionalities related to NB-IoT/CAT-M1 technologies to the library.
 
 > ** This library is a working-in-progress project and has not reach to a mature stage yet, therefore do not download as it may not work at this stage. Check back in the next a couple of weeks, we will remove this paragraph when it is ready for use.**
 
