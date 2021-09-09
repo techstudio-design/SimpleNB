@@ -1,6 +1,6 @@
-#ifndef TINYGSM_H
-#define TINYGSM_H
+#ifndef SIMPLENB_H
+#define SIMPLENB_H
 
-#include "TinyGsmClient.h"
+#include "SimpleNBClient.h"
 
 #endif

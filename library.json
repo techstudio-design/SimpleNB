@@ -1,5 +1,5 @@
 {
-  "name": "SimpleNBIOT",
+  "name": "SimpleNB",
   "version": "1.0.0",
   "description": "A simple Arduino library for communicating with NB-IoT/CAT-M1 modules with AT command interfaces.",
   "keywords": "AT commands, AT, SIM7000, SIM7020, SIM7070, SIM7080, SIM7090, BG96, SARA-R410M, ublox, Quectel, SIMCOM, NB-IoT, CAT-M1, LTE-M",
@@ -12,9 +12,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/techstudio-design/SimpleNBIOT.git"
+    "url": "https://github.com/techstudio-design/SimpleNB.git"
   },
-  "homepage": "https://github.com/techstudio-design/SimpleNBIOT",
+  "homepage": "https://github.com/techstudio-design/SimpleNB",
   "export": {
     "include": [
       "LICENSE",

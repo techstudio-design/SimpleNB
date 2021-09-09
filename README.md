@@ -1,4 +1,4 @@
-## SimpleNBIOT
+## SimpleNB
 
 This is an Arduino library for communicating with NB-IoT/CAT-M1 modules that using AT command interface, such as such as SIMCOM SIM70XX series, Quectel BG96, uBlox SARA-R410M.
 
@@ -6,7 +6,7 @@ This library is based on the works of [TinyGSM](https://github.com/vshymanskyy/T
 
 > ** This library is a working-in-progress project and has not reach to a mature stage yet, therefore do not download as it may not work at this stage. Check back in the next a couple of weeks, we will remove this paragraph when it is ready for use.**
 
-If you like **SimpleNBIOT** - give it a star, or fork it and contribute!
+If you like **SimpleNB** - give it a star, or fork it and contribute!
 
 - [Supported modules](#supported-modules)
   - [Supported Arduino boards]### Supported Arduino boards)
@@ -48,7 +48,7 @@ If you like **SimpleNBIOT** - give it a star, or fork it and contribute!
 - Adafruit FONA 800/808 Shield
 - Industruino GSM
 - RAK WisLTE ***(alpha)***
-- ... other modules, based on supported modems. <!--Some boards require [**special configuration**](https://github.com/techstudio-design/SimpleNBIOT/wiki/Board-configuration).-->
+- ... other modules, based on supported modems. <!--Some boards require [**special configuration**](https://github.com/techstudio-design/SimpleNB/wiki/Board-configuration).-->
 
 ## Features
 
@@ -104,7 +104,7 @@ If you like **SimpleNBIOT** - give it a star, or fork it and contribute!
 - Sequans Monarch:
     - [nootropicdesign](https://github.com/nootropicdesign/)
 - Other Contributors:
-    - https://github.com/techstudio-design/SimpleNBIOT/graphs/contributors
+    - https://github.com/techstudio-design/SimpleNB/graphs/contributors
 
 ## Getting Started
 
@@ -119,7 +119,7 @@ If you like **SimpleNBIOT** - give it a star, or fork it and contribute!
   4. Ensure that you have a stable power supply to the module of at least **2A**.
   5. Check if serial connection is working (Hardware Serial is recommended)
      Send an `AT` command using [this sketch](tools/AT_Debug/AT_Debug.ino)
-  6. Try out the [WebClient](https://github.com/techstudio-design/SimpleNBIOT/blob/master/examples/WebClient/WebClient.ino) example
+  6. Try out the [WebClient](https://github.com/techstudio-design/SimpleNB/blob/master/examples/WebClient/WebClient.ino) example
 
 #### Writing your own code
 
@@ -201,7 +201,7 @@ Improving the power supply actually solves stability problems in **many** cases!
 ### Baud rates
 
 Most modules support some sort of "auto-bauding" feature where the module will attempt to adjust it's baud rate to match what it is receiving.
-SimpleNBIOT also implements its own auto bauding function (`SimpleNBIOTAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);`).
+SimpleNB also implements its own auto bauding function (`SimpleNBAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);`).
 While very useful when initially connecting to a module and doing tests, these should **NOT** be used in any sort of production code.
 Once you've established communication with the module, set the baud rate using the `setBaud(#)` function and stick with that rate.
 
@@ -216,7 +216,7 @@ This may result in problems such as:
  * etc.
 
 To return module to **Factory Defaults**, use this sketch:
-  File -> Examples -> TinyGSM -> tools -> [FactoryReset](https://github.com/techstudio-design/SimpleNBIOT/blob/master/tools/FactoryReset/FactoryReset.ino)
+  File -> Examples -> TinyGSM -> tools -> [FactoryReset](https://github.com/techstudio-design/SimpleNB/blob/master/tools/FactoryReset/FactoryReset.ino)
 
 In some cases, you may need to set an initial APN to connect to the mobile network.
 Try using the `gprsConnect(APN)` function to set an initial APN if you are unable to register on the network.
@@ -235,7 +235,7 @@ When using MQTT, to keep a continuous connection you may need to reduce your kee
 ### Diagnostics sketch
 
 Use this sketch to help diagnose SIM card and GPRS connection issues:
-  File -> Examples -> TinyGSM -> tools -> [Diagnostics](https://github.com/techstudio-design/SimpleNBIOT/blob/master/tools/Diagnostics/Diagnostics.ino)
+  File -> Examples -> TinyGSM -> tools -> [Diagnostics](https://github.com/techstudio-design/SimpleNB/blob/master/tools/Diagnostics/Diagnostics.ino)
 
 If the diagnostics fail, uncomment this line to output some debugging comments from the library:
 ```cpp

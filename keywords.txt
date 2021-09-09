@@ -1,9 +1,9 @@
 #######################################
 # Data types (KEYWORD1)
 #######################################
-SimpleNBIOT	KEYWORD1
-SimpleNBIOTClient	KEYWORD1
-SimpleNBIOTClientSecure	KEYWORD1
+SimpleNB	KEYWORD1
+SimpleNBClient	KEYWORD1
+SimpleNBClientSecure	KEYWORD1
 
 SerialAT	KEYWORD1
 SerialMon	KEYWORD1
