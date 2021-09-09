@@ -2,13 +2,13 @@
  *
  * This sketch uploads SSL certificates to the SIM8xx
  *
- * TinyGSM Getting Started guide:
- *   https://tiny.cc/tinygsm-readme
+ * SimpleNB README:
+ *   https://github.com/techstudio-design/SimpleNB/blob/master/README.md
  *
  **************************************************************/
 
 // This example is specific to SIM8xx
-#define TINY_GSM_MODEM_SIM800
+#define SIMPLE_NB_MODEM_SIM800
 
 // Select your certificate:
 #include "DSTRootCAX3.h"
@@ -19,7 +19,7 @@
 // (the file is stored on the modem)
 #define CERT_FILE "C:\\USER\\CERT.CRT"
 
-#include <TinyGsmClient.h>
+#include <SimpleNBClient.h>
 
 // Set serial for debug console (to the Serial Monitor, speed 115200)
 #define SerialMon Serial
@@ -34,9 +34,9 @@
 #ifdef DUMP_AT_COMMANDS
   #include <StreamDebugger.h>
   StreamDebugger debugger(SerialAT, SerialMon);
-  TinyGsm modem(debugger);
+  SimpleNB modem(debugger);
 #else
-  TinyGsm modem(SerialAT);
+  SimpleNB modem(SerialAT);
 #endif
 
 void setup() {
@@ -66,14 +66,14 @@ void setup() {
     modem.stream.write(c);
   }
 
-  modem.stream.write(GSM_NL);
+  modem.stream.write(ACK_NL);
   modem.stream.flush();
 
   if (modem.waitResponse(2000) != 1) return;
 
   modem.sendAT(GF("+SSLSETCERT=\"" CERT_FILE "\""));
   if (modem.waitResponse() != 1) return;
-  if (modem.waitResponse(5000L, GF(GSM_NL "+SSLSETCERT:")) != 1) return;
+  if (modem.waitResponse(5000L, GF(ACK_NL "+SSLSETCERT:")) != 1) return;
   const int retCode = modem.stream.readStringUntil('\n').toInt();
 
 

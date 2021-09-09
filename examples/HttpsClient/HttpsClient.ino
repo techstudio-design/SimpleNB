@@ -7,8 +7,8 @@
  *   https://github.com/arduino-libraries/ArduinoHttpClient
  *   or from http://librarymanager/all#ArduinoHttpClient
  *
- * TinyGSM Getting Started guide:
- *   https://tiny.cc/tinygsm-readme
+ * SimpleNB Readme:
+ *   https://github.com/techstudio-design/SimpleNB/blob/master/README.md
  *
  * SSL/TLS is not yet supported on the Quectel modems
  * The A6/A7/A20 and M590 are not capable of SSL/TLS
@@ -22,16 +22,14 @@
  **************************************************************/
 
 // Select your modem:
-#define TINY_GSM_MODEM_SIM800
-// #define TINY_GSM_MODEM_SIM808
-// #define TINY_GSM_MODEM_SIM868
-// #define TINY_GSM_MODEM_SIM7000SSL
-// #define TINY_GSM_MODEM_SIM7080
-// #define TINY_GSM_MODEM_UBLOX
-// #define TINY_GSM_MODEM_SARAR4
-// #define TINY_GSM_MODEM_ESP8266
-// #define TINY_GSM_MODEM_XBEE
-// #define TINY_GSM_MODEM_SEQUANS_MONARCH
+#define SIMPLE_NB_MODEM_SIM7000
+// #define SIMPLE_NB_MODEM_SIM7000SSL
+// #define SIMPLE_NB_MODEM_SIM7080
+// #define SIMPLE_NB_MODEM_UBLOX
+// #define SIMPLE_NB_MODEM_SARAR4
+// #define SIMPLE_NB_MODEM_BG96
+// #define SIMPLE_NB_MODEM_XBEE
+// #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
 
 // Set serial for debug console (to the Serial Monitor, default speed 115200)
 #define SerialMon Serial
@@ -51,15 +49,15 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 // Chips without internal buffering (A6/A7, ESP8266, M590)
 // need enough space in the buffer for the entire response
 // else data will be lost (and the http library will fail).
-#if !defined(TINY_GSM_RX_BUFFER)
-#define TINY_GSM_RX_BUFFER 650
+#if !defined(SIMPLE_NB_RX_BUFFER)
+#define SIMPLE_NB_RX_BUFFER 650
 #endif
 
 // See all AT commands, if wanted
 // #define DUMP_AT_COMMANDS
 
 // Define the serial console for debug prints, if needed
-#define TINY_GSM_DEBUG SerialMon
+#define SIMPLE_NB_DEBUG SerialMon
 // #define LOGGING  // <- Logging is for the HTTP library
 
 // Range to attempt to autobaud
@@ -70,18 +68,18 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 
 // Add a reception delay, if needed.
 // This may be needed for a fast processor at a slow baud rate.
-// #define TINY_GSM_YIELD() { delay(2); }
+// #define SIMPLE_NB_YIELD() { delay(2); }
 
 // Define how you're planning to connect to the internet.
 // This is only needed for this example, not in other code.
-#define TINY_GSM_USE_GPRS true
-#define TINY_GSM_USE_WIFI false
+#define SIMPLE_NB_USE_GPRS true
+#define SIMPLE_NB_USE_WIFI false
 
 // set GSM PIN, if any
 #define GSM_PIN ""
 
 // flag to force SSL client authentication, if needed
-// #define TINY_GSM_SSL_CLIENT_AUTHENTICATION
+// #define SIMPLE_NB_SSL_CLIENT_AUTHENTICATION
 
 // Your GPRS credentials, if any
 const char apn[]      = "YourAPN";
@@ -97,32 +95,32 @@ const char server[]   = "vsh.pp.ua";
 const char resource[] = "/TinyGSM/logo.txt";
 const int  port       = 443;
 
-#include <TinyGsmClient.h>
+#include <SimpleNBClient.h>
 #include <ArduinoHttpClient.h>
 
 // Just in case someone defined the wrong thing..
-#if TINY_GSM_USE_GPRS && not defined TINY_GSM_MODEM_HAS_GPRS
-#undef TINY_GSM_USE_GPRS
-#undef TINY_GSM_USE_WIFI
-#define TINY_GSM_USE_GPRS false
-#define TINY_GSM_USE_WIFI true
+#if SIMPLE_NB_USE_GPRS && not defined SIMPLE_NB_SUPPORT_GPRS
+#undef SIMPLE_NB_USE_GPRS
+#undef SIMPLE_NB_USE_WIFI
+#define SIMPLE_NB_USE_GPRS false
+#define SIMPLE_NB_USE_WIFI true
 #endif
-#if TINY_GSM_USE_WIFI && not defined TINY_GSM_MODEM_HAS_WIFI
-#undef TINY_GSM_USE_GPRS
-#undef TINY_GSM_USE_WIFI
-#define TINY_GSM_USE_GPRS true
-#define TINY_GSM_USE_WIFI false
+#if SIMPLE_NB_USE_WIFI && not defined SIMPLE_NB_SUPPORT_WIFI
+#undef SIMPLE_NB_USE_GPRS
+#undef SIMPLE_NB_USE_WIFI
+#define SIMPLE_NB_USE_GPRS true
+#define SIMPLE_NB_USE_WIFI false
 #endif
 
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
 StreamDebugger debugger(SerialAT, SerialMon);
-TinyGsm        modem(debugger);
+SimpleNB        modem(debugger);
 #else
-TinyGsm        modem(SerialAT);
+SimpleNB        modem(SerialAT);
 #endif
 
-TinyGsmClientSecure client(modem);
+SimpleNBClientSecure client(modem);
 HttpClient          http(client, server, port);
 
 void setup() {
@@ -137,7 +135,7 @@ void setup() {
   SerialMon.println("Wait...");
 
   // Set GSM module baud rate
-  TinyGsmAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);
+  SimpleNBAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);
   // SerialAT.begin(9600);
   delay(6000);
 
@@ -151,14 +149,14 @@ void setup() {
   SerialMon.print("Modem Info: ");
   SerialMon.println(modemInfo);
 
-#if TINY_GSM_USE_GPRS
+#if SIMPLE_NB_USE_GPRS
   // Unlock your SIM card with a PIN if needed
   if (GSM_PIN && modem.getSimStatus() != 3) { modem.simUnlock(GSM_PIN); }
 #endif
 }
 
 void loop() {
-#if TINY_GSM_USE_WIFI
+#if SIMPLE_NB_USE_WIFI
   // Wifi connection parameters must be set before waiting for the network
   SerialMon.print(F("Setting SSID/password..."));
   if (!modem.networkConnect(wifiSSID, wifiPass)) {
@@ -169,7 +167,7 @@ void loop() {
   SerialMon.println(" success");
 #endif
 
-#if TINY_GSM_USE_GPRS && defined TINY_GSM_MODEM_XBEE
+#if SIMPLE_NB_USE_GPRS && defined SIMPLE_NB_MODEM_XBEE
   // The XBee must run the gprsConnect function BEFORE waiting for network!
   modem.gprsConnect(apn, gprsUser, gprsPass);
 #endif
@@ -184,7 +182,7 @@ void loop() {
 
   if (modem.isNetworkConnected()) { SerialMon.println("Network connected"); }
 
-#if TINY_GSM_USE_GPRS
+#if SIMPLE_NB_USE_GPRS
   // GPRS connection parameters are usually set after network registration
   SerialMon.print(F("Connecting to "));
   SerialMon.print(apn);
@@ -243,11 +241,11 @@ void loop() {
   http.stop();
   SerialMon.println(F("Server disconnected"));
 
-#if TINY_GSM_USE_WIFI
+#if SIMPLE_NB_USE_WIFI
   modem.networkDisconnect();
   SerialMon.println(F("WiFi disconnected"));
 #endif
-#if TINY_GSM_USE_GPRS
+#if SIMPLE_NB_USE_GPRS
   modem.gprsDisconnect();
   SerialMon.println(F("GPRS disconnected"));
 #endif

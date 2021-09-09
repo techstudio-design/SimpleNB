@@ -7,22 +7,22 @@
  *   https://github.com/arduino-libraries/ArduinoHttpClient
  *   or from http://librarymanager/all#ArduinoHttpClient
  *
- * TinyGSM Getting Started guide:
- *   https://tiny.cc/tinygsm-readme
+ * SimpleNB README:
+ *   https://github.com/techstudio-design/SimpleNB/blob/master/README.md
  *
  * For more HTTP API examples, see ArduinoHttpClient library
  *
  **************************************************************/
 
 // Industruino uses SIM800H
-#define TINY_GSM_MODEM_SIM800
+#define SIMPLE_NB_MODEM_SIM800
 
 // Increase RX buffer if needed
-#if !defined(TINY_GSM_RX_BUFFER)
-#define TINY_GSM_RX_BUFFER 512
+#if !defined(SIMPLE_NB_RX_BUFFER)
+#define SIMPLE_NB_RX_BUFFER 512
 #endif
 
-#include <TinyGsmClient.h>
+#include <SimpleNBClient.h>
 #include <ArduinoHttpClient.h>
 
 // Uncomment this if you want to see all AT commands
@@ -50,16 +50,16 @@ const char resource[] = "/TinyGSM/logo.txt";
 #ifdef DUMP_AT_COMMANDS
   #include <StreamDebugger.h>
   StreamDebugger debugger(SerialAT, SerialMon);
-  TinyGsm modem(debugger);
+  SimpleNB modem(debugger);
 #else
-  TinyGsm modem(SerialAT);
+  SimpleNB modem(SerialAT);
 #endif
 
 #ifdef USE_SSL
-  TinyGsmClientSecure client(modem);
+  SimpleNBClientSecure client(modem);
   HttpClient http(client, server, 443);
 #else
-  TinyGsmClient client(modem);
+  SimpleNBClient client(modem);
   HttpClient http(client, server, 80);
 #endif
 

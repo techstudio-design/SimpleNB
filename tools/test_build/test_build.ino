@@ -4,9 +4,9 @@
  *  This is NOT an example for use of this library!
  *
  **************************************************************/
-#include <TinyGsmClient.h>
+#include <SimpleNBClient.h>
 
-TinyGsm modem(Serial);
+SimpleNB modem(Serial);
 
 void setup() {
   Serial.begin(115200);
@@ -43,7 +43,7 @@ void loop() {
   modem.localIP();
 
 // Test the GPRS and SIM card functions
-#if defined(TINY_GSM_MODEM_HAS_GPRS)
+#if defined(SIMPLE_NB_SUPPORT_GPRS)
   modem.simUnlock("1234");
   modem.getSimCCID();
   modem.getIMEI();
@@ -58,16 +58,16 @@ void loop() {
 #endif
 
 // Test WiFi Functions
-#if defined(TINY_GSM_MODEM_HAS_WIFI)
+#if defined(SIMPLE_NB_SUPPORT_WIFI)
   modem.networkConnect("mySSID", "mySSIDPassword");
   modem.networkDisconnect();
 #endif
 
   // Test TCP functions
   modem.maintain();
-  TinyGsmClient client;
-  TinyGsmClient client2(modem);
-  TinyGsmClient client3(modem, 1);
+  SimpleNBClient client;
+  SimpleNBClient client2(modem);
+  SimpleNBClient client3(modem, 1);
   client.init(&modem);
   client.init(&modem, 1);
 
@@ -91,12 +91,12 @@ void loop() {
 
   client.stop();
 
-#if defined(TINY_GSM_MODEM_HAS_SSL)
+#if defined(SIMPLE_NB_SUPPORT_SSL)
   // modem.addCertificate();  // not yet impemented
   // modem.deleteCertificate();  // not yet impemented
-  TinyGsmClientSecure client_secure(modem);
-  TinyGsmClientSecure client_secure2(modem);
-  TinyGsmClientSecure client_secure3(modem, 1);
+  SimpleNBClientSecure client_secure(modem);
+  SimpleNBClientSecure client_secure2(modem);
+  SimpleNBClientSecure client_secure3(modem, 1);
   client_secure.init(&modem);
   client_secure.init(&modem, 1);
 
@@ -119,11 +119,11 @@ void loop() {
 #endif
 
 // Test the calling functions
-#if defined(TINY_GSM_MODEM_HAS_CALLING) && not defined(__AVR_ATmega32U4__)
+#if defined(SIMPLE_NB_SUPPORT_CALLING) && not defined(__AVR_ATmega32U4__)
   modem.callNumber(String("+380000000000"));
   modem.callHangup();
 
-#if not defined(TINY_GSM_MODEM_SEQUANS_MONARCH)
+#if not defined(SIMPLE_NB_MODEM_SEQUANS_MONARCH)
   modem.callAnswer();
   modem.dtmfSend('A', 1000);
 #endif
@@ -131,22 +131,22 @@ void loop() {
 #endif
 
 // Test the SMS functions
-#if defined(TINY_GSM_MODEM_HAS_SMS) && not defined(__AVR_ATmega32U4__)
+#if defined(SIMPLE_NB_SUPPORT_SMS) && not defined(__AVR_ATmega32U4__)
   modem.sendSMS(String("+380000000000"), String("Hello from "));
 
-#if not defined(TINY_GSM_MODEM_XBEE) && not defined(TINY_GSM_MODEM_SARAR4)
+#if not defined(SIMPLE_NB_MODEM_XBEE) && not defined(SIMPLE_NB_MODEM_SARAR4)
   modem.sendUSSD("*111#");
 #endif
 
-#if not defined(TINY_GSM_MODEM_XBEE) && not defined(TINY_GSM_MODEM_M590) && \
-    not defined(TINY_GSM_MODEM_SARAR4)
+#if not defined(SIMPLE_NB_MODEM_XBEE) && not defined(SIMPLE_NB_MODEM_M590) && \
+    not defined(SIMPLE_NB_MODEM_SARAR4)
   modem.sendSMS_UTF16("+380000000000", "Hello", 5);
 #endif
 
 #endif
 
 // Test the GSM location functions
-#if defined(TINY_GSM_MODEM_HAS_GSM_LOCATION) && not defined(__AVR_ATmega32U4__)
+#if defined(SIMPLE_NB_SUPPORT_GSM_LOCATION) && not defined(__AVR_ATmega32U4__)
   modem.getGsmLocationRaw();
   modem.getGsmLocation();
   float glatitude  = -9999;
@@ -165,7 +165,7 @@ void loop() {
 #endif
 
 // Test the GPS functions
-#if defined(TINY_GSM_MODEM_HAS_GPS) && not defined(__AVR_ATmega32U4__)
+#if defined(SIMPLE_NB_SUPPORT_GPS) && not defined(__AVR_ATmega32U4__)
   modem.enableGPS();
   modem.getGPSraw();
   float latitude  = -9999;
@@ -188,12 +188,12 @@ void loop() {
 #endif
 
 // Test the Network time function
-#if defined(TINY_GSM_MODEM_HAS_NTP) && not defined(__AVR_ATmega32U4__)
+#if defined(SIMPLE_NB_SUPPORT_NTP) && not defined(__AVR_ATmega32U4__)
   modem.NTPServerSync("pool.ntp.org", 3);
 #endif
 
 // Test the Network time function
-#if defined(TINY_GSM_MODEM_HAS_TIME) && not defined(__AVR_ATmega32U4__)
+#if defined(SIMPLE_NB_SUPPORT_TIME) && not defined(__AVR_ATmega32U4__)
   modem.getGSMDateTime(DATE_FULL);
   int   year3    = 0;
   int   month3   = 0;
@@ -206,7 +206,7 @@ void loop() {
 #endif
 
 // Test Battery functions
-#if defined(TINY_GSM_MODEM_HAS_BATTERY)
+#if defined(SIMPLE_NB_SUPPORT_BATTERY)
   uint8_t  chargeState   = 0;
   int8_t   chargePercent = 0;
   uint16_t milliVolts    = 0;
@@ -214,7 +214,7 @@ void loop() {
 #endif
 
 // Test the temperature function
-#if defined(TINY_GSM_MODEM_HAS_TEMPERATURE)
+#if defined(SIMPLE_NB_SUPPORT_TEMPERATURE)
   modem.getTemperature();
 #endif
 }

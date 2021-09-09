@@ -3,20 +3,20 @@
  * This sketch connects to a website and downloads a page.
  * It can be used to perform HTTP/RESTful API calls.
  *
- * TinyGSM Getting Started guide:
- *   https://tiny.cc/tinygsm-readme
+ * SimpleNB README:
+ *   https://github.com/techstudio-design/SimpleNB/blob/master/README.md
  *
  **************************************************************/
 
 // Hologram Dash uses UBLOX U2 modems
-#define TINY_GSM_MODEM_UBLOX
+#define SIMPLE_NB_MODEM_UBLOX
 
 // Increase RX buffer if needed
-#if !defined(TINY_GSM_RX_BUFFER)
-#define TINY_GSM_RX_BUFFER 512
+#if !defined(SIMPLE_NB_RX_BUFFER)
+#define SIMPLE_NB_RX_BUFFER 512
 #endif
 
-#include <TinyGsmClient.h>
+#include <SimpleNBClient.h>
 
 // Uncomment this if you want to see all AT commands
 // #define DUMP_AT_COMMANDS
@@ -43,16 +43,16 @@ const char resource[] = "/TinyGSM/logo.txt";
 #ifdef DUMP_AT_COMMANDS
   #include <StreamDebugger.h>
   StreamDebugger debugger(SerialAT, SerialMon);
-  TinyGsm mdm(debugger);
+  SimpleNB mdm(debugger);
 #else
-  TinyGsm mdm(SerialAT);
+  SimpleNB mdm(SerialAT);
 #endif
 
 #ifdef USE_SSL
-  TinyGsmClientSecure client(mdm);
+  SimpleNBClientSecure client(mdm);
   const int  port = 443;
 #else
-  TinyGsmClient client(mdm);
+  SimpleNBClient client(mdm);
   const int  port = 80;
 #endif
 

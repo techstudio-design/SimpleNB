@@ -3,8 +3,8 @@
  * This script just listens in on the communication
  * between an Arduino and the modem.
  *
- * TinyGSM Getting Started guide:
- *   https://tiny.cc/tinygsm-readme
+ * SimpleNB README:
+ *   https://github.com/techstudio-design/SimpleNB/blob/master/README.md
  *
  **************************************************************/
 

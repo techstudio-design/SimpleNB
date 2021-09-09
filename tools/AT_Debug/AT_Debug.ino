@@ -3,26 +3,20 @@
  * This script tries to auto-detect the baud rate
  * and allows direct AT commands access
  *
- * TinyGSM Getting Started guide:
- *   https://tiny.cc/tinygsm-readme
+ * SimpleNB README:
+ *   https://github.com/techstudio-design/SimpleNB/blob/master/README.md
  *
  **************************************************************/
 
 // Select your modem:
-#define TINY_GSM_MODEM_SIM800
-// #define TINY_GSM_MODEM_SIM900
-// #define TINY_GSM_MODEM_SIM808
-// #define TINY_GSM_MODEM_SIM868
-// #define TINY_GSM_MODEM_UBLOX
-// #define TINY_GSM_MODEM_M95
-// #define TINY_GSM_MODEM_BG96
-// #define TINY_GSM_MODEM_A6
-// #define TINY_GSM_MODEM_A7
-// #define TINY_GSM_MODEM_M590
-// #define TINY_GSM_MODEM_MC60
-// #define TINY_GSM_MODEM_MC60E
-// #define TINY_GSM_MODEM_ESP8266
-// #define TINY_GSM_MODEM_XBEE
+#define SIMPLE_NB_MODEM_SIM7000
+// #define SIMPLE_NB_MODEM_SIM7000SSL
+// #define SIMPLE_NB_MODEM_SIM7080
+// #define SIMPLE_NB_MODEM_UBLOX
+// #define SIMPLE_NB_MODEM_SARAR4
+// #define SIMPLE_NB_MODEM_BG96
+// #define SIMPLE_NB_MODEM_XBEE
+// #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
 
 // Set serial for debug console (to the Serial Monitor, speed 115200)
 #define SerialMon Serial
@@ -38,9 +32,9 @@
 SoftwareSerial SerialAT(2, 3);  // RX, TX
 #endif
 
-#define TINY_GSM_DEBUG SerialMon
+#define SIMPLE_NB_DEBUG SerialMon
 
-#include <TinyGsmClient.h>
+#include <SimpleNBClient.h>
 
 // Module baud rate
 uint32_t rate = 0; // Set to 0 for Auto-Detect
@@ -54,7 +48,7 @@ void setup() {
 void loop() {
 
   if (!rate) {
-    rate = TinyGsmAutoBaud(SerialAT);
+    rate = SimpleNBAutoBaud(SerialAT);
   }
 
   if (!rate) {
