@@ -20,6 +20,12 @@ typedef SimpleNBSim7000SSL                            SimpleNB;
 typedef SimpleNBSim7000SSL::GsmClientSim7000SSL       SimpleNBClient;
 typedef SimpleNBSim7000SSL::GsmClientSecureSIM7000SSL SimpleNBClientSecure;
 
+#elif defined(SIMPLE_NB_MODEM_SIM7020)
+#include "SimpleNBClientSIM7020.h"
+typedef SimpleNBSim7020                   SimpleNB;
+typedef SimpleNBSim7020::GsmClientSim7020 SimpleNBClient;
+// typedef TinyGsmSim7020::GsmClientSecureSim7020 TinyGsmClientSecure; TODO!
+
 #elif defined(SIMPLE_NB_MODEM_SIM7070) || defined(SIMPLE_NB_MODEM_SIM7080) || \
     defined(SIMPLE_NB_MODEM_SIM7090)
 #include "SimpleNBClientSIM7080.h"
