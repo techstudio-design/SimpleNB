@@ -334,23 +334,14 @@ void loop() {
 #endif
 
 #if SIMPLE_NB_TEST_GSM_LOCATION && defined SIMPLE_NB_SUPPORT_GSM_LOCATION
-  float lat      = 0;
-  float lon      = 0;
-  float accuracy = 0;
-  int   year     = 0;
-  int   month    = 0;
-  int   day      = 0;
-  int   hour     = 0;
-  int   min      = 0;
-  int   sec      = 0;
+  CellLBS_t lbs;
   for (int8_t i = 15; i; i--) {
     DBG("Requesting current GSM location");
-    if (modem.getGsmLocation(&lat, &lon, &accuracy, &year, &month, &day, &hour,
-                             &min, &sec)) {
-      DBG("Latitude:", String(lat, 8), "\tLongitude:", String(lon, 8));
-      DBG("Accuracy:", accuracy);
-      DBG("Year:", year, "\tMonth:", month, "\tDay:", day);
-      DBG("Hour:", hour, "\tMinute:", min, "\tSecond:", sec);
+    if (modem.getGsmLocation(lbs)) {
+      DBG("Latitude:", String(lbs.lat, 8), "\tLongitude:", String(lbs.lon, 8));
+      DBG("Accuracy:", lbs.accuracy);
+      DBG("Year:", lbs.year, "\tMonth:", lbs.month, "\tDay:", lbs.day);
+      DBG("Hour:", lsb.hour, "\tMinute:", lbs.min, "\tSecond:", lsb.sec);
       break;
     } else {
       DBG("Couldn't get GSM location, retrying in 15s.");

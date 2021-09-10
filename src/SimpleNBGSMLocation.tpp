@@ -1,8 +1,10 @@
 /**
  * @file       SimpleNBGSMLocation.h
  * @author     Volodymyr Shymanskyy
+ * @author     Henry Cheung
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
+ * @copyright  Copyright (c) 2021 Henry Cheung.
  * @date       Nov 2016
  */
 
@@ -13,62 +15,45 @@
 
 #define SIMPLE_NB_SUPPORT_GSM_LOCATION
 
+typedef struct {
+  float lat      = 0;
+  float lon      = 0;
+  float accuracy = 0;
+  int year       = 0;
+  int month      = 0;
+  int day        = 0;
+  int hour       = 0;
+  int minute     = 0;
+  int second     = 0;
+} CellLBS_t;
+
 template <class modemType>
 class SimpleNBGSMLocation {
  public:
   /*
    * GSM Location functions
    */
-  String getGsmLocationRaw() {
-    return thisModem().getGsmLocationRawImpl();
-  }
-
   String getGsmLocation() {
-    return thisModem().getGsmLocationRawImpl();
+    return thisModem().getGsmLocationImpl();
   }
 
-  bool getGsmLocation(float* lat, float* lon, float* accuracy = 0,
-                      int* year = 0, int* month = 0, int* day = 0,
-                      int* hour = 0, int* minute = 0, int* second = 0) {
-    return thisModem().getGsmLocationImpl(lat, lon, accuracy, year, month, day,
-                                          hour, minute, second);
+  bool getGsmLocation(CellLBS_t& lbs) {
+    return thisModem().getGsmLocationImpl(lbs);
   };
-
-  bool getGsmLocationTime(int* year, int* month, int* day, int* hour,
-                          int* minute, int* second) {
-    float lat      = 0;
-    float lon      = 0;
-    float accuracy = 0;
-    return thisModem().getGsmLocation(&lat, &lon, &accuracy, year, month, day,
-                                      hour, minute, second);
-  }
 
   /*
    * CRTP Helper
    */
  protected:
   inline const modemType& thisModem() const {
-    return static_cast<const modemType&>(*this);
+   return static_cast<const modemType&>(*this);
   }
+
   inline modemType& thisModem() {
-    return static_cast<modemType&>(*this);
+   return static_cast<modemType&>(*this);
   }
 
-  /*
-   * GSM Location functions
-   * Template is based on SIMCOM commands
-   */
- protected:
-  // String getGsmLocationImpl() {
-  //   thisModem().sendAT(GF("+CIPGSMLOC=1,1"));
-  //   if (thisModem().waitResponse(10000L, GF("+CIPGSMLOC:")) != 1) { return
-  //   ""; } String res = thisModem().stream.readStringUntil('\n');
-  //   thisModem().waitResponse();
-  //   res.trim();
-  //   return res;
-  // }
-
-  String getGsmLocationRawImpl() {
+  String getGsmLocationImpl() {
     // AT+CLBS=<type>,<cid>
     // <type> 1 = location using 3 cell's information
     //        3 = get number of times location has been accessed
@@ -88,9 +73,7 @@ class SimpleNBGSMLocation {
     return res;
   }
 
-  bool getGsmLocationImpl(float* lat, float* lon, float* accuracy = 0,
-                          int* year = 0, int* month = 0, int* day = 0,
-                          int* hour = 0, int* minute = 0, int* second = 0) {
+  bool getGsmLocationImpl(CellLBS_t& lbs) {
     // AT+CLBS=<type>,<cid>
     // <type> 1 = location using 3 cell's information
     //        3 = get number of times location has been accessed
@@ -105,40 +88,18 @@ class SimpleNBGSMLocation {
       return false;
     }
 
-    // init variables
-    float ilat      = 0;
-    float ilon      = 0;
-    float iaccuracy = 0;
-    int   iyear     = 0;
-    int   imonth    = 0;
-    int   iday      = 0;
-    int   ihour     = 0;
-    int   imin      = 0;
-    int   isec      = 0;
-
-    ilat      = thisModem().streamGetFloatBefore(',');  // Latitude
-    ilon      = thisModem().streamGetFloatBefore(',');  // Longitude
-    iaccuracy = thisModem().streamGetIntBefore(',');    // Positioning accuracy
+    lbs.lat      = thisModem().streamGetFloatBefore(',');  // Latitude
+    lbs.lon      = thisModem().streamGetFloatBefore(',');  // Longitude
+    lbs.accuracy = thisModem().streamGetIntBefore(',');    // Positioning accuracy
 
     // Date & Time
-    iyear  = thisModem().streamGetIntBefore('/');
-    imonth = thisModem().streamGetIntBefore('/');
-    iday   = thisModem().streamGetIntBefore(',');
-    ihour  = thisModem().streamGetIntBefore(':');
-    imin   = thisModem().streamGetIntBefore(':');
-    isec   = thisModem().streamGetIntBefore('\n');
-
-    // Set pointers
-    if (lat != NULL) *lat = ilat;
-    if (lon != NULL) *lon = ilon;
-    if (accuracy != NULL) *accuracy = iaccuracy;
-    if (iyear < 2000) iyear += 2000;
-    if (year != NULL) *year = iyear;
-    if (month != NULL) *month = imonth;
-    if (day != NULL) *day = iday;
-    if (hour != NULL) *hour = ihour;
-    if (minute != NULL) *minute = imin;
-    if (second != NULL) *second = isec;
+    lbs.year     = thisModem().streamGetIntBefore('/');
+    if (lbs.year < 2000) lbs.year += 2000;
+    lbs.month    = thisModem().streamGetIntBefore('/');
+    lbs.day      = thisModem().streamGetIntBefore(',');
+    lbs.hour     = thisModem().streamGetIntBefore(':');
+    lbs.minute   = thisModem().streamGetIntBefore(':');
+    lbs.second   = thisModem().streamGetIntBefore('\n');
 
     // Final OK
     thisModem().waitResponse();

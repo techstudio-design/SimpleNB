@@ -153,21 +153,9 @@ void loop() {
 
 // Test the GSM location functions
 #if defined(SIMPLE_NB_SUPPORT_GSM_LOCATION) && not defined(__AVR_ATmega32U4__)
-  modem.getGsmLocationRaw();
   modem.getGsmLocation();
-  float glatitude  = -9999;
-  float glongitude = -9999;
-  float gacc       = 0;
-  int   gyear      = 0;
-  int   gmonth     = 0;
-  int   gday       = 0;
-  int   ghour      = 0;
-  int   gmin       = 0;
-  int   gsec       = 0;
-  modem.getGsmLocation(&glatitude, &glongitude);
-  modem.getGsmLocation(&glatitude, &glongitude, &gacc, &gyear, &gmonth, &gday,
-                       &ghour, &gmin, &gsec);
-  modem.getGsmLocationTime(&gyear, &gmonth, &gday, &ghour, &gmin, &gsec);
+  CellLBS_t lbs;
+  modem.getGsmLocation(lbs);
 #endif
 
 // Test the GPS functions
