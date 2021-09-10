@@ -9,8 +9,8 @@
 #ifndef SRC_SIMPLE_NB_CLIENTSIM70XX_H_
 #define SRC_SIMPLE_NB_CLIENTSIM70XX_H_
 
-// #define TINY_ACK_DEBUG Serial
-// #define TINY_ACK_USE_HEX
+// #define SIMPLE_NB_DEBUG Serial
+// #define SIMPLE_NB_USE_HEX
 
 #include "SimpleNBBattery.tpp"
 #include "SimpleNBGPS.tpp"

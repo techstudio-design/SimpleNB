@@ -1,35 +1,23 @@
 /**
  * @file       SimpleNBClientSIM7020.h
  * @author     Volodymyr Shymanskyy
+ * @author     Henry Cheung
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
+ * @copyright  Copyright (c) 2021 Henry Cheung.
  * @date       Nov 2016
  */
 
 #ifndef SRC_SIMPLE_NB_CLIENTSIM7020_H_
 #define SRC_SIMPLE_NB_CLIENTSIM7020_H_
-// #pragma message("SimpleNB:  SimpleNBClientSIM7020")
-
-// #define SIMPLE_NB_DEBUG Serial
-// #define SIMPLE_NB_USE_HEX
-
-#ifdef __AVR__
-#define SIMPLE_NB_RX_BUFFER 32
-#else
-#define SIMPLE_NB_RX_BUFFER 192
-#endif
-
-#if !defined(SIMPLE_NB_YIELD_MS)
-#define SIMPLE_NB_YIELD_MS 0
-#endif
 
 #define SIMPLE_NB_MUX_COUNT 1
 #define SIMPLE_NB_BUFFER_READ_AND_CHECK_SIZE
 
  #include "SimpleNBModem.tpp"
-// #include "SimpleNBGPRS.tpp"
 #include "SimpleNBTCP.tpp"
 #include "SimpleNBTime.tpp"
+#include "SimpleNBNTP.tpp"
 
 #define ACK_NL "\r\n"
 static const char ACK_OK[] SIMPLE_NB_PROGMEM    = "OK" ACK_NL;
@@ -50,14 +38,15 @@ enum RegStatus
     REG_UNKNOWN      = 4,
 };
 
-class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
-    // public SimpleNBGPRS<SimpleNBSim7020>,
+class SimpleNBSim7020 :
+    public SimpleNBModem<SimpleNBSim7020>,
     public SimpleNBTCP<SimpleNBSim7020, SIMPLE_NB_MUX_COUNT>,
-    public SimpleNBTime<SimpleNBSim7020> {
+    public SimpleNBTime<SimpleNBSim7020>,
+    public SimpleNBNTP<SimpleNBSim7020> {
       friend class SimpleNBModem<SimpleNBSim7020>;
-      // friend class SimpleNBNGPRS<SimpleNBSim7020>;
       friend class SimpleNBTCP<SimpleNBSim7020, SIMPLE_NB_MUX_COUNT>;
       friend class SimpleNBTime<SimpleNBSim7020>;
+      friend class SimpleNBNTP<SimpleNBSim7020>;
 
     /*
      * Inner Client
@@ -69,10 +58,11 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
       public:
         GsmClientSim7020() {}
 
-        explicit GsmClientSim7020(SimpleNBSim7020 &modem, uint8_t mux = 0) { init(&modem, mux); }
+        explicit GsmClientSim7020(SimpleNBSim7020 &modem, uint8_t mux = 0) {
+          init(&modem, mux);
+        }
 
-        bool init(SimpleNBSim7020 *modem, uint8_t mux = 0)
-        {
+        bool init(SimpleNBSim7020 *modem, uint8_t mux = 0) {
             this->at       = modem;
             sock_available = 0;
             prev_check     = 0;
@@ -90,18 +80,16 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
         }
 
       public:
-        virtual int connect(const char *host, uint16_t port, int timeout_s)
-        {
+        virtual int connect(const char *host, uint16_t port, int timeout_s) {
             stop();
             SIMPLE_NB_YIELD();
             rx.clear();
-            sock_connected = at->modemConnect(host, port, mux, timeout_s);
+            sock_connected = at->modemConnect(host, port, mux, false, timeout_s);
             return sock_connected;
         }
         SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
 
-        void stop(uint32_t maxWaitMs)
-        {
+        void stop(uint32_t maxWaitMs) {
             dumpModemBuffer(maxWaitMs);
             at->sendAT(GF("+CIPSHUT"));
             at->waitResponse(10000, GF("SHUT OK"));
@@ -110,7 +98,9 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
             sock_connected = false;
             at->waitResponse(GF("CLOSE OK"));
         }
-        void stop() override { stop(15000L); }
+        void stop() override {
+          stop(15000L);
+        }
 
         /*
          * Extended API
@@ -122,12 +112,37 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
     /*
      * Inner Secure Client
      */
-    // TODO: SSL Client
+
+  /*
+  class GsmClientSecureSim7020 : public GsmClientSim7020
+  {
+  public:
+    GsmClientSecure() {}
+
+    GsmClientSecure(SimpleNBSim700& modem, uint8_t mux = 0)
+     : public GsmClient(modem, mux)
+    {}
+
+
+  public:
+    int connect(const char* host, uint16_t port, int timeout_s) override {
+      stop();
+      SIMPLE_NB_YIELD();
+      rx.clear();
+      sock_connected = at->modemConnect(host, port, mux, true, timeout_s);
+      return sock_connected;
+    }
+    SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
+  };
+  */
+
     /*
      * Constructor
      */
   public:
-    explicit SimpleNBSim7020(Stream &stream, uint8_t reset_pin) : stream(stream), reset_pin(reset_pin) { memset(sockets, 0, sizeof(sockets)); }
+    explicit SimpleNBSim7020(Stream &stream) : stream(stream) {
+      memset(sockets, 0, sizeof(sockets));
+    }
 
     /*
      * Basic functions
@@ -135,22 +150,13 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
   protected:
     bool initImpl(const char *pin = NULL)
     {
-        restart();
-
         DBG(GF("### SimpleNB Version:"), SIMPLENB_VERSION);
         DBG(GF("### SimpleNB Compiled Module:  SimpleNBClientSIM7020"));
 
-        if (!testAT()) {
-            return false;
-        }
-
-        sendAT(GF("&FZ"));     // Factory + Reset
-        waitResponse();
+        if (!testAT()) { return false; }
 
         sendAT(GF("E0"));     // Echo Off
-        if (waitResponse() != 1) {
-            return false;
-        }
+        if (waitResponse() != 1) { return false; }
 
 #ifdef SIMPLE_NB_DEBUG
         sendAT(GF("+CMEE=2"));     // turn on verbose error codes
@@ -160,13 +166,10 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
         waitResponse();
 
         DBG(GF("### Modem:"), getModemName());
+
         // Enable battery checks
         sendAT(GF("+CBATCHK=1"));
         waitResponse();
-
-        // Save config
-        // sendAT(GF("&w"));
-        // waitResponse();
 
         SimStatus ret = getSimStatus();
         // if the sim isn't ready and a pin has been provided, try to unlock the sim
@@ -180,31 +183,6 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
         }
     }
 
-    String getModemNameImpl()
-    {
-        sendAT(GF("+CGMI"));
-        String res1;
-        if (waitResponse(1000L, res1) != 1) {
-            return "unknown";
-        }
-        res1.replace("\r\nOK\r\n", "");
-        res1.replace("\rOK\r", "");
-        res1.trim();
-
-        sendAT(GF("+GMM"));
-        String res2;
-        if (waitResponse(1000L, res2) != 1) {
-            return "unknown";
-        }
-        res2.replace("\r\nOK\r\n", "");
-        res2.replace("\rOK\r", "");
-        res2.trim();
-
-        String name = res1 + String(' ') + res2;
-        DBG("### Modem:", name);
-        return name;
-    }
-
     bool factoryDefaultImpl()
     {
         sendAT(GF("&F0"));     // Factory
@@ -212,8 +190,6 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
         sendAT(GF("Z0"));     // Reset
         waitResponse();
         sendAT(GF("E0"));     // Echo Off
-        waitResponse();
-        sendAT(GF("&W"));     // Write
         waitResponse();
         sendAT(GF("+CSOSENDFLAG=0"));     // Disable TCP Send Flag
         waitResponse();
@@ -232,17 +208,14 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
     /*
      * Power functions
      */
-  protected:
-    bool restartImpl()
-    {
-        /* Hardware Reset */
-        pinMode(this->reset_pin, OUTPUT);
-        digitalWrite(this->reset_pin, LOW);
-        delay(300);
-        digitalWrite(this->reset_pin, HIGH);
-        delay(5000);
-
-        return true;
+ protected:
+    bool restartImpl(const char* pin=NULL) {
+      sendAT(GF("E0"));  // Echo Off
+      waitResponse();
+      if (setPhoneFunctionality(0)) { return false; }
+      if (setPhoneFunctionality(1, true)) { return false; }
+      waitResponse(30000L, GF("SMS Ready"));
+      return initImpl(pin);
     }
 
     bool powerOffImpl()
@@ -261,15 +234,21 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
         return waitResponse() == 1;
     }
 
+    bool setPhoneFunctionalityImpl(uint8_t fun, bool reset = false) {
+      sendAT(GF("+CFUN="), fun, reset ? ",1" : "");
+      return waitResponse(10000L, GF("OK")) == 1;
+    }
+
     /*
      * Generic network functions
      */
   public:
-    RegStatus getRegistrationStatus() { return (RegStatus)getRegistrationStatusXREG("CEREG"); }
+    RegStatus getRegistrationStatus() {
+      return (RegStatus)getRegistrationStatusXREG("CEREG");
+    }
 
   protected:
-    bool isNetworkConnectedImpl()
-    {
+    bool isNetworkConnectedImpl() {
         RegStatus s = getRegistrationStatus();
         return (s == REG_OK_HOME || s == REG_OK_ROAMING);
     }
@@ -356,92 +335,17 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
      * Time functions
      */
   protected:
-    // String getGSMDateTimeImpl(SimpleNBDateTimeFormat format)
-    // {
-    //     sendAT(GF("+CCLK?"));
-    //     if (waitResponse(2000L, GF("+CCLK: ")) != 1) {
-    //         return "";
-    //     }
-    //
-    //     String res;
-    //
-    //     switch (format) {
-    //     case DATE_FULL:
-    //         res = stream.readStringUntil('\r');
-    //         break;
-    //     case DATE_TIME:
-    //         streamSkipUntil(',');
-    //         res = stream.readStringUntil('\r');
-    //         break;
-    //     case DATE_DATE:
-    //         res = stream.readStringUntil(',');
-    //         break;
-    //     }
-    //     waitResponse();     // Ends with OK
-    //     return res;
-    // }
-      String getNetworkTimeImpl()
-      {
-          sendAT(GF("+CCLK?"));
-          if (waitResponse(2000L, GF("+CCLK: ")) != 1) {
-              return "";
-          }
+    String getNetworkTimeImpl()
+    {
+        sendAT(GF("+CCLK?"));
+        if (waitResponse(2000L, GF("+CCLK: ")) != 1) {
+            return "";
+        }
 
-          String res = stream.readStringUntil('\r');
-          waitResponse();     // Ends with OK
-          return res;
-      }
-
-    // bool getNetworkTimeImpl(int *year, int *month, int *day, int *hour, int *minute, int *second, float *timezone)
-    // {
-    //     sendAT(GF("+CCLK?"));
-    //     if (waitResponse(2000L, GF("+CCLK: ")) != 1) {
-    //         return false;
-    //     }
-    //
-    //     int iyear     = 0;
-    //     int imonth    = 0;
-    //     int iday      = 0;
-    //     int ihour     = 0;
-    //     int imin      = 0;
-    //     int isec      = 0;
-    //     int itimezone = 0;
-    //
-    //     // Date & Time
-    //     iyear       = streamGetIntBefore('/');
-    //     imonth      = streamGetIntBefore('/');
-    //     iday        = streamGetIntBefore(',');
-    //     ihour       = streamGetIntBefore(':');
-    //     imin        = streamGetIntBefore(':');
-    //     isec        = streamGetIntLength(2);
-    //     char tzSign = stream.read();
-    //     itimezone   = streamGetIntBefore('\n');
-    //     if (tzSign == '-') {
-    //         itimezone = itimezone * -1;
-    //     }
-    //
-    //     // Set pointers
-    //     if (iyear < 2000)
-    //         iyear += 2000;
-    //     if (year != NULL)
-    //         *year = iyear;
-    //     if (month != NULL)
-    //         *month = imonth;
-    //     if (day != NULL)
-    //         *day = iday;
-    //     if (hour != NULL)
-    //         *hour = ihour;
-    //     if (minute != NULL)
-    //         *minute = imin;
-    //     if (second != NULL)
-    //         *second = isec;
-    //     if (timezone != NULL)
-    //         *timezone = static_cast<float>(itimezone) / 4.0;
-    //
-    //     // Final OK
-    //     waitResponse();
-    //     return true;
-    // }
+        String res = stream.readStringUntil('\r');
+        waitResponse();     // Ends with OK
+        return res;
+    }
 
     bool getNetworkTimeImpl(DateTime_t& dt)
     {
@@ -469,52 +373,38 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
     }
 
     /*
-     * Battery functions
-     */
-  protected:
-    // Follows all battery functions per template
-
-    /*
      * NTP server functions
      */
-  public:
-    bool isValidNumber(String str)
-    {
-        if (!(str.charAt(0) == '+' || str.charAt(0) == '-' || isDigit(str.charAt(0))))
-            return false;
-
-        for (byte i = 1; i < str.length(); i++) {
-            if (!(isDigit(str.charAt(i)) || str.charAt(i) == '.')) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    bool NTPServerSync(String server = "pool.ntp.org", byte TimeZone = 32)
+    byte NTPServerSyncImpl(String server = "pool.ntp.org", byte TimeZone = 32)
     {
         // AT+CURTC Control CCLK Show UTC Or RTC Time
         // Use AT CCLK? command to get UTC Or RTC Time
         // Start to query network time
         sendAT(GF("+CSNTPSTART="), '\"', server, GF("\",\"+"), String(TimeZone), '\"');
         if (waitResponse(10000L) != 1) {
-            return false;
+            return -1;
         }
 
         // Stop to query network time
         sendAT(GF("+CSNTPSTOP"));
         if (waitResponse(10000L) != 1) {
-            return false;
+            return -1;
         }
-        return true;
+        return 1;
     }
+
+    /*
+     * Battery functions
+     */
+  protected:
+    // Follows all battery functions per template
 
     /*
      * Client related functions
      */
   protected:
-    bool modemConnect(const char *host, uint16_t port, uint8_t mux, int timeout_s = 75)
-    {
+    bool modemConnect(const char *host, uint16_t port, uint8_t mux,
+      bool ssl = false, int timeout_s = 75) {
         if (!sockets[mux]) {
             return false;
         }

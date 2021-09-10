@@ -17,7 +17,6 @@
 
 #include "SimpleNBBattery.tpp"
 #include "SimpleNBCalling.tpp"
-// #include "SimpleNBGPRS.tpp"
 #include "SimpleNBGPS.tpp"
 #include "SimpleNBGSMLocation.tpp"
 #include "SimpleNBModem.tpp"
@@ -45,7 +44,6 @@ enum RegStatus {
 };
 
 class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
-                     // public SimpleNBGPRS<SimpleNBUBLOX>,
                      public SimpleNBTCP<SimpleNBUBLOX, SIMPLE_NB_MUX_COUNT>,
                      public SimpleNBSSL<SimpleNBUBLOX>,
                      public SimpleNBCalling<SimpleNBUBLOX>,
@@ -55,7 +53,6 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
                      public SimpleNBTime<SimpleNBUBLOX>,
                      public SimpleNBBattery<SimpleNBUBLOX> {
   friend class SimpleNBModem<SimpleNBUBLOX>;
-  // friend class SimpleNBGPRS<SimpleNBUBLOX>;
   friend class SimpleNBTCP<SimpleNBUBLOX, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBSSL<SimpleNBUBLOX>;
   friend class SimpleNBCalling<SimpleNBUBLOX>;

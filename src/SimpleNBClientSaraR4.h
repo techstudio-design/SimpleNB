@@ -16,7 +16,6 @@
 #define SIMPLE_NB_BUFFER_READ_AND_CHECK_SIZE
 
 #include "SimpleNBBattery.tpp"
-// #include "SimpleNBGPRS.tpp"
 #include "SimpleNBGPS.tpp"
 #include "SimpleNBGSMLocation.tpp"
 #include "SimpleNBModem.tpp"
@@ -45,7 +44,6 @@ enum RegStatus {
 };
 
 class SimpleNBSaraR4 : public SimpleNBModem<SimpleNBSaraR4>,
-                      // public SimpleNBGPRS<SimpleNBSaraR4>,
                       public SimpleNBTCP<SimpleNBSaraR4, SIMPLE_NB_MUX_COUNT>,
                       public SimpleNBSSL<SimpleNBSaraR4>,
                       public SimpleNBBattery<SimpleNBSaraR4>,
@@ -55,7 +53,6 @@ class SimpleNBSaraR4 : public SimpleNBModem<SimpleNBSaraR4>,
                       public SimpleNBTemperature<SimpleNBSaraR4>,
                       public SimpleNBTime<SimpleNBSaraR4> {
   friend class SimpleNBModem<SimpleNBSaraR4>;
-  // friend class SimpleNBGPRS<SimpleNBSaraR4>;
   friend class SimpleNBTCP<SimpleNBSaraR4, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBSSL<SimpleNBSaraR4>;
   friend class SimpleNBBattery<SimpleNBSaraR4>;
