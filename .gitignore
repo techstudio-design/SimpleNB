@@ -9,7 +9,7 @@
 *.orig
 *.log
 *.bak
-.DS_Store
+*/.DS_Store
 
 # IDE project files
 .cproject
