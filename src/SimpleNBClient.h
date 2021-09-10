@@ -33,6 +33,11 @@ typedef SimpleNBSim7080                         SimpleNB;
 typedef SimpleNBSim7080::GsmClientSim7080       SimpleNBClient;
 typedef SimpleNBSim7080::GsmClientSecureSIM7080 SimpleNBClientSecure;
 
+#elif defined(SIMPLE_NB_MODEM_BG96)
+#include "SimpleNBClientBG96.h"
+typedef SimpleNBBG96                SimpleNB;
+typedef SimpleNBBG96::GsmClientBG96 SimpleNBClient;
+
 #elif defined(SIMPLE_NB_MODEM_UBLOX)
 #include "SimpleNBClientUBLOX.h"
 typedef SimpleNBUBLOX                       SimpleNB;
@@ -60,7 +65,7 @@ typedef SimpleNBSequansMonarch::GsmClientSecureSequansMonarch
     SimpleNBClientSecure;
 
 #else
-#error "Please define GSM modem model"
+#error "Unsupported modules"
 #endif
 
 #endif  // SRC_SIMPLE_NB_CLIENT_H_

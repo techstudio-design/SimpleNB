@@ -1,4 +1,4 @@
-SIMPLE_NB_/**
+/**
  * @file       SimpleNBGPRS.tpp
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0

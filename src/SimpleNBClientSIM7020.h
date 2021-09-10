@@ -442,7 +442,7 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
      * NTP server functions
      */
   public:
-    boolean isValidNumber(String str)
+    bool isValidNumber(String str)
     {
         if (!(str.charAt(0) == '+' || str.charAt(0) == '-' || isDigit(str.charAt(0))))
             return false;

@@ -9,7 +9,6 @@ This library is based on the works of [TinyGSM](https://github.com/vshymanskyy/T
 If you like **SimpleNB** - give it a star, or fork it and contribute!
 
 - [Supported modules](#supported-modules)
-  - [Supported Arduino boards]### Supported Arduino boards)
 - [Features](#features)
 - [Getting Started](#getting-started)
     - [First Steps](#first-steps)
@@ -33,22 +32,12 @@ If you like **SimpleNB** - give it a star, or fork it and contribute!
 
 ## Supported modules
 
-- SIMCom SIM7000E/A/G CAT-M1/NB-IoT Module
-- SIMCom SIM7020C/E/G CAT-M1/NB-IoT Module
+- SIMCom SIM7000X CAT-M1/NB-IoT Module
+- SIMCom SIM7020X CAT-M1/NB-IoT Module
 - SIMCom SIM7070/SIM7080/SIM7090 CAT-M1/NB-IoT Module
 - u-blox LTE-M/NB-IoT Modems (SARA-R4xx, SARA-N4xx, _but NOT SARA-N2xx_)
 - Sequans Monarch LTE Cat M1/NB1 (VZM20Q)
 - Quectel BG96
-
-### Supported Arduino boards
-- Arduino MKR GSM 1400
-- GPRSbee
-- Microduino GSM
-- Adafruit FONA (Mini Cellular GSM Breakout)
-- Adafruit FONA 800/808 Shield
-- Industruino GSM
-- RAK WisLTE ***(alpha)***
-- ... other modules, based on supported modems. <!--Some boards require [**special configuration**](https://github.com/techstudio-design/SimpleNB/wiki/Board-configuration).-->
 
 ## Features
 
@@ -116,7 +105,7 @@ If you like **SimpleNB** - give it a star, or fork it and contribute!
     - Check that APN, User, Pass are correct and you have internet
   2. Ensure the SIM card is correctly inserted into the module
   3. Ensure that GSM antenna is firmly attached
-  4. Ensure that you have a stable power supply to the module of at least **2A**.
+  4. Ensure that you have a stable power supply to the module of at least **500mA**.
   5. Check if serial connection is working (Hardware Serial is recommended)
      Send an `AT` command using [this sketch](tools/AT_Debug/AT_Debug.ino)
   6. Try out the [WebClient](https://github.com/techstudio-design/SimpleNB/blob/master/examples/WebClient/WebClient.ino) example
@@ -127,18 +116,18 @@ The general flow of your code should be:
 - Define the module that you are using (choose one and only one)
     - ie, `#define TINY_GSM_MODEM_SIM800`
 - Included TinyGSM
-    - `#include <TinyGsmClient.h>`
+    - `#include <SimpleNBClient.h>`
 - Create a TinyGSM modem instance
-    - `TinyGsm modem(SerialAT);`
+    - `SimpleNB modem(SerialAT);`
 - Create one or more TinyGSM client instances
     - For a single connection, use
-        - `TinyGsmClient client(modem);`
+        - `SimpleNBClient client(modem);`
         or
-        `TinyGsmClientSecure client(modem);` (on supported modules)
+        `SimpleNBClientSecure client(modem);` (on supported modules)
     - For multiple connections (on supported modules) use:
-        - `TinyGsmClient clientX(modem, 0);`, `TinyGsmClient clientY(modem, 1);`, etc
+        - `SimpleNBClient clientX(modem, 0);`, `SimpleNBClient clientY(modem, 1);`, etc
           or
-        - `TinyGsmClientSecure clientX(modem, 0);`, `TinyGsmClientSecure clientY(modem, 1);`, etc
+        - `SimpleNBClientSecure clientX(modem, 0);`, `SimpleNBClientSecure clientY(modem, 1);`, etc
     - Secure and insecure clients can usually be mixed when using multiple connections.
     - The total number of connections possible varies by module
 - Begin your serial communication and set all your pins as required to power your module and bring it to full functionality.
@@ -253,9 +242,9 @@ In custom code, you can add this snippit:
 #ifdef DUMP_AT_COMMANDS
   #include <StreamDebugger.h>
   StreamDebugger debugger(SerialAT, SerialMon);
-  TinyGsm modem(debugger);
+  SimpleNB modem(debugger);
 #else
-  TinyGsm modem(SerialAT);
+  SimpleNB modem(SerialAT);
 #endif
 ```
 
@@ -320,4 +309,3 @@ __________
 ## License
 This project is released under
 The GNU Lesser General Public License (LGPL-3.0)
---->

@@ -28,7 +28,6 @@
 #include "SimpleNBSSL.tpp"
 #include "SimpleNBTCP.tpp"
 #include "SimpleNBTemperature.tpp"
-#include "SimpleNBWifi.tpp"
 
 #define ACK_NL "\r"
 static const char ACK_OK[] SIMPLE_NB_PROGMEM    = "OK" ACK_NL;
@@ -68,7 +67,6 @@ enum XBeeType {
 
 class SimpleNBXBee : public SimpleNBModem<SimpleNBXBee>,
                     public SimpleNBGPRS<SimpleNBXBee>,
-                    public SimpleNBWifi<SimpleNBXBee>,
                     public SimpleNBTCP<SimpleNBXBee, SIMPLE_NB_MUX_COUNT>,
                     public SimpleNBSSL<SimpleNBXBee>,
                     public SimpleNBSMS<SimpleNBXBee>,
@@ -76,7 +74,6 @@ class SimpleNBXBee : public SimpleNBModem<SimpleNBXBee>,
                     public SimpleNBTemperature<SimpleNBXBee> {
   friend class SimpleNBModem<SimpleNBXBee>;
   friend class SimpleNBGPRS<SimpleNBXBee>;
-  friend class SimpleNBWifi<SimpleNBXBee>;
   friend class SimpleNBTCP<SimpleNBXBee, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBSSL<SimpleNBXBee>;
   friend class SimpleNBSMS<SimpleNBXBee>;

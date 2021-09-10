@@ -22,11 +22,11 @@
 #include "SimpleNBGSMLocation.tpp"
 
 #define ACK_NL "\r\n"
-static const char ACK_OK[] TINY_ACK_PROGMEM    = "OK" ACK_NL;
-static const char ACK_ERROR[] TINY_ACK_PROGMEM = "ERROR" ACK_NL;
-#if defined       TINY_ACK_DEBUG
-static const char ACK_CME_ERROR[] TINY_ACK_PROGMEM = ACK_NL "+CME ERROR:";
-static const char ACK_CMS_ERROR[] TINY_ACK_PROGMEM = ACK_NL "+CMS ERROR:";
+static const char ACK_OK[] SIMPLE_NB_PROGMEM    = "OK" ACK_NL;
+static const char ACK_ERROR[] SIMPLE_NB_PROGMEM = "ERROR" ACK_NL;
+#if defined       SIMPLE_NB_DEBUG
+static const char ACK_CME_ERROR[] SIMPLE_NB_PROGMEM = ACK_NL "+CME ERROR:";
+static const char ACK_CMS_ERROR[] SIMPLE_NB_PROGMEM = ACK_NL "+CMS ERROR:";
 #endif
 
 enum RegStatus {
@@ -40,14 +40,15 @@ enum RegStatus {
 };
 
 template <class modemType>
-class SimpleNBSim70xx : public SimpleNBModem<SimpleNBSim70xx<modemType>>,
-                       public SimpleNBGPRS<SimpleNBSim70xx<modemType>>,
-                       public SimpleNBSMS<SimpleNBSim70xx<modemType>>,
-                       public SimpleNBGPS<SimpleNBSim70xx<modemType>>,
-                       public SimpleNBTime<SimpleNBSim70xx<modemType>>,
-                       public SimpleNBNTP<SimpleNBSim70xx<modemType>>,
-                       public SimpleNBBattery<SimpleNBSim70xx<modemType>>,
-                       public SimpleNBGSMLocation<SimpleNBSim70xx<modemType>> {
+class SimpleNBSim70xx:public SimpleNBModem<SimpleNBSim70xx<modemType>>,
+                      public SimpleNBGPRS<SimpleNBSim70xx<modemType>>,
+                      public SimpleNBSMS<SimpleNBSim70xx<modemType>>,
+                      public SimpleNBGPS<SimpleNBSim70xx<modemType>>,
+                      public SimpleNBTime<SimpleNBSim70xx<modemType>>,
+                      public SimpleNBNTP<SimpleNBSim70xx<modemType>>,
+                      public SimpleNBBattery<SimpleNBSim70xx<modemType>>,
+                      public SimpleNBGSMLocation<SimpleNBSim70xx<modemType>>
+{
   friend class SimpleNBModem<SimpleNBSim70xx<modemType>>;
   friend class SimpleNBGPRS<SimpleNBSim70xx<modemType>>;
   friend class SimpleNBSMS<SimpleNBSim70xx<modemType>>;
@@ -114,8 +115,8 @@ class SimpleNBSim70xx : public SimpleNBModem<SimpleNBSim70xx<modemType>>,
   /*
    * Power functions
    */
- protected:
-  bool restartImpl(const char* pin = NULL) {
+protected:
+  bool restartImpl(const char* pin=NULL) {
     thisModem().sendAT(GF("E0"));  // Echo Off
     thisModem().waitResponse();
     if (!thisModem().setPhoneFunctionality(0)) { return false; }
@@ -414,7 +415,7 @@ class SimpleNBSim70xx : public SimpleNBModem<SimpleNBSim70xx<modemType>>,
   int8_t waitResponse(uint32_t timeout_ms, String& data,
                       GsmConstStr r1 = GFP(ACK_OK),
                       GsmConstStr r2 = GFP(ACK_ERROR),
-#if defined TINY_ACK_DEBUG
+#if defined SIMPLE_NB_DEBUG
                       GsmConstStr r3 = GFP(ACK_CME_ERROR),
                       GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
@@ -426,7 +427,7 @@ class SimpleNBSim70xx : public SimpleNBModem<SimpleNBSim70xx<modemType>>,
 
   int8_t waitResponse(uint32_t timeout_ms, GsmConstStr r1 = GFP(ACK_OK),
                       GsmConstStr r2 = GFP(ACK_ERROR),
-#if defined TINY_ACK_DEBUG
+#if defined SIMPLE_NB_DEBUG
                       GsmConstStr r3 = GFP(ACK_CME_ERROR),
                       GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else
@@ -439,7 +440,7 @@ class SimpleNBSim70xx : public SimpleNBModem<SimpleNBSim70xx<modemType>>,
 
   int8_t waitResponse(GsmConstStr r1 = GFP(ACK_OK),
                       GsmConstStr r2 = GFP(ACK_ERROR),
-#if defined TINY_ACK_DEBUG
+#if defined SIMPLE_NB_DEBUG
                       GsmConstStr r3 = GFP(ACK_CME_ERROR),
                       GsmConstStr r4 = GFP(ACK_CMS_ERROR),
 #else

@@ -19,8 +19,9 @@
 #include "SimpleNBTCP.tpp"
 
 
-class SimpleNBSim7000 : public SimpleNBSim70xx<SimpleNBSim7000>,
-                       public SimpleNBTCP<SimpleNBSim7000, SIMPLE_NB_MUX_COUNT> {
+class SimpleNBSim7000
+  : public SimpleNBSim70xx<SimpleNBSim7000>,
+    public SimpleNBTCP<SimpleNBSim7000, SIMPLE_NB_MUX_COUNT> {
   friend class SimpleNBSim70xx<SimpleNBSim7000>;
   friend class SimpleNBTCP<SimpleNBSim7000, SIMPLE_NB_MUX_COUNT>;
 

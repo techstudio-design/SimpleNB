@@ -4,6 +4,17 @@
  *  This is NOT an example for use of this library!
  *
  **************************************************************/
+// #define SIMPLE_NB_MODEM_SIM7000
+// #define SIMPLE_NB_MODEM_SIM7020
+// #define SIMPLE_NB_MODEM_SIM7070
+// #define SIMPLE_NB_MODEM_SIM7080
+// #define SIMPLE_NB_MODEM_SIM7090
+// #define SIMPLE_NB_MODEM_BG96
+// #define SIMPLE_NB_MODEM_SARAR4
+// #define SIMPLE_NB_MODEM_UBLOX
+// #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
+// #define SIMPLE_NB_MODEM_XBEE
+
 #include <SimpleNBClient.h>
 
 SimpleNB modem(Serial);
@@ -55,12 +66,6 @@ void loop() {
   modem.gprsConnect("myAPN", "myAPNUser", "myAPNPass");
   modem.gprsDisconnect();
   modem.getOperator();
-#endif
-
-// Test WiFi Functions
-#if defined(SIMPLE_NB_SUPPORT_WIFI)
-  modem.networkConnect("mySSID", "mySSIDPassword");
-  modem.networkDisconnect();
 #endif
 
   // Test TCP functions

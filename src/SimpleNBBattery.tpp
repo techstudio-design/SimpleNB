@@ -1,5 +1,5 @@
 /**
- * @file       TinyGsmBattery.tpp
+ * @file       SimpleNBBattery.tpp
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
@@ -14,7 +14,7 @@
 #define SIMPLE_NB_SUPPORT_BATTERY
 
 template <class modemType>
-class TinyGsmBattery {
+class SimpleNBBattery {
  public:
   /*
    * Battery functions

@@ -1,4 +1,4 @@
-SimpleNBSimpleNB/**
+/**
  * @file       SimpleNBTCP.tpp
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
