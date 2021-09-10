@@ -183,20 +183,14 @@ void loop() {
 
 // Test the Network time function
 #if defined(SIMPLE_NB_SUPPORT_NTP) && not defined(__AVR_ATmega32U4__)
-  modem.NTPServerSync("pool.ntp.org", 3);
+  modem.NTPServerSync("pool.ntp.org", 32);
 #endif
 
 // Test the Network time function
 #if defined(SIMPLE_NB_SUPPORT_TIME) && not defined(__AVR_ATmega32U4__)
-  modem.getGSMDateTime(DATE_FULL);
-  int   year3    = 0;
-  int   month3   = 0;
-  int   day3     = 0;
-  int   hour3    = 0;
-  int   min3     = 0;
-  int   sec3     = 0;
-  float timezone = 0;
-  modem.getNetworkTime(&year3, &month3, &day3, &hour3, &min3, &sec3, &timezone);
+  modem.getNetworkTime();
+  DateTime_t dt;
+  modem.getNetworkTime(dt);
 #endif
 
 // Test Battery functions

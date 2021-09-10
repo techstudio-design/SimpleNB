@@ -54,7 +54,7 @@ class SimpleNBNTP {
    * NTP server functions
    */
  protected:
-  byte NTPServerSyncImpl(String server = "pool.ntp.org", byte TimeZone = 3) {
+  byte NTPServerSyncImpl(String server = "pool.ntp.org", byte TimeZone = 0) {
     // Set GPRS bearer profile to associate with NTP sync
     // this may fail, it's not supported by all modules
     thisModem().sendAT(GF("+CNTPCID=1"));
