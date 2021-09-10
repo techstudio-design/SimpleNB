@@ -12,12 +12,15 @@
 // Select your modem:
 #define SIMPLE_NB_MODEM_SIM7000
 // #define SIMPLE_NB_MODEM_SIM7000SSL
+// #define SIMPLE_NB_MODEM_SIM7020
+// #define SIMPLE_NB_MODEM_SIM7070
 // #define SIMPLE_NB_MODEM_SIM7080
-// #define SIMPLE_NB_MODEM_UBLOX
-// #define SIMPLE_NB_MODEM_SARAR4
+// #define SIMPLE_NB_MODEM_SIM7090
 // #define SIMPLE_NB_MODEM_BG96
-// #define SIMPLE_NB_MODEM_XBEE
+// #define SIMPLE_NB_MODEM_SARAR4
+// #define SIMPLE_NB_MODEM_UBLOX
 // #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
+// #define SIMPLE_NB_MODEM_XBEE
 
 // Set serial for debug console (to the Serial Monitor, default speed 115200)
 #define SerialMon Serial
@@ -431,13 +434,11 @@ void loop() {
 #endif
 
 #if SIMPLE_NB_TEST_BATTERY && defined SIMPLE_NB_SUPPORT_BATTERY
-  uint8_t  chargeState = -99;
-  int8_t   percent     = -99;
-  uint16_t milliVolts  = -9999;
-  modem.getBattStats(chargeState, percent, milliVolts);
-  DBG("Battery charge state:", chargeState);
-  DBG("Battery charge 'percent':", percent);
-  DBG("Battery voltage:", milliVolts / 1000.0F);
+  Battery_t batt;
+  modem.getBatteryStatus(batt);
+  DBG("Battery charge state:", batt.chargeState);
+  DBG("Battery charge 'percent':", batt.percent);
+  DBG("Battery voltage:", batt.milliVolts / 1000.0F);
 #endif
 
 #if SIMPLE_NB_TEST_TEMPERATURE && defined SIMPLE_NB_SUPPORT_TEMPERATURE
@@ -455,11 +456,6 @@ void loop() {
   } else {
     DBG("GPRS disconnect: Failed.");
   }
-#endif
-
-#if SIMPLE_NB_TEST_WIFI
-  modem.networkDisconnect();
-  DBG("WiFi disconnected");
 #endif
 
   // Try to power-off (modem may decide to restart automatically)

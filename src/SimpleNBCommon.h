@@ -33,12 +33,10 @@
 #endif
 
 #ifndef SIMPLE_NB_YIELD
-#define SIMPLE_NB_YIELD() \
-  { delay(SIMPLE_NB_YIELD_MS); }
+#define SIMPLE_NB_YIELD() { delay(SIMPLE_NB_YIELD_MS); }
 #endif
 
-#define SIMPLE_NB_ATTR_NOT_AVAILABLE \
-  __attribute__((error("Not available on this modem type")))
+#define SIMPLE_NB_ATTR_NOT_AVAILABLE __attribute__((error("Not available on this modem type")))
 #define SIMPLE_NB_ATTR_NOT_IMPLEMENTED __attribute__((error("Not implemented")))
 
 #if defined(__AVR__) && !defined(__AVR_ATmega4809__)

@@ -5,6 +5,7 @@
  *
  **************************************************************/
 // #define SIMPLE_NB_MODEM_SIM7000
+// #define SIMPLE_NB_MODEM_SIM7000SSL
 // #define SIMPLE_NB_MODEM_SIM7020
 // #define SIMPLE_NB_MODEM_SIM7070
 // #define SIMPLE_NB_MODEM_SIM7080
@@ -212,10 +213,8 @@ void loop() {
 
 // Test Battery functions
 #if defined(SIMPLE_NB_SUPPORT_BATTERY)
-  uint8_t  chargeState   = 0;
-  int8_t   chargePercent = 0;
-  uint16_t milliVolts    = 0;
-  modem.getBattStats(chargeState, chargePercent, milliVolts);
+  Battery_t batt;
+  modem.getBatteryStatus(batt);
 #endif
 
 // Test the temperature function
