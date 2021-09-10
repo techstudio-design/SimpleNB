@@ -17,7 +17,6 @@
 
 #include "SimpleNBBattery.tpp"
 #include "SimpleNBCalling.tpp"
-// #include "SimpleNBGPRS.tpp"
 #include "SimpleNBGPS.tpp"
 #include "SimpleNBModem.tpp"
 #include "SimpleNBSMS.tpp"
@@ -45,7 +44,6 @@ enum RegStatus {
 };
 
 class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
-                    // public SimpleNBGPRS<SimpleNBBG96>,
                     public SimpleNBTCP<SimpleNBBG96, SIMPLE_NB_MUX_COUNT>,
                     public SimpleNBCalling<SimpleNBBG96>,
                     public SimpleNBSMS<SimpleNBBG96>,
@@ -55,7 +53,6 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
                     public SimpleNBBattery<SimpleNBBG96>,
                     public SimpleNBTemperature<SimpleNBBG96> {
   friend class SimpleNBModem<SimpleNBBG96>;
-  // friend class SimpleNBGPRS<SimpleNBBG96>;
   friend class SimpleNBTCP<SimpleNBBG96, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBCalling<SimpleNBBG96>;
   friend class SimpleNBSMS<SimpleNBBG96>;
@@ -419,20 +416,11 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
    * Time functions
    */
  protected:
-  String getGSMDateTimeImpl(SimpleNBDateTimeFormat format) {
+  String getNetworkTimeImpl() {
     sendAT(GF("+QLTS=2"));
     if (waitResponse(2000L, GF("+QLTS: \"")) != 1) { return ""; }
 
-    String res;
-
-    switch (format) {
-      case DATE_FULL: res = stream.readStringUntil('"'); break;
-      case DATE_TIME:
-        streamSkipUntil(',');
-        res = stream.readStringUntil('"');
-        break;
-      case DATE_DATE: res = stream.readStringUntil(','); break;
-    }
+    String res = stream.readStringUntil('"');
     waitResponse();  // Ends with OK
     return res;
   }
@@ -440,43 +428,24 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   // The BG96 returns UTC time instead of local time as other modules do in
   // response to CCLK, so we're using QLTS where we can specifically request
   // local time.
-  bool getNetworkTimeImpl(int* year, int* month, int* day, int* hour,
-                          int* minute, int* second, float* timezone) {
+  bool getNetworkTimeImpl(DateTime_t dt) {
     sendAT(GF("+QLTS=2"));
     if (waitResponse(2000L, GF("+QLTS: \"")) != 1) { return false; }
 
-    int iyear     = 0;
-    int imonth    = 0;
-    int iday      = 0;
-    int ihour     = 0;
-    int imin      = 0;
-    int isec      = 0;
-    int itimezone = 0;
-
     // Date & Time
-    iyear       = streamGetIntBefore('/');
-    imonth      = streamGetIntBefore('/');
-    iday        = streamGetIntBefore(',');
-    ihour       = streamGetIntBefore(':');
-    imin        = streamGetIntBefore(':');
-    isec        = streamGetIntLength(2);
+    dt.year       = streamGetIntBefore('/');
+    if (dt.year < 2000) dt.year += 2000;
+    dt.month      = streamGetIntBefore('/');
+    dt.day        = streamGetIntBefore(',');
+    dt.hour       = streamGetIntBefore(':');
+    dt.minute     = streamGetIntBefore(':');
+    dt.second     = streamGetIntLength(2);
     char tzSign = stream.read();
-    itimezone   = streamGetIntBefore(',');
-    if (tzSign == '-') { itimezone = itimezone * -1; }
+    dt.timezone   = streamGetIntBefore(',');
+    if (tzSign == '-') { dt.timezone = dt.timezone * -1; }
     streamSkipUntil('\n');  // DST flag
-
-    // Set pointers
-    if (iyear < 2000) iyear += 2000;
-    if (year != NULL) *year = iyear;
-    if (month != NULL) *month = imonth;
-    if (day != NULL) *day = iday;
-    if (hour != NULL) *hour = ihour;
-    if (minute != NULL) *minute = imin;
-    if (second != NULL) *second = isec;
-    if (timezone != NULL) *timezone = static_cast<float>(itimezone) / 4.0;
-
     // Final OK
-    waitResponse();  // Ends with OK
+    waitResponse();
     return true;
   }
 

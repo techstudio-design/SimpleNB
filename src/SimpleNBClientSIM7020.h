@@ -26,8 +26,8 @@
 #define SIMPLE_NB_MUX_COUNT 1
 #define SIMPLE_NB_BUFFER_READ_AND_CHECK_SIZE
 
-#include "SimpleNBModem.tpp"
-#include "SimpleNBGPRS.tpp"
+ #include "SimpleNBModem.tpp"
+// #include "SimpleNBGPRS.tpp"
 #include "SimpleNBTCP.tpp"
 #include "SimpleNBTime.tpp"
 
@@ -51,11 +51,11 @@ enum RegStatus
 };
 
 class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
-    public SimpleNBGPRS<SimpleNBSim7020>,
+    // public SimpleNBGPRS<SimpleNBSim7020>,
     public SimpleNBTCP<SimpleNBSim7020, SIMPLE_NB_MUX_COUNT>,
     public SimpleNBTime<SimpleNBSim7020> {
       friend class SimpleNBModem<SimpleNBSim7020>;
-      friend class SimpleNBNGPRS<SimpleNBSim7020>;
+      // friend class SimpleNBNGPRS<SimpleNBSim7020>;
       friend class SimpleNBTCP<SimpleNBSim7020, SIMPLE_NB_MUX_COUNT>;
       friend class SimpleNBTime<SimpleNBSim7020>;
 
@@ -356,77 +356,113 @@ class SimpleNBSim7020 : public SimpleNBModem<SimpleNBSim7020>,
      * Time functions
      */
   protected:
-    String getGSMDateTimeImpl(SimpleNBDateTimeFormat format)
-    {
-        sendAT(GF("+CCLK?"));
-        if (waitResponse(2000L, GF("+CCLK: ")) != 1) {
-            return "";
-        }
+    // String getGSMDateTimeImpl(SimpleNBDateTimeFormat format)
+    // {
+    //     sendAT(GF("+CCLK?"));
+    //     if (waitResponse(2000L, GF("+CCLK: ")) != 1) {
+    //         return "";
+    //     }
+    //
+    //     String res;
+    //
+    //     switch (format) {
+    //     case DATE_FULL:
+    //         res = stream.readStringUntil('\r');
+    //         break;
+    //     case DATE_TIME:
+    //         streamSkipUntil(',');
+    //         res = stream.readStringUntil('\r');
+    //         break;
+    //     case DATE_DATE:
+    //         res = stream.readStringUntil(',');
+    //         break;
+    //     }
+    //     waitResponse();     // Ends with OK
+    //     return res;
+    // }
+      String getNetworkTimeImpl()
+      {
+          sendAT(GF("+CCLK?"));
+          if (waitResponse(2000L, GF("+CCLK: ")) != 1) {
+              return "";
+          }
 
-        String res;
+          String res = stream.readStringUntil('\r');
+          waitResponse();     // Ends with OK
+          return res;
+      }
 
-        switch (format) {
-        case DATE_FULL:
-            res = stream.readStringUntil('\r');
-            break;
-        case DATE_TIME:
-            streamSkipUntil(',');
-            res = stream.readStringUntil('\r');
-            break;
-        case DATE_DATE:
-            res = stream.readStringUntil(',');
-            break;
-        }
-        waitResponse();     // Ends with OK
-        return res;
-    }
+    // bool getNetworkTimeImpl(int *year, int *month, int *day, int *hour, int *minute, int *second, float *timezone)
+    // {
+    //     sendAT(GF("+CCLK?"));
+    //     if (waitResponse(2000L, GF("+CCLK: ")) != 1) {
+    //         return false;
+    //     }
+    //
+    //     int iyear     = 0;
+    //     int imonth    = 0;
+    //     int iday      = 0;
+    //     int ihour     = 0;
+    //     int imin      = 0;
+    //     int isec      = 0;
+    //     int itimezone = 0;
+    //
+    //     // Date & Time
+    //     iyear       = streamGetIntBefore('/');
+    //     imonth      = streamGetIntBefore('/');
+    //     iday        = streamGetIntBefore(',');
+    //     ihour       = streamGetIntBefore(':');
+    //     imin        = streamGetIntBefore(':');
+    //     isec        = streamGetIntLength(2);
+    //     char tzSign = stream.read();
+    //     itimezone   = streamGetIntBefore('\n');
+    //     if (tzSign == '-') {
+    //         itimezone = itimezone * -1;
+    //     }
+    //
+    //     // Set pointers
+    //     if (iyear < 2000)
+    //         iyear += 2000;
+    //     if (year != NULL)
+    //         *year = iyear;
+    //     if (month != NULL)
+    //         *month = imonth;
+    //     if (day != NULL)
+    //         *day = iday;
+    //     if (hour != NULL)
+    //         *hour = ihour;
+    //     if (minute != NULL)
+    //         *minute = imin;
+    //     if (second != NULL)
+    //         *second = isec;
+    //     if (timezone != NULL)
+    //         *timezone = static_cast<float>(itimezone) / 4.0;
+    //
+    //     // Final OK
+    //     waitResponse();
+    //     return true;
+    // }
 
-    bool getNetworkTimeImpl(int *year, int *month, int *day, int *hour, int *minute, int *second, float *timezone)
+    bool getNetworkTimeImpl(DateTime_t& dt)
     {
         sendAT(GF("+CCLK?"));
         if (waitResponse(2000L, GF("+CCLK: ")) != 1) {
             return false;
         }
 
-        int iyear     = 0;
-        int imonth    = 0;
-        int iday      = 0;
-        int ihour     = 0;
-        int imin      = 0;
-        int isec      = 0;
-        int itimezone = 0;
-
         // Date & Time
-        iyear       = streamGetIntBefore('/');
-        imonth      = streamGetIntBefore('/');
-        iday        = streamGetIntBefore(',');
-        ihour       = streamGetIntBefore(':');
-        imin        = streamGetIntBefore(':');
-        isec        = streamGetIntLength(2);
+        dt.year       = streamGetIntBefore('/');
+        if (dt.year < 2000) dt.year += 2000;
+        dt.month      = streamGetIntBefore('/');
+        dt.day        = streamGetIntBefore(',');
+        dt.hour       = streamGetIntBefore(':');
+        dt.minute     = streamGetIntBefore(':');
+        dt.second     = streamGetIntLength(2);
         char tzSign = stream.read();
-        itimezone   = streamGetIntBefore('\n');
+        dt.timezone   = streamGetIntBefore('\n');
         if (tzSign == '-') {
-            itimezone = itimezone * -1;
+            dt.timezone = dt.timezone * -1;
         }
-
-        // Set pointers
-        if (iyear < 2000)
-            iyear += 2000;
-        if (year != NULL)
-            *year = iyear;
-        if (month != NULL)
-            *month = imonth;
-        if (day != NULL)
-            *day = iday;
-        if (hour != NULL)
-            *hour = ihour;
-        if (minute != NULL)
-            *minute = imin;
-        if (second != NULL)
-            *second = isec;
-        if (timezone != NULL)
-            *timezone = static_cast<float>(itimezone) / 4.0;
-
         // Final OK
         waitResponse();
         return true;

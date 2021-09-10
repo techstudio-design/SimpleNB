@@ -16,7 +16,7 @@
 #define SIMPLE_NB_BUFFER_READ_AND_CHECK_SIZE
 
 #include "SimpleNBBattery.tpp"
-#include "SimpleNBGPRS.tpp"
+// #include "SimpleNBGPRS.tpp"
 #include "SimpleNBGPS.tpp"
 #include "SimpleNBGSMLocation.tpp"
 #include "SimpleNBModem.tpp"
@@ -45,7 +45,7 @@ enum RegStatus {
 };
 
 class SimpleNBSaraR4 : public SimpleNBModem<SimpleNBSaraR4>,
-                      public SimpleNBGPRS<SimpleNBSaraR4>,
+                      // public SimpleNBGPRS<SimpleNBSaraR4>,
                       public SimpleNBTCP<SimpleNBSaraR4, SIMPLE_NB_MUX_COUNT>,
                       public SimpleNBSSL<SimpleNBSaraR4>,
                       public SimpleNBBattery<SimpleNBSaraR4>,
@@ -55,7 +55,7 @@ class SimpleNBSaraR4 : public SimpleNBModem<SimpleNBSaraR4>,
                       public SimpleNBTemperature<SimpleNBSaraR4>,
                       public SimpleNBTime<SimpleNBSaraR4> {
   friend class SimpleNBModem<SimpleNBSaraR4>;
-  friend class SimpleNBGPRS<SimpleNBSaraR4>;
+  // friend class SimpleNBGPRS<SimpleNBSaraR4>;
   friend class SimpleNBTCP<SimpleNBSaraR4, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBSSL<SimpleNBSaraR4>;
   friend class SimpleNBBattery<SimpleNBSaraR4>;
@@ -568,9 +568,20 @@ class SimpleNBSaraR4 : public SimpleNBModem<SimpleNBSaraR4>,
     waitResponse();
     return true;
   }
-  bool getGsmLocationImpl(float* lat, float* lon, float* accuracy = 0,
-                          int* year = 0, int* month = 0, int* day = 0,
-                          int* hour = 0, int* minute = 0, int* second = 0) {
+  // bool getGsmLocationImpl(float* lat, float* lon, float* accuracy = 0,
+  //                         int* year = 0, int* month = 0, int* day = 0,
+  //                         int* hour = 0, int* minute = 0, int* second = 0) {
+  //   return getUbloxLocation(2, lat, lon, 0, 0, 0, 0, accuracy, year, month, day,
+  //                           hour, minute, second);
+  // }
+  // bool getGPSImpl(float* lat, float* lon, float* speed = 0, float* alt = 0,
+  //                 int* vsat = 0, int* usat = 0, float* accuracy = 0,
+  //                 int* year = 0, int* month = 0, int* day = 0, int* hour = 0,
+  //                 int* minute = 0, int* second = 0) {
+  //   return getUbloxLocation(1, lat, lon, speed, alt, vsat, usat, accuracy, year,
+  //                           month, day, hour, minute, second);
+  // }
+  bool getGsmLocationImpl(CellLBS_t lbs) {
     return getUbloxLocation(2, lat, lon, 0, 0, 0, 0, accuracy, year, month, day,
                             hour, minute, second);
   }
@@ -592,26 +603,16 @@ class SimpleNBSaraR4 : public SimpleNBModem<SimpleNBSaraR4>,
    * Battery functions
    */
  protected:
-  uint16_t getBattVoltageImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
-
-  int8_t getBattPercentImpl() {
+  bool getBattaryStatusImpl(Battery_t& batt) {
     sendAT(GF("+CIND?"));
     if (waitResponse(GF(ACK_NL "+CIND:")) != 1) { return 0; }
 
     int8_t res     = streamGetIntBefore(',');
-    int8_t percent = res * 20;  // return is 0-5
+    batt.percent     = res * 20;  // return is 0-5
+    batt.chargeState = 0;
+    batt.milliVolts  = 0;
     // Wait for final OK
     waitResponse();
-    return percent;
-  }
-
-  uint8_t getBattChargeStateImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
-
-  bool getBattStatsImpl(uint8_t& chargeState, int8_t& percent,
-                        uint16_t& milliVolts) {
-    chargeState = 0;
-    percent     = getBattPercent();
-    milliVolts  = 0;
     return true;
   }
 

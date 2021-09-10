@@ -2,8 +2,7 @@
  * @file       SimpleNBClientXBee.h
  * @author     Volodymyr Shymanskyy
  * @license    LGPL-3.0
- * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy, XBee module by Sara
- * Damiano
+ * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy, XBee module by Sara Damiano
  * @date       Nov 2016
  */
 
@@ -22,7 +21,6 @@
 #define SIMPLE_NB_XBEE_GUARD_TIME 1010
 
 #include "SimpleNBBattery.tpp"
-#include "SimpleNBGPRS.tpp"
 #include "SimpleNBModem.tpp"
 #include "SimpleNBSMS.tpp"
 #include "SimpleNBSSL.tpp"
@@ -66,14 +64,12 @@ enum XBeeType {
 };
 
 class SimpleNBXBee : public SimpleNBModem<SimpleNBXBee>,
-                    public SimpleNBGPRS<SimpleNBXBee>,
                     public SimpleNBTCP<SimpleNBXBee, SIMPLE_NB_MUX_COUNT>,
                     public SimpleNBSSL<SimpleNBXBee>,
                     public SimpleNBSMS<SimpleNBXBee>,
                     public SimpleNBBattery<SimpleNBXBee>,
                     public SimpleNBTemperature<SimpleNBXBee> {
   friend class SimpleNBModem<SimpleNBXBee>;
-  friend class SimpleNBGPRS<SimpleNBXBee>;
   friend class SimpleNBTCP<SimpleNBXBee, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBSSL<SimpleNBXBee>;
   friend class SimpleNBSMS<SimpleNBXBee>;
@@ -951,27 +947,16 @@ class SimpleNBXBee : public SimpleNBModem<SimpleNBXBee>,
    * Battery functions
    */
  protected:
-  // Use: float vBatt = modem.getBattVoltage() / 1000.0;
-  uint16_t getBattVoltageImpl() {
-    int16_t intRes = 0;
+  bool getBatteryStatusImpl(Battery_t batt) {
     XBEE_COMMAND_START_DECORATOR(5, false)
     if (beeType == XBEE_UNKNOWN) getSeries();
     if (beeType == XBEE_S6B_WIFI) {
       sendAT(GF("%V"));
-      intRes = readResponseInt();
+      batt.milliVolts  = readResponseInt();
+      batt.chargeState = 0;
+      batt.percent     = 0;
     }
     XBEE_COMMAND_END_DECORATOR
-    return intRes;
-  }
-
-  int8_t  getBattPercentImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
-  uint8_t getBattChargeStateImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
-
-  bool getBattStatsImpl(uint8_t& chargeState, int8_t& percent,
-                        uint16_t& milliVolts) {
-    chargeState = 0;
-    percent     = 0;
-    milliVolts  = getBattVoltage();
     return true;
   }
 

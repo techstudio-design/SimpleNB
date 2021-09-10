@@ -15,7 +15,7 @@
 #define SIMPLE_NB_BUFFER_READ_AND_CHECK_SIZE
 
 #include "SimpleNBCalling.tpp"
-#include "SimpleNBGPRS.tpp"
+// #include "SimpleNBGPRS.tpp"
 #include "SimpleNBModem.tpp"
 #include "SimpleNBSMS.tpp"
 #include "SimpleNBSSL.tpp"
@@ -51,9 +51,9 @@ enum SocketStatus {
   SOCK_OPENING                = 6,
 };
 
-class SimpleNBSequansMonarch
-    : public SimpleNBModem<SimpleNBSequansMonarch>,
-      public SimpleNBGPRS<SimpleNBSequansMonarch>,
+class SimpleNBSequansMonarch :
+      public SimpleNBModem<SimpleNBSequansMonarch>,
+      // public SimpleNBGPRS<SimpleNBSequansMonarch>,
       public SimpleNBTCP<SimpleNBSequansMonarch, SIMPLE_NB_MUX_COUNT>,
       public SimpleNBSSL<SimpleNBSequansMonarch>,
       public SimpleNBCalling<SimpleNBSequansMonarch>,
@@ -61,7 +61,7 @@ class SimpleNBSequansMonarch
       public SimpleNBTime<SimpleNBSequansMonarch>,
       public SimpleNBTemperature<SimpleNBSequansMonarch> {
   friend class SimpleNBModem<SimpleNBSequansMonarch>;
-  friend class SimpleNBGPRS<SimpleNBSequansMonarch>;
+  // friend class SimpleNBGPRS<SimpleNBSequansMonarch>;
   friend class SimpleNBTCP<SimpleNBSequansMonarch, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBSSL<SimpleNBSequansMonarch>;
   friend class SimpleNBCalling<SimpleNBSequansMonarch>;

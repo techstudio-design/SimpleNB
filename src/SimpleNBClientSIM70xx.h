@@ -13,7 +13,6 @@
 // #define TINY_ACK_USE_HEX
 
 #include "SimpleNBBattery.tpp"
-// #include "SimpleNBGPRS.tpp"
 #include "SimpleNBGPS.tpp"
 #include "SimpleNBModem.tpp"
 #include "SimpleNBSMS.tpp"
@@ -41,7 +40,6 @@ enum RegStatus {
 
 template <class modemType>
 class SimpleNBSim70xx:public SimpleNBModem<SimpleNBSim70xx<modemType>>,
-                      // public SimpleNBGPRS<SimpleNBSim70xx<modemType>>,
                       public SimpleNBSMS<SimpleNBSim70xx<modemType>>,
                       public SimpleNBGPS<SimpleNBSim70xx<modemType>>,
                       public SimpleNBTime<SimpleNBSim70xx<modemType>>,
@@ -50,7 +48,6 @@ class SimpleNBSim70xx:public SimpleNBModem<SimpleNBSim70xx<modemType>>,
                       public SimpleNBGSMLocation<SimpleNBSim70xx<modemType>>
 {
   friend class SimpleNBModem<SimpleNBSim70xx<modemType>>;
-  // friend class SimpleNBGPRS<SimpleNBSim70xx<modemType>>;
   friend class SimpleNBSMS<SimpleNBSim70xx<modemType>>;
   friend class SimpleNBGPS<SimpleNBSim70xx<modemType>>;
   friend class SimpleNBTime<SimpleNBSim70xx<modemType>>;

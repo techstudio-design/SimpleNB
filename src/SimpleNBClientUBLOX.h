@@ -17,7 +17,7 @@
 
 #include "SimpleNBBattery.tpp"
 #include "SimpleNBCalling.tpp"
-#include "SimpleNBGPRS.tpp"
+// #include "SimpleNBGPRS.tpp"
 #include "SimpleNBGPS.tpp"
 #include "SimpleNBGSMLocation.tpp"
 #include "SimpleNBModem.tpp"
@@ -45,7 +45,7 @@ enum RegStatus {
 };
 
 class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
-                     public SimpleNBGPRS<SimpleNBUBLOX>,
+                     // public SimpleNBGPRS<SimpleNBUBLOX>,
                      public SimpleNBTCP<SimpleNBUBLOX, SIMPLE_NB_MUX_COUNT>,
                      public SimpleNBSSL<SimpleNBUBLOX>,
                      public SimpleNBCalling<SimpleNBUBLOX>,
@@ -55,7 +55,7 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
                      public SimpleNBTime<SimpleNBUBLOX>,
                      public SimpleNBBattery<SimpleNBUBLOX> {
   friend class SimpleNBModem<SimpleNBUBLOX>;
-  friend class SimpleNBGPRS<SimpleNBUBLOX>;
+  // friend class SimpleNBGPRS<SimpleNBUBLOX>;
   friend class SimpleNBTCP<SimpleNBUBLOX, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBSSL<SimpleNBUBLOX>;
   friend class SimpleNBCalling<SimpleNBUBLOX>;
@@ -592,28 +592,41 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
    * Battery functions
    */
  protected:
-  uint16_t getBattVoltageImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
+  bool getBattaryStatusImpl(Battery_t& batt) {
+   sendAT(GF("+CIND?"));
+   if (waitResponse(GF(ACK_NL "+CIND:")) != 1) { return 0; }
 
-  int8_t getBattPercentImpl() {
-    sendAT(GF("+CIND?"));
-    if (waitResponse(GF(ACK_NL "+CIND:")) != 1) { return 0; }
-
-    int8_t res     = streamGetIntBefore(',');
-    int8_t percent = res * 20;  // return is 0-5
-    // Wait for final OK
-    waitResponse();
-    return percent;
+   int8_t res     = streamGetIntBefore(',');
+   batt.percent     = res * 20;  // return is 0-5
+   batt.chargeState = 0;
+   batt.milliVolts  = 0;
+   // Wait for final OK
+   waitResponse();
+   return true;
   }
-
-  uint8_t getBattChargeStateImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
-
-  bool getBattStatsImpl(uint8_t& chargeState, int8_t& percent,
-                        uint16_t& milliVolts) {
-    chargeState = 0;
-    percent     = getBattPercent();
-    milliVolts  = 0;
-    return true;
-  }
+  //
+  // uint16_t getBattVoltageImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
+  //
+  // int8_t getBattPercentImpl() {
+  //   sendAT(GF("+CIND?"));
+  //   if (waitResponse(GF(ACK_NL "+CIND:")) != 1) { return 0; }
+  //
+  //   int8_t res     = streamGetIntBefore(',');
+  //   int8_t percent = res * 20;  // return is 0-5
+  //   // Wait for final OK
+  //   waitResponse();
+  //   return percent;
+  // }
+  //
+  // uint8_t getBattChargeStateImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
+  //
+  // bool getBattStatsImpl(uint8_t& chargeState, int8_t& percent,
+  //                       uint16_t& milliVolts) {
+  //   chargeState = 0;
+  //   percent     = getBattPercent();
+  //   milliVolts  = 0;
+  //   return true;
+  // }
 
   /*
    * Temperature functions
