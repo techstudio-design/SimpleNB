@@ -17,7 +17,7 @@
 
 #include "SimpleNBBattery.tpp"
 #include "SimpleNBCalling.tpp"
-#include "SimpleNBGPRS.tpp"
+// #include "SimpleNBGPRS.tpp"
 #include "SimpleNBGPS.tpp"
 #include "SimpleNBModem.tpp"
 #include "SimpleNBSMS.tpp"
@@ -45,7 +45,7 @@ enum RegStatus {
 };
 
 class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
-                    public SimpleNBGPRS<SimpleNBBG96>,
+                    // public SimpleNBGPRS<SimpleNBBG96>,
                     public SimpleNBTCP<SimpleNBBG96, SIMPLE_NB_MUX_COUNT>,
                     public SimpleNBCalling<SimpleNBBG96>,
                     public SimpleNBSMS<SimpleNBBG96>,
@@ -55,7 +55,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
                     public SimpleNBBattery<SimpleNBBG96>,
                     public SimpleNBTemperature<SimpleNBBG96> {
   friend class SimpleNBModem<SimpleNBBG96>;
-  friend class SimpleNBGPRS<SimpleNBBG96>;
+  // friend class SimpleNBGPRS<SimpleNBBG96>;
   friend class SimpleNBTCP<SimpleNBBG96, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBCalling<SimpleNBBG96>;
   friend class SimpleNBSMS<SimpleNBBG96>;
