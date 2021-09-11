@@ -337,8 +337,8 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
     return true;
   }
 
-  // get the RAW GPS output
-  String getGPSrawImpl() {
+  // get the GPS output as a string
+  String getGPSImpl() {
     sendAT(GF("+QGPSLOC=2"));
     if (waitResponse(10000L, GF(ACK_NL "+QGPSLOC:")) != 1) { return ""; }
     String res = stream.readStringUntil('\n');
@@ -348,67 +348,35 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   }
 
   // get GPS informations
-  bool getGPSImpl(float* lat, float* lon, float* speed = 0, float* alt = 0,
-                  int* vsat = 0, int* usat = 0, float* accuracy = 0,
-                  int* year = 0, int* month = 0, int* day = 0, int* hour = 0,
-                  int* minute = 0, int* second = 0) {
+  bool getGPSImpl(GPS_t& gps) {
     sendAT(GF("+QGPSLOC=2"));
     if (waitResponse(10000L, GF(ACK_NL "+QGPSLOC:")) != 1) {
       // NOTE:  Will return an error if the position isn't fixed
       return false;
     }
 
-    // init variables
-    float ilat         = 0;
-    float ilon         = 0;
-    float ispeed       = 0;
-    float ialt         = 0;
-    int   iusat        = 0;
-    float iaccuracy    = 0;
-    int   iyear        = 0;
-    int   imonth       = 0;
-    int   iday         = 0;
-    int   ihour        = 0;
-    int   imin         = 0;
-    float secondWithSS = 0;
-
     // UTC date & Time
-    ihour        = streamGetIntLength(2);      // Two digit hour
-    imin         = streamGetIntLength(2);      // Two digit minute
-    secondWithSS = streamGetFloatBefore(',');  // 6 digit second with subseconds
+    gps.hour        = streamGetIntLength(2);      // Two digit hour
+    gps.minute      = streamGetIntLength(2);      // Two digit minute
+    gps.second      = static_cast<int>(streamGetFloatBefore(','));  // seconds
 
-    ilat      = streamGetFloatBefore(',');  // Latitude
-    ilon      = streamGetFloatBefore(',');  // Longitude
-    iaccuracy = streamGetFloatBefore(',');  // Horizontal precision
-    ialt      = streamGetFloatBefore(',');  // Altitude from sea level
+    gps.lat      = streamGetFloatBefore(',');  // Latitude
+    gps.lon      = streamGetFloatBefore(',');  // Longitude
+    gps.accuracy = streamGetFloatBefore(',');  // Horizontal precision
+    gps.alt      = streamGetFloatBefore(',');  // Altitude from sea level
     streamSkipUntil(',');                   // GNSS positioning mode
     streamSkipUntil(',');  // Course Over Ground based on true north
     streamSkipUntil(',');  // Speed Over Ground in Km/h
-    ispeed = streamGetFloatBefore(',');  // Speed Over Ground in knots
+    gps.speed = streamGetFloatBefore(',');  // Speed Over Ground in knots
 
-    iday   = streamGetIntLength(2);    // Two digit day
-    imonth = streamGetIntLength(2);    // Two digit month
-    iyear  = streamGetIntBefore(',');  // Two digit year
+    gps.day   = streamGetIntLength(2);    // Two digit day
+    gps.month = streamGetIntLength(2);    // Two digit month
+    gps.year  = streamGetIntBefore(',');  // Two digit year
+    if (gps.year < 2000) gps.year += 2000;
 
-    iusat = streamGetIntBefore(',');  // Number of satellites,
+    gps.usat = streamGetIntBefore(',');  // Number of satellites,
     streamSkipUntil('\n');  // The error code of the operation. If it is not
                             // 0, it is the type of error.
-
-    // Set pointers
-    if (lat != NULL) *lat = ilat;
-    if (lon != NULL) *lon = ilon;
-    if (speed != NULL) *speed = ispeed;
-    if (alt != NULL) *alt = ialt;
-    if (vsat != NULL) *vsat = 0;
-    if (usat != NULL) *usat = iusat;
-    if (accuracy != NULL) *accuracy = iaccuracy;
-    if (iyear < 2000) iyear += 2000;
-    if (year != NULL) *year = iyear;
-    if (month != NULL) *month = imonth;
-    if (day != NULL) *day = iday;
-    if (hour != NULL) *hour = ihour;
-    if (minute != NULL) *minute = imin;
-    if (second != NULL) *second = static_cast<int>(secondWithSS);
 
     waitResponse();  // Final OK
     return true;

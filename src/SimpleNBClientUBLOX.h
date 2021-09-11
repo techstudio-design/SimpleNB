@@ -637,34 +637,10 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
    waitResponse();
    return true;
   }
-  //
-  // uint16_t getBattVoltageImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
-  //
-  // int8_t getBattPercentImpl() {
-  //   sendAT(GF("+CIND?"));
-  //   if (waitResponse(GF(ACK_NL "+CIND:")) != 1) { return 0; }
-  //
-  //   int8_t res     = streamGetIntBefore(',');
-  //   int8_t percent = res * 20;  // return is 0-5
-  //   // Wait for final OK
-  //   waitResponse();
-  //   return percent;
-  // }
-  //
-  // uint8_t getBattChargeStateImpl() SIMPLE_NB_ATTR_NOT_AVAILABLE;
-  //
-  // bool getBattStatsImpl(uint8_t& chargeState, int8_t& percent,
-  //                       uint16_t& milliVolts) {
-  //   chargeState = 0;
-  //   percent     = getBattPercent();
-  //   milliVolts  = 0;
-  //   return true;
-  // }
 
   /*
    * Temperature functions
    */
-
   // This would only available for a small number of modules in this group
   // (TOBY-L)
   float getTemperatureImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;

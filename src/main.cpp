@@ -7,9 +7,9 @@
 // #define SIMPLE_NB_MODEM_SIM7000
 // #define SIMPLE_NB_MODEM_SIM7020
 // #define SIMPLE_NB_MODEM_SIM7070
-#define SIMPLE_NB_MODEM_SIM7080
+// #define SIMPLE_NB_MODEM_SIM7080
 // #define SIMPLE_NB_MODEM_SIM7090
-// #define SIMPLE_NB_MODEM_BG96
+#define SIMPLE_NB_MODEM_BG96
 // #define SIMPLE_NB_MODEM_SARAR4
 // #define SIMPLE_NB_MODEM_UBLOX
 // #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
@@ -160,23 +160,9 @@ void loop() {
 // Test the GPS functions
 #if defined(SIMPLE_NB_SUPPORT_GPS) && not defined(__AVR_ATmega32U4__)
   modem.enableGPS();
-  modem.getGPSraw();
-  float latitude  = -9999;
-  float longitude = -9999;
-  float speed     = 0;
-  float alt       = 0;
-  int   vsat      = 0;
-  int   usat      = 0;
-  float acc       = 0;
-  int   year      = 0;
-  int   month     = 0;
-  int   day       = 0;
-  int   hour      = 0;
-  int   minute    = 0;
-  int   second    = 0;
-  modem.getGPS(&latitude, &longitude);
-  modem.getGPS(&latitude, &longitude, &speed, &alt, &vsat, &usat, &acc, &year,
-               &month, &day, &hour, &minute, &second);
+  modem.getGPS();
+  GPS_t gps;
+  modem.getGPS(gps);
   modem.disableGPS();
 #endif
 
