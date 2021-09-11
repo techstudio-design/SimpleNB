@@ -4,7 +4,7 @@
  * @author     Henry Cheung
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
- * @copyright  Copyright (c) 2021 Henry Cheung 
+ * @copyright  Copyright (c) 2021 Henry Cheung
  * @date       Nov 2016
  */
 
@@ -14,6 +14,22 @@
 #include "SimpleNBCommon.h"
 
 #define SIMPLE_NB_SUPPORT_GPS
+
+typedef struct {
+  float lat      = 0;
+  float lon      = 0;
+  float speed    = 0;
+  float alt      = 0;
+  int   vsat     = 0;
+  int   usat     = 0;
+  float accuracy = 0;
+  int   year     = 0;
+  int   month    = 0;
+  int   day      = 0;
+  int   hour     = 0;
+  int   minute   = 0;
+  int   second   = 0;
+} GPS_t;
 
 template <class modemType>
 class SimpleNBGPS {
@@ -27,30 +43,11 @@ class SimpleNBGPS {
   bool disableGPS() {
     return thisModem().disableGPSImpl();
   }
-  String getGPSraw() {
-    return thisModem().getGPSrawImpl();
+  String getGPS() {
+    return thisModem().getGPSImpl();
   }
-  bool getGPS(float* lat, float* lon, float* speed = 0, float* alt = 0,
-              int* vsat = 0, int* usat = 0, float* accuracy = 0, int* year = 0,
-              int* month = 0, int* day = 0, int* hour = 0, int* minute = 0,
-              int* second = 0) {
-    return thisModem().getGPSImpl(lat, lon, speed, alt, vsat, usat, accuracy,
-                                  year, month, day, hour, minute, second);
-  }
-  bool getGPSTime(int* year, int* month, int* day, int* hour, int* minute,
-                  int* second) {
-    float lat = 0;
-    float lon = 0;
-    return thisModem().getGPSImpl(&lat, &lon, 0, 0, 0, 0, 0, year, month, day,
-                                  hour, minute, second);
-  }
-
-  String setGNSSMode(uint8_t mode, bool dpo) {
-    return thisModem().setGNSSModeImpl(mode, dpo);
-  }
-
-  uint8_t getGNSSMode() {
-    return thisModem().getGNSSModeImpl();
+  bool getGPS(GPS_t& gps) {
+    return thisModem().getGPSImpl(gps);
   }
 
   /*
@@ -70,14 +67,8 @@ class SimpleNBGPS {
 
   bool    enableGPSImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
   bool    disableGPSImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
-  String  getGPSrawImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
-  bool    getGPSImpl(float* lat, float* lon, float* speed = 0, float* alt = 0,
-                     int* vsat = 0, int* usat = 0, float* accuracy = 0,
-                     int* year = 0, int* month = 0, int* day = 0, int* hour = 0,
-                     int* minute = 0,
-                     int* second = 0) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
-  String  setGNSSModeImpl(uint8_t mode, bool dpo) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
-  uint8_t getGNSSModeImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
+  String  getGPSImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
+  bool    getGPSImpl(GPS_t& gps) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 };
 
 

@@ -595,7 +595,7 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
     lbs.year     = streamGetIntBefore(',');    // Four digit year
     lbs.hour     = streamGetIntBefore(':');    // Two digit hour
     lbs.minute   = streamGetIntBefore(':');    // Two digit minute
-    lbs.second   = streamGetFloatBefore(',');  // 6 digit second with subseconds
+    lbs.second   = static_cast<int>(streamGetFloatBefore(','));  // remove subseconds
 
     lbs.lat      = streamGetFloatBefore(',');  // latitude, in degrees
     lbs.lon      = streamGetFloatBefore(',');  // longitude, in degrees
