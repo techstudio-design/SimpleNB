@@ -468,7 +468,7 @@ class SimpleNBSaraR4 : public SimpleNBModem<SimpleNBSaraR4>,
     res.trim();
     return res;
   }
-  String getGsmLocationRawImpl() {
+  String getGsmLocationImpl() {
     return getUbloxLocationRaw(2);
   }
   String getGPSrawImpl() {
@@ -565,23 +565,46 @@ class SimpleNBSaraR4 : public SimpleNBModem<SimpleNBSaraR4>,
     waitResponse();
     return true;
   }
-  // bool getGsmLocationImpl(float* lat, float* lon, float* accuracy = 0,
-  //                         int* year = 0, int* month = 0, int* day = 0,
-  //                         int* hour = 0, int* minute = 0, int* second = 0) {
-  //   return getUbloxLocation(2, lat, lon, 0, 0, 0, 0, accuracy, year, month, day,
-  //                           hour, minute, second);
-  // }
-  // bool getGPSImpl(float* lat, float* lon, float* speed = 0, float* alt = 0,
-  //                 int* vsat = 0, int* usat = 0, float* accuracy = 0,
-  //                 int* year = 0, int* month = 0, int* day = 0, int* hour = 0,
-  //                 int* minute = 0, int* second = 0) {
-  //   return getUbloxLocation(1, lat, lon, speed, alt, vsat, usat, accuracy, year,
-  //                           month, day, hour, minute, second);
-  // }
+
   bool getGsmLocationImpl(CellLBS_t lbs) {
-    return getUbloxLocation(2, lat, lon, 0, 0, 0, 0, accuracy, year, month, day,
-                            hour, minute, second);
+    // AT+ULOC=<mode>,<sensor>,<response_type>,<timeout>,<accuracy>
+    // <mode> - 2: single shot position
+    // <sensor> - 2: use cellular CellLocate location information
+    //          - 0: use the last fix in the internal database and stop the GNSS
+    //          receiver
+    //          - 1: use the GNSS receiver for localization
+    //          - 3: ?? use the combined GNSS receiver and CellLocate service
+    //          information ?? - Docs show using sensor 3 and it's documented
+    //          for the +UTIME command but not for +ULOC
+    // <response_type> - 0: standard (single-hypothesis) response
+    // <timeout> - Timeout period in seconds
+    // <accuracy> - Target accuracy in meters (1 - 999999)
+    sendAT(GF("+ULOC=2,2,0,120,1"));
+    // wait for first "OK"
+    if (waitResponse(10000L) != 1) { return false; }
+    // wait for the final result - wait full timeout time
+    if (waitResponse(120000L, GF(ACK_NL "+UULOC: ")) != 1) { return false; }
+
+    // +UULOC: <date>, <time>, <lat>, <long>, <alt>, <uncertainty>
+
+    // Date & Time
+    lbs.day      = streamGetIntBefore('/');    // Two digit day
+    lbs.month    = streamGetIntBefore('/');    // Two digit month
+    lbs.year     = streamGetIntBefore(',');    // Four digit year
+    lbs.hour     = streamGetIntBefore(':');    // Two digit hour
+    lbs.minute   = streamGetIntBefore(':');    // Two digit minute
+    lbs.second   = streamGetFloatBefore(',');  // 6 digit second with subseconds
+
+    lbs.lat      = streamGetFloatBefore(',');  // latitude, in degrees
+    lbs.lon      = streamGetFloatBefore(',');  // longitude, in degrees
+    streamSkipUntil(',');                         // alt = 0 for cell LBS
+    lbs.accuracy = streamGetFloatBefore('\n'); // accuracy in meters
+
+    // final ok
+    waitResponse();
+    return true;
   }
+
   bool getGPSImpl(float* lat, float* lon, float* speed = 0, float* alt = 0,
                   int* vsat = 0, int* usat = 0, float* accuracy = 0,
                   int* year = 0, int* month = 0, int* day = 0, int* hour = 0,
