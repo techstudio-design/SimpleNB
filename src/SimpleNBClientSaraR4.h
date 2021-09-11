@@ -1,8 +1,10 @@
 /**
- * @file       SimpleNBClientSaraR4.h
+ * @file       SimpleNBClientSaraR4.tpp
  * @author     Volodymyr Shymanskyy
+ * @author     Henry Cheung
  * @license    LGPL-3.0
- * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
+ * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy.
+ * @copyright  Copyright (c) 2021 Henry Cheung.
  * @date       Nov 2016
  */
 

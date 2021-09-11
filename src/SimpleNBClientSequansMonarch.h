@@ -1,8 +1,10 @@
 /**
- * @file       SimpleNBClientSequansMonarch.h
+ * @file       SimpleNBClientSequansMonarch.tpp
  * @author     Michael Krumpus
+ * @author     Henry Cheung
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2019 Michael Krumpus
+ * @copyright  Copyright (c) 2021 Henry Cheung.
  * @date       Jan 2019
  */
 

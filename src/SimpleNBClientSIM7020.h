@@ -1,11 +1,9 @@
 /**
- * @file       SimpleNBClientSIM7020.h
- * @author     Volodymyr Shymanskyy
+ * @file       SimpleNBClientSIM7020.tpp
  * @author     Henry Cheung
  * @license    LGPL-3.0
- * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
  * @copyright  Copyright (c) 2021 Henry Cheung.
- * @date       Nov 2016
+ * @date       Sep 2021
  */
 
 #ifndef SRC_SIMPLE_NB_CLIENTSIM7020_H_

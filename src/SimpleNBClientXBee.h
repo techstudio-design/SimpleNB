@@ -1,8 +1,10 @@
 /**
  * @file       SimpleNBClientXBee.h
  * @author     Volodymyr Shymanskyy
+ * @author     Henry Cheung
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy, XBee module by Sara Damiano
+ * @copyright  Copyright (c) 2021 Henry Cheung
  * @date       Nov 2016
  */
 

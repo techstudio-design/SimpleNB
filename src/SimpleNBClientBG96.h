@@ -1,9 +1,11 @@
 /**
- * @file       SimpleNBClientBG96.h
+ * @file       SimpleNBClientBG96.tpp
  * @author     Volodymyr Shymanskyy
+ * @author     Henry Cheung
  * @license    LGPL-3.0
- * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
- * @date       Apr 2018
+ * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy.
+ * @copyright  Copyright (c) 2021 Henry Cheung.
+ * @date       Nov 2016
  */
 
 #ifndef SRC_SIMPLE_NB_CLIENTBG96_H_

@@ -1,8 +1,10 @@
 /**
  * @file       SimpleNBCommon.h
  * @author     Volodymyr Shymanskyy
+ * @author     Henry Cheung
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
+ * @copyright  Copyright (c) 2021 Henry Cheung
  * @date       Nov 2016
  */
 
@@ -112,6 +114,23 @@ uint32_t SimpleNBAutoBaud(T& SerialAT, uint32_t minimum = 9600,
   }
   SerialAT.begin(minimum);
   return 0;
+}
+
+template <class T>
+bool SimpleNBBegin(T& SerialAT, uint32_t rate) {
+  DBG("Communicate at baud rate", rate, "...");
+  SerialAT.begin(rate);
+  delay(10);
+  for (int j = 0; j < 10; j++) {
+    SerialAT.print("AT\r\n");
+    String input = SerialAT.readString();
+    if (input.indexOf("OK") >= 0) {
+      return true;
+    }
+    delay(10);
+  }
+  DBG("No response from modem, check your hardware connection");
+  return false;
 }
 
 #endif  // SRC_SIMPLE_NB_COMMON_H_

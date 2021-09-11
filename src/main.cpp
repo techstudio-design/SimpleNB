@@ -7,11 +7,11 @@
 // #define SIMPLE_NB_MODEM_SIM7000
 // #define SIMPLE_NB_MODEM_SIM7020
 // #define SIMPLE_NB_MODEM_SIM7070
-// #define SIMPLE_NB_MODEM_SIM7080
+#define SIMPLE_NB_MODEM_SIM7080
 // #define SIMPLE_NB_MODEM_SIM7090
 // #define SIMPLE_NB_MODEM_BG96
 // #define SIMPLE_NB_MODEM_SARAR4
-#define SIMPLE_NB_MODEM_UBLOX
+// #define SIMPLE_NB_MODEM_UBLOX
 // #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
 // #define SIMPLE_NB_MODEM_XBEE
 
@@ -182,7 +182,7 @@ void loop() {
 
 // Test the Network time function
 #if defined(SIMPLE_NB_SUPPORT_NTP) && not defined(__AVR_ATmega32U4__)
-  modem.NTPServerSync("pool.ntp.org", 3);
+  modem.NTPServerSync("pool.ntp.org", 32);
 #endif
 
 // Test the Network time function
