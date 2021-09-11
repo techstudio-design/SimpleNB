@@ -21,9 +21,6 @@
 
 #include <SimpeNBClient.h>
 
-// Set serial for debug console (to the Serial Monitor, speed 115200)
-#define SerialMon Serial
-
 // Set serial for AT commands (to the module)
 // Use Hardware Serial on Mega, Leonardo, Micro
 #ifndef __AVR_ATmega328P__
@@ -36,12 +33,12 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 #endif
 
 #include <StreamDebugger.h>
-StreamDebugger debugger(SerialAT, SerialMon);
+StreamDebugger debugger(SerialAT, Serial);
 SimpeNB modem(debugger);
 
 void setup() {
   // Set console baud rate
-  SerialMon.begin(115200);
+  Serial.begin(115200);
   delay(10);
 
   // Set GSM module baud rate
@@ -49,20 +46,20 @@ void setup() {
   delay(6000);
 
   if (!modem.init()) {
-    SerialMon.println(F("***********************************************************"));
-    SerialMon.println(F(" Cannot initialize modem!"));
-    SerialMon.println(F("   Use File -> Examples -> SimpeNB -> tools -> AT_Debug"));
-    SerialMon.println(F("   to find correct configuration"));
-    SerialMon.println(F("***********************************************************"));
+    Serial.println(F("***********************************************************"));
+    Serial.println(F(" Cannot initialize modem!"));
+    Serial.println(F("   Use File -> Examples -> SimpeNB -> tools -> AT_Debug"));
+    Serial.println(F("   to find correct configuration"));
+    Serial.println(F("***********************************************************"));
     return;
   }
 
   bool ret = modem.factoryDefault();
 
-  SerialMon.println(F("***********************************************************"));
-  SerialMon.print  (F(" Return settings to Factory Defaults: "));
-  SerialMon.println((ret) ? "OK" : "FAIL");
-  SerialMon.println(F("***********************************************************"));
+  Serial.println(F("***********************************************************"));
+  Serial.print  (F(" Return settings to Factory Defaults: "));
+  Serial.println((ret) ? "OK" : "FAIL");
+  Serial.println(F("***********************************************************"));
 }
 
 void loop() {
