@@ -21,9 +21,6 @@
 
 #include <SimpleNBClient.h>
 
-// Set serial for debug console (to the Serial Monitor, speed 115200)
-#define SerialMon Serial
-
 // Use Hardware Serial for AT commands
 #define SerialAT Serial1
 
@@ -33,7 +30,7 @@
 
 #ifdef DUMP_AT_COMMANDS
   #include <StreamDebugger.h>
-  StreamDebugger debugger(SerialAT, SerialMon);
+  StreamDebugger debugger(SerialAT, Serial);
   SimpleNB modem(debugger);
 #else
   SimpleNB modem(SerialAT);
@@ -41,14 +38,15 @@
 
 void setup() {
   // Set console baud rate
-  SerialMon.begin(115200);
+  Serial.begin(115200);
   delay(10);
 
   // Set GSM module baud rate
   SerialAT.begin(115200);
+  SimpleNBBegin(SerialAT, 115200);
   delay(6000);
 
-  SerialMon.println(F("Initializing modem..."));
+  Serial.println(F("Initializing modem..."));
   modem.init();
 
   modem.sendAT(GF("+FSCREATE=" CERT_FILE));
@@ -77,20 +75,20 @@ void setup() {
   const int retCode = modem.stream.readStringUntil('\n').toInt();
 
 
-  SerialMon.println();
-  SerialMon.println();
-  SerialMon.println(F("****************************"));
-  SerialMon.print(F("Setting Certificate: "));
-  SerialMon.println((0 == retCode) ? "OK" : "FAILED");
-  SerialMon.println(F("****************************"));
+  Serial.println();
+  Serial.println();
+  Serial.println(F("****************************"));
+  Serial.print(F("Setting Certificate: "));
+  Serial.println((0 == retCode) ? "OK" : "FAILED");
+  Serial.println(F("****************************"));
 }
 
 void loop() {
   if (SerialAT.available()) {
-    SerialMon.write(SerialAT.read());
+    Serial.write(SerialAT.read());
   }
-  if (SerialMon.available()) {
-    SerialAT.write(SerialMon.read());
+  if (Serial.available()) {
+    SerialAT.write(Serial.read());
   }
   delay(0);
 }

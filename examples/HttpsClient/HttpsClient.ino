@@ -31,9 +31,6 @@
 // #define SIMPLE_NB_MODEM_XBEE
 // #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
 
-// Set serial for debug console (to the Serial Monitor, default speed 115200)
-#define SerialMon Serial
-
 // Set serial for AT commands (to the module)
 // Use Hardware Serial on Mega, Leonardo, Micro
 #ifndef __AVR_ATmega328P__
@@ -57,14 +54,8 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 // #define DUMP_AT_COMMANDS
 
 // Define the serial console for debug prints, if needed
-#define SIMPLE_NB_DEBUG SerialMon
+#define SIMPLE_NB_DEBUG Serial
 // #define LOGGING  // <- Logging is for the HTTP library
-
-// Range to attempt to autobaud
-// NOTE:  DO NOT AUTOBAUD in production code.  Once you've established
-// communication, set a fixed baud rate using modem.setBaud(#).
-#define GSM_AUTOBAUD_MIN 9600
-#define GSM_AUTOBAUD_MAX 115200
 
 // Add a reception delay, if needed.
 // This may be needed for a fast processor at a slow baud rate.
@@ -114,7 +105,7 @@ const int  port       = 443;
 
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
-StreamDebugger debugger(SerialAT, SerialMon);
+StreamDebugger debugger(SerialAT, Serial);
 SimpleNB        modem(debugger);
 #else
 SimpleNB        modem(SerialAT);
@@ -125,29 +116,29 @@ HttpClient          http(client, server, port);
 
 void setup() {
   // Set console baud rate
-  SerialMon.begin(115200);
+  Serial.begin(115200);
   delay(10);
 
   // !!!!!!!!!!!
   // Set your reset, enable, power pins here
   // !!!!!!!!!!!
 
-  SerialMon.println("Wait...");
+  Serial.println("Wait...");
 
   // Set GSM module baud rate
-  SimpleNBAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);
-  // SerialAT.begin(9600);
+  SimpleNBBegin(SerialAT, 115200);
+  //SimpleNBAutoBaud(SerialAT, 9600, 115200);
   delay(6000);
 
   // Restart takes quite some time
   // To skip it, call init() instead of restart()
-  SerialMon.println("Initializing modem...");
+  Serial.println("Initializing modem...");
   modem.restart();
   // modem.init();
 
   String modemInfo = modem.getModemInfo();
-  SerialMon.print("Modem Info: ");
-  SerialMon.println(modemInfo);
+  Serial.print("Modem Info: ");
+  Serial.println(modemInfo);
 
 #if SIMPLE_NB_USE_GPRS
   // Unlock your SIM card with a PIN if needed
@@ -158,13 +149,13 @@ void setup() {
 void loop() {
 #if SIMPLE_NB_USE_WIFI
   // Wifi connection parameters must be set before waiting for the network
-  SerialMon.print(F("Setting SSID/password..."));
+  Serial.print(F("Setting SSID/password..."));
   if (!modem.networkConnect(wifiSSID, wifiPass)) {
-    SerialMon.println(" fail");
+    Serial.println(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 #endif
 
 #if SIMPLE_NB_USE_GPRS && defined SIMPLE_NB_MODEM_XBEE
@@ -172,82 +163,82 @@ void loop() {
   modem.gprsConnect(apn, gprsUser, gprsPass);
 #endif
 
-  SerialMon.print("Waiting for network...");
+  Serial.print("Waiting for network...");
   if (!modem.waitForNetwork()) {
-    SerialMon.println(" fail");
+    Serial.println(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 
-  if (modem.isNetworkConnected()) { SerialMon.println("Network connected"); }
+  if (modem.isNetworkConnected()) { Serial.println("Network connected"); }
 
 #if SIMPLE_NB_USE_GPRS
   // GPRS connection parameters are usually set after network registration
-  SerialMon.print(F("Connecting to "));
-  SerialMon.print(apn);
+  Serial.print(F("Connecting to "));
+  Serial.print(apn);
   if (!modem.gprsConnect(apn, gprsUser, gprsPass)) {
-    SerialMon.println(" fail");
+    Serial.println(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 
-  if (modem.isGprsConnected()) { SerialMon.println("GPRS connected"); }
+  if (modem.isGprsConnected()) { Serial.println("GPRS connected"); }
 #endif
 
-  SerialMon.print(F("Performing HTTPS GET request... "));
+  Serial.print(F("Performing HTTPS GET request... "));
   http.connectionKeepAlive();  // Currently, this is needed for HTTPS
   int err = http.get(resource);
   if (err != 0) {
-    SerialMon.println(F("failed to connect"));
+    Serial.println(F("failed to connect"));
     delay(10000);
     return;
   }
 
   int status = http.responseStatusCode();
-  SerialMon.print(F("Response status code: "));
-  SerialMon.println(status);
+  Serial.print(F("Response status code: "));
+  Serial.println(status);
   if (!status) {
     delay(10000);
     return;
   }
 
-  SerialMon.println(F("Response Headers:"));
+  Serial.println(F("Response Headers:"));
   while (http.headerAvailable()) {
     String headerName  = http.readHeaderName();
     String headerValue = http.readHeaderValue();
-    SerialMon.println("    " + headerName + " : " + headerValue);
+    Serial.println("    " + headerName + " : " + headerValue);
   }
 
   int length = http.contentLength();
   if (length >= 0) {
-    SerialMon.print(F("Content length is: "));
-    SerialMon.println(length);
+    Serial.print(F("Content length is: "));
+    Serial.println(length);
   }
   if (http.isResponseChunked()) {
-    SerialMon.println(F("The response is chunked"));
+    Serial.println(F("The response is chunked"));
   }
 
   String body = http.responseBody();
-  SerialMon.println(F("Response:"));
-  SerialMon.println(body);
+  Serial.println(F("Response:"));
+  Serial.println(body);
 
-  SerialMon.print(F("Body length is: "));
-  SerialMon.println(body.length());
+  Serial.print(F("Body length is: "));
+  Serial.println(body.length());
 
   // Shutdown
 
   http.stop();
-  SerialMon.println(F("Server disconnected"));
+  Serial.println(F("Server disconnected"));
 
 #if SIMPLE_NB_USE_WIFI
   modem.networkDisconnect();
-  SerialMon.println(F("WiFi disconnected"));
+  Serial.println(F("WiFi disconnected"));
 #endif
 #if SIMPLE_NB_USE_GPRS
   modem.gprsDisconnect();
-  SerialMon.println(F("GPRS disconnected"));
+  Serial.println(F("GPRS disconnected"));
 #endif
 
   // Do nothing forevermore

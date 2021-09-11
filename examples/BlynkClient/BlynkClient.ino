@@ -1,4 +1,4 @@
-/**************************************************************
+Serial/**************************************************************
  *
  * For this example, you need to install Blynk library:
  *   https://github.com/blynkkk/blynk-library/releases/latest
@@ -41,9 +41,6 @@
 #include <SimpleNBClient.h>
 #include <BlynkSimpleSimpleNB.h>
 
-// Set serial for debug console (to the Serial Monitor, default speed 115200)
-#define SerialMon Serial
-
 // Hardware Serial on Mega, Leonardo, Micro
 #ifndef __AVR_ATmega328P__
 #define SerialAT Serial1
@@ -69,7 +66,7 @@ SimpleNB modem(SerialAT);
 void setup()
 {
   // Set console baud rate
-  SerialMon.begin(115200);
+  Serial.begin(115200);
   delay(10);
 
   // Set GSM module baud rate
@@ -78,12 +75,12 @@ void setup()
 
   // Restart takes quite some time
   // To skip it, call init() instead of restart()
-  SerialMon.println("Initializing modem...");
+  Serial.println("Initializing modem...");
   modem.restart();
 
   String modemInfo = modem.getModemInfo();
-  SerialMon.print("Modem Info: ");
-  SerialMon.println(modemInfo);
+  Serial.print("Modem Info: ");
+  Serial.println(modemInfo);
 
   // Unlock your SIM card with a PIN
   //modem.simUnlock("1234");

@@ -22,9 +22,6 @@
 // #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
 // #define SIMPLE_NB_MODEM_XBEE
 
-// Set serial for debug console (to the Serial Monitor, default speed 115200)
-#define SerialMon Serial
-
 // Set serial for AT commands (to the module)
 // Use Hardware Serial on Mega, Leonardo, Micro
 #ifndef __AVR_ATmega328P__
@@ -40,13 +37,7 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 // #define DUMP_AT_COMMANDS
 
 // Define the serial console for debug prints, if needed
-#define SIMPLE_NB_DEBUG SerialMon
-
-// Range to attempt to autobaud
-// NOTE:  DO NOT AUTOBAUD in production code.  Once you've established
-// communication, set a fixed baud rate using modem.setBaud(#).
-#define GSM_AUTOBAUD_MIN 9600
-#define GSM_AUTOBAUD_MAX 57600
+#define SIMPLE_NB_DEBUG Serial
 
 // Add a reception delay, if needed.
 // This may be needed for a fast processor at a slow baud rate.
@@ -109,7 +100,7 @@ const char resource[] = "/SimpleNB/logo.txt";
 
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
-StreamDebugger debugger(SerialAT, SerialMon);
+StreamDebugger debugger(SerialAT, Serial);
 SimpleNB        modem(debugger);
 #else
 SimpleNB        modem(SerialAT);
@@ -117,7 +108,7 @@ SimpleNB        modem(SerialAT);
 
 void setup() {
   // Set console baud rate
-  SerialMon.begin(115200);
+  Serial.begin(115200);
   delay(10);
 
   // !!!!!!!!!!!
@@ -128,19 +119,19 @@ void setup() {
   delay(6000);
 
   // Set GSM module baud rate
-  SimpleNBAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);
-  // SerialAT.begin(9600);
+  SimpleNBBegin(SerialAT, 115200);
+  // If unsure the baud rate work, alternatively use 
+  // SimpleNBAutoBaud(SerialAT, 9600, 115200);
 }
 
 void loop() {
   // Restart takes quite some time
   // To skip it, call init() instead of restart()
-  DBG("Initializing modem...");
-  if (!modem.restart()) {
-    // if (!modem.init()) {
+  // if (!modem.restart()) {
+  if (!modem.init()) {
     DBG("Failed to restart modem, delaying 10s and retrying");
     // restart autobaud in case GSM just rebooted
-    // SimpleNBAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);
+    // SimpleNBBegin(SerialAT, 115200);
     return;
   }
 
@@ -162,7 +153,7 @@ void loop() {
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 #endif
 
 #if SIMPLE_NB_TEST_GPRS && defined SIMPLE_NB_MODEM_XBEE
@@ -248,7 +239,7 @@ void loop() {
         start = millis();
       }
     }
-    SerialMon.println(logo);
+    Serial.println(logo);
     DBG("#####  RECEIVED:", strlen(logo), "CHARACTERS");
     client.stop();
   }
@@ -287,7 +278,7 @@ void loop() {
         startS = millis();
       }
     }
-    SerialMon.println(logoS);
+    Serial.println(logoS);
     DBG("#####  RECEIVED:", strlen(logoS), "CHARACTERS");
     secureClient.stop();
   }

@@ -20,7 +20,7 @@
 // #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
 
 // Set serial for debug console (to the Serial Monitor, default speed 115200)
-#define SerialMon Serial
+#define Serial Serial
 
 // Set serial for AT commands (to the module)
 // Use Hardware Serial on Mega, Leonardo, Micro
@@ -43,9 +43,6 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 
 // See all AT commands, if wanted
 // #define DUMP_AT_COMMANDS
-
-// Define the serial console for debug prints, if needed
-#define SIMPLE_NB_DEBUG SerialMon
 
 // Range to attempt to autobaud
 // NOTE:  DO NOT AUTOBAUD in production code.  Once you've established
@@ -80,23 +77,9 @@ const char resource[] = "/SimpeNB/logo.txt";
 
 #include <SimpleNBClient.h>
 
-// Just in case someone defined the wrong thing..
-#if SIMPLE_NB_USE_GPRS && not defined SIMPLE_NB_SUPPORT_GPRS
-#undef SIMPLE_NB_USE_GPRS
-#undef SIMPLE_NB_USE_WIFI
-#define SIMPLE_NB_USE_GPRS false
-#define SIMPLE_NB_USE_WIFI true
-#endif
-#if SIMPLE_NB_USE_WIFI && not defined SIMPLE_NB_SUPPORT_WIFI
-#undef SIMPLE_NB_USE_GPRS
-#undef SIMPLE_NB_USE_WIFI
-#define SIMPLE_NB_USE_GPRS true
-#define SIMPLE_NB_USE_WIFI false
-#endif
-
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
-StreamDebugger debugger(SerialAT, SerialMon);
+StreamDebugger debugger(SerialAT, Serial);
 SimpleNB        modem(debugger);
 #else
 SimpleNB        modem(SerialAT);
@@ -112,43 +95,44 @@ const int      port = 80;
 
 void setup() {
   // Set console baud rate
-  SerialMon.begin(115200);
+  Serial.begin(115200);
   delay(10);
 
   // !!!!!!!!!!!
   // Set your reset, enable, power pins here
   // !!!!!!!!!!!
 
-  SerialMon.println("Wait...");
+  Serial.println("Wait...");
 
   // Set GSM module baud rate
-  SimpleNBAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);
-  // SerialAT.begin(9600);
+  SerialAT.begin(115200);
+  SimpleNBBegin(SerialAT, 115200);
+  // SimpleNBAutoBaud(SerialAT, 9600, 115200);
   delay(6000);
 }
 
 void loop() {
   // Restart takes quite some time
   // To skip it, call init() instead of restart()
-  SerialMon.print("Initializing modem...");
+  Serial.print("Initializing modem...");
   if (!modem.restart()) {
     // if (!modem.init()) {
-    SerialMon.println(F(" [fail]"));
-    SerialMon.println(F("************************"));
-    SerialMon.println(F(" Is your modem connected properly?"));
-    SerialMon.println(F(" Is your serial speed (baud rate) correct?"));
-    SerialMon.println(F(" Is your modem powered on?"));
-    SerialMon.println(F(" Do you use a good, stable power source?"));
-    SerialMon.println(F(" Try using File -> Examples -> SimpeNB -> tools -> AT_Debug to find correct configuration"));
-    SerialMon.println(F("************************"));
+    Serial.println(F(" [fail]"));
+    Serial.println(F("************************"));
+    Serial.println(F(" Is your modem connected properly?"));
+    Serial.println(F(" Is your serial speed (baud rate) correct?"));
+    Serial.println(F(" Is your modem powered on?"));
+    Serial.println(F(" Do you use a good, stable power source?"));
+    Serial.println(F(" Try using File -> Examples -> SimpeNB -> tools -> AT_Debug to find correct configuration"));
+    Serial.println(F("************************"));
     delay(10000);
     return;
   }
-  SerialMon.println(F(" [OK]"));
+  Serial.println(F(" [OK]"));
 
   String modemInfo = modem.getModemInfo();
-  SerialMon.print("Modem Info: ");
-  SerialMon.println(modemInfo);
+  Serial.print("Modem Info: ");
+  Serial.println(modemInfo);
 
 #if SIMPLE_NB_USE_GPRS
   // Unlock your SIM card with a PIN if needed
@@ -157,13 +141,13 @@ void loop() {
 
 #if SIMPLE_NB_USE_WIFI
   // Wifi connection parameters must be set before waiting for the network
-  SerialMon.print(F("Setting SSID/password..."));
+  Serial.print(F("Setting SSID/password..."));
   if (!modem.networkConnect(wifiSSID, wifiPass)) {
-    SerialMon.println(" fail");
+    Serial.println(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 #endif
 
 #if SIMPLE_NB_USE_GPRS && defined SIMPLE_NB_MODEM_XBEE
@@ -171,49 +155,49 @@ void loop() {
   modem.gprsConnect(apn, gprsUser, gprsPass);
 #endif
 
-  SerialMon.print("Waiting for network...");
+  Serial.print("Waiting for network...");
   if (!modem.waitForNetwork(
           600000L)) {  // You may need lengthen this in poor service areas
-    SerialMon.println(F(" [fail]"));
-    SerialMon.println(F("************************"));
-    SerialMon.println(F(" Is your sim card locked?"));
-    SerialMon.println(F(" Do you have a good signal?"));
-    SerialMon.println(F(" Is antenna attached?"));
-    SerialMon.println(F(" Does the SIM card work with your phone?"));
-    SerialMon.println(F("************************"));
+    Serial.println(F(" [fail]"));
+    Serial.println(F("************************"));
+    Serial.println(F(" Is your sim card locked?"));
+    Serial.println(F(" Do you have a good signal?"));
+    Serial.println(F(" Is antenna attached?"));
+    Serial.println(F(" Does the SIM card work with your phone?"));
+    Serial.println(F("************************"));
     delay(10000);
     return;
   }
-  SerialMon.println(F(" [OK]"));
+  Serial.println(F(" [OK]"));
 
 #if SIMPLE_NB_USE_GPRS
   // GPRS connection parameters are usually set after network registration
-  SerialMon.print("Connecting to ");
-  SerialMon.print(apn);
+  Serial.print("Connecting to ");
+  Serial.print(apn);
   if (!modem.gprsConnect(apn, gprsUser, gprsPass)) {
-    SerialMon.println(F(" [fail]"));
-    SerialMon.println(F("************************"));
-    SerialMon.println(F(" Is GPRS enabled by network provider?"));
-    SerialMon.println(F(" Try checking your card balance."));
-    SerialMon.println(F("************************"));
+    Serial.println(F(" [fail]"));
+    Serial.println(F("************************"));
+    Serial.println(F(" Is GPRS enabled by network provider?"));
+    Serial.println(F(" Try checking your card balance."));
+    Serial.println(F("************************"));
     delay(10000);
     return;
   }
-  SerialMon.println(F(" [OK]"));
+  Serial.println(F(" [OK]"));
 #endif
 
   IPAddress local = modem.localIP();
-  SerialMon.print("Local IP: ");
-  SerialMon.println(local);
+  Serial.print("Local IP: ");
+  Serial.println(local);
 
-  SerialMon.print(F("Connecting to "));
-  SerialMon.print(server);
+  Serial.print(F("Connecting to "));
+  Serial.print(server);
   if (!client.connect(server, port)) {
-    SerialMon.println(F(" [fail]"));
+    Serial.println(F(" [fail]"));
     delay(10000);
     return;
   }
-  SerialMon.println(F(" [OK]"));
+  Serial.println(F(" [OK]"));
 
   // Make a HTTP GET request:
   client.print(String("GET ") + resource + " HTTP/1.0\r\n");
@@ -223,9 +207,9 @@ void loop() {
   // Wait for data to arrive
   while (client.connected() && !client.available()) {
     delay(100);
-    SerialMon.print('.');
+    Serial.print('.');
   };
-  SerialMon.println();
+  Serial.println();
 
   // Skip all headers
   client.find("\r\n\r\n");
@@ -236,32 +220,32 @@ void loop() {
   while (client.connected() && millis() - timeout < 10000L) {
     while (client.available()) {
       char c = client.read();
-      // SerialMon.print(c);
+      // Serial.print(c);
       bytesReceived += 1;
       timeout = millis();
     }
   }
 
   client.stop();
-  SerialMon.println(F("Server disconnected"));
+  Serial.println(F("Server disconnected"));
 
 #if SIMPLE_NB_USE_WIFI
   modem.networkDisconnect();
-  SerialMon.println(F("WiFi disconnected"));
+  Serial.println(F("WiFi disconnected"));
 #endif
 #if SIMPLE_NB_USE_GPRS
   modem.gprsDisconnect();
-  SerialMon.println(F("GPRS disconnected"));
+  Serial.println(F("GPRS disconnected"));
 #endif
 
-  SerialMon.println();
-  SerialMon.println(F("************************"));
-  SerialMon.print(F(" Received: "));
-  SerialMon.print(bytesReceived);
-  SerialMon.println(F(" bytes"));
-  SerialMon.print(F(" Test:     "));
-  SerialMon.println((bytesReceived == 121) ? "PASSED" : "FAILED");
-  SerialMon.println(F("************************"));
+  Serial.println();
+  Serial.println(F("************************"));
+  Serial.print(F(" Received: "));
+  Serial.print(bytesReceived);
+  Serial.println(F(" bytes"));
+  Serial.print(F(" Test:     "));
+  Serial.println((bytesReceived == 121) ? "PASSED" : "FAILED");
+  Serial.println(F("************************"));
 
   // Do nothing forevermore
   while (true) { delay(1000); }

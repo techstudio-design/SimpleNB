@@ -24,7 +24,7 @@
 // #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
 
 // Set serial for debug console (to the Serial Monitor, default speed 115200)
-#define SerialMon Serial
+#define Serial Serial
 
 // Set serial for AT commands (to the module)
 // Use Hardware Serial on Mega, Leonardo, Micro
@@ -49,7 +49,7 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 // #define DUMP_AT_COMMANDS
 
 // Define the serial console for debug prints, if needed
-#define SIMPLE_NB_DEBUG SerialMon
+#define SIMPLE_NB_DEBUG Serial
 // #define LOGGING  // <- Logging is for the HTTP library
 
 // Add a reception delay, if needed.
@@ -100,7 +100,7 @@ uint32_t   knownFileSize = 1024;  // In case server does not send it
 
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
-StreamDebugger debugger(SerialAT, SerialMon);
+StreamDebugger debugger(SerialAT, Serial);
 SimpleNB        modem(debugger);
 #else
 SimpleNB        modem(SerialAT);
@@ -110,14 +110,14 @@ SimpleNBClient client(modem);
 
 void setup() {
   // Set console baud rate
-  SerialMon.begin(115200);
+  Serial.begin(115200);
   delay(10);
 
   // !!!!!!!!!!!
   // Set your reset, enable, power pins here
   // !!!!!!!!!!!
 
-  SerialMon.println("Wait...");
+  Serial.println("Wait...");
 
   // Set GSM module baud rate
   SerialAT.begin(115200);
@@ -125,13 +125,14 @@ void setup() {
 
   // Restart takes quite some time
   // To skip it, call init() instead of restart()
-  SerialMon.println("Initializing modem...");
-  modem.restart();
-  // modem.init();
+  // modem.restart();
+  SimpleNBBegin(SerialAT, 115200);
+  Serial.println("Initializing modem...");
+  modem.init();
 
   String modemInfo = modem.getModemInfo();
-  SerialMon.print("Modem Info: ");
-  SerialMon.println(modemInfo);
+  Serial.print("Modem Info: ");
+  Serial.println(modemInfo);
 
 #if SIMPLE_NB_USE_GPRS
   // Unlock your SIM card with a PIN if needed
@@ -142,24 +143,24 @@ void setup() {
 void printPercent(uint32_t readLength, uint32_t contentLength) {
   // If we know the total length
   if (contentLength != (uint32_t)-1) {
-    SerialMon.print("\r ");
-    SerialMon.print((100.0 * readLength) / contentLength);
-    SerialMon.print('%');
+    Serial.print("\r ");
+    Serial.print((100.0 * readLength) / contentLength);
+    Serial.print('%');
   } else {
-    SerialMon.println(readLength);
+    Serial.println(readLength);
   }
 }
 
 void loop() {
 #if SIMPLE_NB_USE_WIFI
   // Wifi connection parameters must be set before waiting for the network
-  SerialMon.print(F("Setting SSID/password..."));
+  Serial.print(F("Setting SSID/password..."));
   if (!modem.networkConnect(wifiSSID, wifiPass)) {
-    SerialMon.println(" fail");
+    Serial.println(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 #endif
 
 #if SIMPLE_NB_USE_GPRS && defined SIMPLE_NB_MODEM_XBEE
@@ -167,38 +168,38 @@ void loop() {
   modem.gprsConnect(apn, gprsUser, gprsPass);
 #endif
 
-  SerialMon.print("Waiting for network...");
+  Serial.print("Waiting for network...");
   if (!modem.waitForNetwork()) {
-    SerialMon.println(" fail");
+    Serial.println(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 
-  if (modem.isNetworkConnected()) { SerialMon.println("Network connected"); }
+  if (modem.isNetworkConnected()) { Serial.println("Network connected"); }
 
 #if SIMPLE_NB_USE_GPRS
   // GPRS connection parameters are usually set after network registration
-  SerialMon.print(F("Connecting to "));
-  SerialMon.print(apn);
+  Serial.print(F("Connecting to "));
+  Serial.print(apn);
   if (!modem.gprsConnect(apn, gprsUser, gprsPass)) {
-    SerialMon.println(" fail");
+    Serial.println(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 
-  if (modem.isGprsConnected()) { SerialMon.println("GPRS connected"); }
+  if (modem.isGprsConnected()) { Serial.println("GPRS connected"); }
 #endif
 
-  SerialMon.print(F("Connecting to "));
-  SerialMon.print(server);
+  Serial.print(F("Connecting to "));
+  Serial.print(server);
   if (!client.connect(server, port)) {
-    SerialMon.println(" fail");
+    Serial.println(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 
   // Make a HTTP GET request:
   client.print(String("GET ") + resource + " HTTP/1.0\r\n");
@@ -208,7 +209,7 @@ void loop() {
   // Let's see what the entire elapsed time is, from after we send the request.
   uint32_t timeElapsed = millis();
 
-  SerialMon.println(F("Waiting for response header"));
+  Serial.println(F("Waiting for response header"));
 
   // While we are still looking for the end of the header (i.e. empty line
   // FOLLOWED by a newline), continue to read data into the buffer, parsing each
@@ -232,14 +233,14 @@ void loop() {
 
         // Uncomment the lines below to see the data coming into the buffer
         // if (c < 16)
-        //   SerialMon.print('0');
-        // SerialMon.print(c, HEX);
-        // SerialMon.print(' ');
+        //   Serial.print('0');
+        // Serial.print(c, HEX);
+        // Serial.print(' ');
         // if (isprint(c))
-        //   SerialMon.print(reinterpret_cast<char> c);
+        //   Serial.print(reinterpret_cast<char> c);
         // else
-        //   SerialMon.print('*');
-        // SerialMon.print(' ');
+        //   Serial.print('*');
+        // Serial.print(' ');
 
         // Let's exit and process if we find a new line
         if (headerBuffer.indexOf(F("\r\n")) >= 0) break;
@@ -247,7 +248,7 @@ void loop() {
     } else {
       if (millis() - clientReadStartTime > clientReadTimeout) {
         // Time-out waiting for data from client
-        SerialMon.println(F(">>> Client Timeout !"));
+        Serial.println(F(">>> Client Timeout !"));
         break;
       }
     }
@@ -261,8 +262,8 @@ void loop() {
       if (headerBuffer.startsWith(F("content-length:"))) {
         contentLength =
             headerBuffer.substring(headerBuffer.indexOf(':') + 1).toInt();
-        // SerialMon.print(F("Got Content Length: "));  // uncomment for
-        // SerialMon.println(contentLength);            // confirmation
+        // Serial.print(F("Got Content Length: "));  // uncomment for
+        // Serial.println(contentLength);            // confirmation
       }
 
       headerBuffer.remove(0, nlPos + 2);  // remove the line
@@ -285,7 +286,7 @@ void loop() {
   CRC32    crc;
 
   if (finishedHeader && contentLength == knownFileSize) {
-    SerialMon.println(F("Reading response data"));
+    Serial.println(F("Reading response data"));
     clientReadStartTime = millis();
 
     printPercent(readLength, contentLength);
@@ -293,7 +294,7 @@ void loop() {
            millis() - clientReadStartTime < clientReadTimeout) {
       while (client.available()) {
         uint8_t c = client.read();
-        // SerialMon.print(reinterpret_cast<char>c);  // Uncomment this to show
+        // Serial.print(reinterpret_cast<char>c);  // Uncomment this to show
         // data
         crc.update(c);
         readLength++;
@@ -307,36 +308,36 @@ void loop() {
   }
 
   timeElapsed = millis() - timeElapsed;
-  SerialMon.println();
+  Serial.println();
 
   // Shutdown
 
   client.stop();
-  SerialMon.println(F("Server disconnected"));
+  Serial.println(F("Server disconnected"));
 
 #if SIMPLE_NB_USE_WIFI
   modem.networkDisconnect();
-  SerialMon.println(F("WiFi disconnected"));
+  Serial.println(F("WiFi disconnected"));
 #endif
 #if SIMPLE_NB_USE_GPRS
   modem.gprsDisconnect();
-  SerialMon.println(F("GPRS disconnected"));
+  Serial.println(F("GPRS disconnected"));
 #endif
 
   float duration = float(timeElapsed) / 1000;
 
-  SerialMon.println();
-  SerialMon.print("Content-Length: ");
-  SerialMon.println(contentLength);
-  SerialMon.print("Actually read:  ");
-  SerialMon.println(readLength);
-  SerialMon.print("Calc. CRC32:    0x");
-  SerialMon.println(crc.finalize(), HEX);
-  SerialMon.print("Known CRC32:    0x");
-  SerialMon.println(knownCRC32, HEX);
-  SerialMon.print("Duration:       ");
-  SerialMon.print(duration);
-  SerialMon.println("s");
+  Serial.println();
+  Serial.print("Content-Length: ");
+  Serial.println(contentLength);
+  Serial.print("Actually read:  ");
+  Serial.println(readLength);
+  Serial.print("Calc. CRC32:    0x");
+  Serial.println(crc.finalize(), HEX);
+  Serial.print("Known CRC32:    0x");
+  Serial.println(knownCRC32, HEX);
+  Serial.print("Duration:       ");
+  Serial.print(duration);
+  Serial.println("s");
 
   // Do nothing forevermore
   while (true) { delay(1000); }

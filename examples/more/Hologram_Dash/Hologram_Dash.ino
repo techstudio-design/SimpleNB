@@ -24,9 +24,6 @@
 // Uncomment this if you want to use SSL
 // #define USE_SSL
 
-// Set serial for debug console (to the Serial Monitor, speed 115200)
-#define SerialMon Serial
-
 // We'll be using SerialSystem in Passthrough mode
 #define SerialAT SerialSystem
 
@@ -42,7 +39,7 @@ const char resource[] = "/TinyGSM/logo.txt";
 
 #ifdef DUMP_AT_COMMANDS
   #include <StreamDebugger.h>
-  StreamDebugger debugger(SerialAT, SerialMon);
+  StreamDebugger debugger(SerialAT, Serial);
   SimpleNB mdm(debugger);
 #else
   SimpleNB mdm(SerialAT);
@@ -58,7 +55,7 @@ const char resource[] = "/TinyGSM/logo.txt";
 
 void setup() {
   // Set console baud rate
-  SerialMon.begin(115200);
+  Serial.begin(115200);
   delay(10);
 
   // Set up Passthrough
@@ -67,43 +64,45 @@ void setup() {
 
   // Restart takes quite some time
   // To skip it, call init() instead of restart()
-  SerialMon.println(F("Initializing modem..."));
-  mdm.restart();
+  // mdm.restart();
+  mdm.init();
+  Serial.println(F("Initializing modem..."));
+
 
   String modemInfo = mdm.getModemInfo();
-  SerialMon.print(F("Modem: "));
-  SerialMon.println(modemInfo);
+  Serial.print(F("Modem: "));
+  Serial.println(modemInfo);
 
   // Unlock your SIM card with a PIN
   //mdm.simUnlock("1234");
 }
 
 void loop() {
-  SerialMon.print(F("Waiting for network..."));
+  Serial.print(F("Waiting for network..."));
   if (!mdm.waitForNetwork()) {
-    SerialMon.println(" fail");
+    Serial.println(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 
-  SerialMon.print(F("Connecting to "));
-  SerialMon.print(apn);
+  Serial.print(F("Connecting to "));
+  Serial.print(apn);
   if (!mdm.gprsConnect(apn, user, pass)) {
-    SerialMon.println(" fail");
+    Serial.println(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 
-  SerialMon.print(F("Connecting to "));
-  SerialMon.print(server);
+  Serial.print(F("Connecting to "));
+  Serial.print(server);
   if (!client.connect(server, port)) {
-    SerialMon.println(" fail");
+    Serial.println(" fail");
     delay(10000);
     return;
   }
-  SerialMon.println(" success");
+  Serial.println(" success");
 
   // Make a HTTP GET request:
   client.print(String("GET ") + resource + " HTTP/1.0\r\n");
@@ -115,19 +114,19 @@ void loop() {
     // Print available data
     while (client.available()) {
       char c = client.read();
-      SerialMon.print(c);
+      Serial.print(c);
       timeout = millis();
     }
   }
-  SerialMon.println();
+  Serial.println();
 
   // Shutdown
 
   client.stop();
-  SerialMon.println(F("Server disconnected"));
+  Serial.println(F("Server disconnected"));
 
   mdm.gprsDisconnect();
-  SerialMon.println(F("GPRS disconnected"));
+  Serial.println(F("GPRS disconnected"));
 
   // Do nothing forevermore
   while (true) {

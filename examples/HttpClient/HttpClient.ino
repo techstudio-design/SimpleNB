@@ -57,12 +57,6 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 #define SIMPLE_NB_DEBUG SerialMon
 // #define LOGGING  // <- Logging is for the HTTP library
 
-// Range to attempt to autobaud
-// NOTE:  DO NOT AUTOBAUD in production code.  Once you've established
-// communication, set a fixed baud rate using modem.setBaud(#).
-#define GSM_AUTOBAUD_MIN 9600
-#define GSM_AUTOBAUD_MAX 115200
-
 // Add a reception delay, if needed.
 // This may be needed for a fast processor at a slow baud rate.
 // #define SIMPLE_NB_YIELD() { delay(2); }
@@ -129,8 +123,8 @@ void setup() {
   SerialMon.println("Wait...");
 
   // Set GSM module baud rate
-  SimpleNBAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);
-  // SerialAT.begin(9600);
+  SimpleNBBegin(SerialAT, 115200);
+  // SimpleNBAutoBaud(SerialAT, 9600, 115200);
   delay(6000);
 
   // Restart takes quite some time
