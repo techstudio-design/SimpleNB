@@ -473,99 +473,8 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
   String getGsmLocationImpl() {
     return getUbloxLocationRaw(2);
   }
-  String getGPSrawImpl() {
+  String getGPSImpl() {
     return getUbloxLocationRaw(1);
-  }
-
-  inline bool getUbloxLocation(int8_t sensor, float* lat, float* lon,
-                               float* speed = 0, float* alt = 0, int* vsat = 0,
-                               int* usat = 0, float* accuracy = 0,
-                               int* year = 0, int* month = 0, int* day = 0,
-                               int* hour = 0, int* minute = 0,
-                               int* second = 0) {
-    // AT+ULOC=<mode>,<sensor>,<response_type>,<timeout>,<accuracy>
-    // <mode> - 2: single shot position
-    // <sensor> - 2: use cellular CellLocate location information
-    //          - 0: use the last fix in the internal database and stop the GNSS
-    //          receiver
-    //          - 1: use the GNSS receiver for localization
-    //          - 3: ?? use the combined GNSS receiver and CellLocate service
-    //          information ?? - Docs show using sensor 3 and it's documented
-    //          for the +UTIME command but not for +ULOC
-    // <response_type> - 0: standard (single-hypothesis) response
-    // <timeout> - Timeout period in seconds
-    // <accuracy> - Target accuracy in meters (1 - 999999)
-    sendAT(GF("+ULOC=2,"), sensor, GF(",0,120,1"));
-    // wait for first "OK"
-    if (waitResponse(10000L) != 1) { return false; }
-    // wait for the final result - wait full timeout time
-    if (waitResponse(120000L, GF(ACK_NL "+UULOC: ")) != 1) { return false; }
-
-    // +UULOC: <date>, <time>, <lat>, <long>, <alt>, <uncertainty>, <speed>,
-    // <direction>, <vertical_acc>, <sensor_used>, <SV_used>, <antenna_status>,
-    // <jamming_status>
-
-    // init variables
-    float ilat         = 0;
-    float ilon         = 0;
-    float ispeed       = 0;
-    float ialt         = 0;
-    int   iusat        = 0;
-    float iaccuracy    = 0;
-    int   iyear        = 0;
-    int   imonth       = 0;
-    int   iday         = 0;
-    int   ihour        = 0;
-    int   imin         = 0;
-    float secondWithSS = 0;
-
-    // Date & Time
-    iday         = streamGetIntBefore('/');    // Two digit day
-    imonth       = streamGetIntBefore('/');    // Two digit month
-    iyear        = streamGetIntBefore(',');    // Four digit year
-    ihour        = streamGetIntBefore(':');    // Two digit hour
-    imin         = streamGetIntBefore(':');    // Two digit minute
-    secondWithSS = streamGetFloatBefore(',');  // 6 digit second with subseconds
-
-    ilat = streamGetFloatBefore(',');  // Estimated latitude, in degrees
-    ilon = streamGetFloatBefore(',');  // Estimated longitude, in degrees
-    ialt = streamGetFloatBefore(
-        ',');         // Estimated altitude, in meters - only forGNSS
-                      // positioning, 0 in case of CellLocate
-    if (ialt != 0) {  // values not returned for CellLocate
-      iaccuracy =
-          streamGetFloatBefore(',');       // Maximum possible error, in meters
-      ispeed = streamGetFloatBefore(',');  // Speed over ground m/s3
-      streamSkipUntil(',');  // Course over ground in degree (0 deg - 360 deg)
-      streamSkipUntil(',');  // Vertical accuracy, in meters
-      streamSkipUntil(',');  // Sensor used for the position calculation
-      iusat = streamGetIntBefore(',');  // Number of satellite used
-      streamSkipUntil(',');             // Antenna status
-      streamSkipUntil('\n');            // Jamming status
-    } else {
-      iaccuracy =
-          streamGetFloatBefore('\n');  // Maximum possible error, in meters
-    }
-
-    // Set pointers
-    if (lat != NULL) *lat = ilat;
-    if (lon != NULL) *lon = ilon;
-    if (speed != NULL) *speed = ispeed;
-    if (alt != NULL) *alt = ialt;
-    if (vsat != NULL) *vsat = 0;  // Number of satellites viewed not reported;
-    if (usat != NULL) *usat = iusat;
-    if (accuracy != NULL) *accuracy = iaccuracy;
-    if (iyear < 2000) iyear += 2000;
-    if (year != NULL) *year = iyear;
-    if (month != NULL) *month = imonth;
-    if (day != NULL) *day = iday;
-    if (hour != NULL) *hour = ihour;
-    if (minute != NULL) *minute = imin;
-    if (second != NULL) *second = static_cast<int>(secondWithSS);
-
-    // final ok
-    waitResponse();
-    return true;
   }
 
   bool getGsmLocationImpl(CellLBS_t lbs) {
@@ -593,6 +502,7 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
     lbs.day      = streamGetIntBefore('/');    // Two digit day
     lbs.month    = streamGetIntBefore('/');    // Two digit month
     lbs.year     = streamGetIntBefore(',');    // Four digit year
+    if (lbs.year < 2000) lbs.year += 2000;
     lbs.hour     = streamGetIntBefore(':');    // Two digit hour
     lbs.minute   = streamGetIntBefore(':');    // Two digit minute
     lbs.second   = static_cast<int>(streamGetFloatBefore(','));  // remove subseconds
@@ -607,12 +517,53 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
     return true;
   }
 
-  bool getGPSImpl(float* lat, float* lon, float* speed = 0, float* alt = 0,
-                  int* vsat = 0, int* usat = 0, float* accuracy = 0,
-                  int* year = 0, int* month = 0, int* day = 0, int* hour = 0,
-                  int* minute = 0, int* second = 0) {
-    return getUbloxLocation(1, lat, lon, speed, alt, vsat, usat, accuracy, year,
-                            month, day, hour, minute, second);
+  bool getGPSImpl(GPS_t gps) {
+    // AT+ULOC=<mode>,<sensor>,<response_type>,<timeout>,<accuracy>
+    // <mode> - 2: single shot position
+    // <sensor> - 2: use cellular CellLocate location information
+    //          - 0: use the last fix in the internal database and stop the GNSS
+    //          receiver
+    //          - 1: use the GNSS receiver for localization
+    //          - 3: ?? use the combined GNSS receiver and CellLocate service
+    //          information ?? - Docs show using sensor 3 and it's documented
+    //          for the +UTIME command but not for +ULOC
+    // <response_type> - 0: standard (single-hypothesis) response
+    // <timeout> - Timeout period in seconds
+    // <accuracy> - Target accuracy in meters (1 - 999999)
+    sendAT(GF("+ULOC=2,1,0,120,1"));
+    // wait for first "OK"
+    if (waitResponse(10000L) != 1) { return false; }
+    // wait for the final result - wait full timeout time
+    if (waitResponse(120000L, GF(ACK_NL "+UULOC: ")) != 1) { return false; }
+
+    // +UULOC: <date>, <time>, <lat>, <long>, <alt>, <uncertainty>, <speed>,
+    // <direction>, <vertical_acc>, <sensor_used>, <SV_used>, <antenna_status>,
+    // <jamming_status>
+
+    // Date & Time
+    gps.day    = streamGetIntBefore('/');    // Two digit day
+    gps.month  = streamGetIntBefore('/');    // Two digit month
+    gps.year   = streamGetIntBefore(',');    // Four digit year
+    if (gps.year < 2000) gps.year += 2000;
+    gps.hour   = streamGetIntBefore(':');    // Two digit hour
+    gps.minute = streamGetIntBefore(':');    // Two digit minute
+    gps.second = static_cast<int>(streamGetFloatBefore(',')); // second only
+
+    gps.lat = streamGetFloatBefore(',');  // Estimated latitude, in degrees
+    gps.lon = streamGetFloatBefore(',');  // Estimated longitude, in degrees
+    gps.alt = streamGetFloatBefore(',');  // Estimated altitude, in meters
+    gps.accuracy = streamGetFloatBefore(',');       // Maximum possible error, in meters
+    gps.speed = streamGetFloatBefore(',');  // Speed over ground m/s3
+    streamSkipUntil(',');  // Course over ground in degree (0 deg - 360 deg)
+    streamSkipUntil(',');  // Vertical accuracy, in meters
+    streamSkipUntil(',');  // Sensor used for the position calculation
+    gps.usat = streamGetIntBefore(',');  // Number of satellite used
+    streamSkipUntil(',');             // Antenna status
+    streamSkipUntil('\n');            // Jamming status
+
+    // final ok
+    waitResponse();
+    return true;
   }
 
   /*
