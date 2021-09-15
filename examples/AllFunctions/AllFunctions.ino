@@ -47,7 +47,6 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
  * Tests enabled
  */
 #define SIMPLE_NB_TEST_GPRS true
-#define SIMPLE_NB_TEST_WIFI false
 #define SIMPLE_NB_TEST_TCP true
 #define SIMPLE_NB_TEST_SSL true
 #define SIMPLE_NB_TEST_CALL false
@@ -75,28 +74,11 @@ const char apn[] = "YourAPN";
 const char gprsUser[] = "";
 const char gprsPass[] = "";
 
-// Your WiFi connection credentials, if applicable
-const char wifiSSID[] = "YourSSID";
-const char wifiPass[] = "YourWiFiPass";
-
 // Server details to test TCP/SSL
 const char server[]   = "vsh.pp.ua";
 const char resource[] = "/SimpleNB/logo.txt";
 
 #include <SimpleNBClient.h>
-
-#if SIMPLE_NB_TEST_GPRS && not defined SIMPLE_NB_SUPPORT_GPRS
-#undef SIMPLE_NB_TEST_GPRS
-#undef SIMPLE_NB_TEST_WIFI
-#define SIMPLE_NB_TEST_GPRS false
-#define SIMPLE_NB_TEST_WIFI true
-#endif
-#if SIMPLE_NB_TEST_WIFI && not defined SIMPLE_NB_SUPPORT_WIFI
-#undef SIMPLE_NB_USE_GPRS
-#undef SIMPLE_NB_USE_WIFI
-#define SIMPLE_NB_USE_GPRS true
-#define SIMPLE_NB_USE_WIFI false
-#endif
 
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
@@ -120,7 +102,7 @@ void setup() {
 
   // Set GSM module baud rate
   SimpleNBBegin(SerialAT, 115200);
-  // If unsure the baud rate work, alternatively use 
+  // If unsure the baud rate work, alternatively use
   // SimpleNBAutoBaud(SerialAT, 9600, 115200);
 }
 
@@ -144,16 +126,6 @@ void loop() {
 #if SIMPLE_NB_TEST_GPRS
   // Unlock your SIM card with a PIN if needed
   if (GSM_PIN && modem.getSimStatus() != 3) { modem.simUnlock(GSM_PIN); }
-#endif
-
-#if SIMPLE_NB_TEST_WIFI
-  DBG("Setting SSID/password...");
-  if (!modem.networkConnect(wifiSSID, wifiPass)) {
-    DBG(" fail");
-    delay(10000);
-    return;
-  }
-  Serial.println(" success");
 #endif
 
 #if SIMPLE_NB_TEST_GPRS && defined SIMPLE_NB_MODEM_XBEE
@@ -284,8 +256,7 @@ void loop() {
   }
 #endif
 
-#if SIMPLE_NB_TEST_CALL && defined SIMPLE_NB_SUPPORT_CALLING && \
-    defined                       CALL_TARGET
+#if SIMPLE_NB_TEST_CALL && defined SIMPLE_NB_SUPPORT_CALLING && defined CALL_TARGET
   DBG("Calling:", CALL_TARGET);
 
   // This is NOT supported on M590
