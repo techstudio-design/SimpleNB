@@ -44,7 +44,7 @@ class SimpleNBSim7020 :
     public SimpleNBTime<SimpleNBSim7020>,
     public SimpleNBNTP<SimpleNBSim7020> {
       friend class SimpleNBModem<SimpleNBSim7020>;
-      friend class SimpleMBBattery<SimpleNBSim7020>,
+      friend class SimpleNBBattery<SimpleNBSim7020>;
       friend class SimpleNBTCP<SimpleNBSim7020, SIMPLE_NB_MUX_COUNT>;
       friend class SimpleNBTime<SimpleNBSim7020>;
       friend class SimpleNBNTP<SimpleNBSim7020>;

@@ -4,8 +4,8 @@
  *  This is NOT an example for use of this library!
  *
  **************************************************************/
-#define SIMPLE_NB_MODEM_SIM7000
-// #define SIMPLE_NB_MODEM_SIM7020
+// #define SIMPLE_NB_MODEM_SIM7000
+#define SIMPLE_NB_MODEM_SIM7020
 // #define SIMPLE_NB_MODEM_SIM7070
 // #define SIMPLE_NB_MODEM_SIM7080
 // #define SIMPLE_NB_MODEM_SIM7090
