@@ -12,7 +12,8 @@
 #define SIMPLE_NB_MUX_COUNT 1
 #define SIMPLE_NB_BUFFER_READ_AND_CHECK_SIZE
 
- #include "SimpleNBModem.tpp"
+#include "SimpleNBBattery.tpp"
+#include "SimpleNBModem.tpp"
 #include "SimpleNBTCP.tpp"
 #include "SimpleNBTime.tpp"
 #include "SimpleNBNTP.tpp"
@@ -38,10 +39,12 @@ enum RegStatus
 
 class SimpleNBSim7020 :
     public SimpleNBModem<SimpleNBSim7020>,
+    public SimpleNBBattery<SimpleNBSim7020>,
     public SimpleNBTCP<SimpleNBSim7020, SIMPLE_NB_MUX_COUNT>,
     public SimpleNBTime<SimpleNBSim7020>,
     public SimpleNBNTP<SimpleNBSim7020> {
       friend class SimpleNBModem<SimpleNBSim7020>;
+      friend class SimpleMBBattery<SimpleNBSim7020>,
       friend class SimpleNBTCP<SimpleNBSim7020, SIMPLE_NB_MUX_COUNT>;
       friend class SimpleNBTime<SimpleNBSim7020>;
       friend class SimpleNBNTP<SimpleNBSim7020>;
