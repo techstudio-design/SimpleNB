@@ -5,7 +5,8 @@
  *
  **************************************************************/
 // #define SIMPLE_NB_MODEM_SIM7000
-#define SIMPLE_NB_MODEM_SIM7020
+#define SIMPLE_NB_MODEM_SIM7000SSL
+// #define SIMPLE_NB_MODEM_SIM7020
 // #define SIMPLE_NB_MODEM_SIM7070
 // #define SIMPLE_NB_MODEM_SIM7080
 // #define SIMPLE_NB_MODEM_SIM7090
@@ -45,7 +46,7 @@ void loop() {
 
   // Test generic network functions
   modem.getRegistrationStatus();
-  modem.isNetworkConnected();
+  modem.isNetworkRegistered();
   modem.waitForNetwork();
   modem.waitForNetwork(15000L);
   modem.waitForNetwork(15000L, true);

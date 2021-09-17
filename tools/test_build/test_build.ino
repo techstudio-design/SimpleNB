@@ -46,7 +46,7 @@ void loop() {
 
   // Test generic network functions
   modem.getRegistrationStatus();
-  modem.isNetworkConnected();
+  modem.isNetworkRegistered();
   modem.waitForNetwork();
   modem.waitForNetwork(15000L);
   modem.waitForNetwork(15000L, true);

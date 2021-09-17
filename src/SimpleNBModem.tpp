@@ -4,7 +4,7 @@
  * @author     Henry Cheung
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
- * @copyright  Copyright (c) 2021 Henry Cheung 
+ * @copyright  Copyright (c) 2021 Henry Cheung
  * @date       Nov 2016
  */
 
@@ -124,8 +124,8 @@ class SimpleNBModem {
    * Generic network functions
    */
   // RegStatus getRegistrationStatus() {}
-  bool isNetworkConnected() {
-    return thisModem().isNetworkConnectedImpl();
+  bool isNetworkRegistered() {
+    return thisModem().isNetworkRegisteredImpl();
   }
   // Waits for network attachment
   bool waitForNetwork(uint32_t timeout_ms = 60000L, bool check_signal = false) {
@@ -343,7 +343,7 @@ class SimpleNBModem {
                           bool     check_signal = false) {
     for (uint32_t start = millis(); millis() - start < timeout_ms;) {
       if (check_signal) { thisModem().getSignalQuality(); }
-      if (thisModem().isNetworkConnected()) { return true; }
+      if (thisModem().isNetworkRegistered()) { return true; }
       delay(250);
     }
     return false;

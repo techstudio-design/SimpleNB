@@ -714,7 +714,7 @@ class SimpleNBXBee : public SimpleNBModem<SimpleNBXBee>,
     }
   }
 
-  bool isNetworkConnectedImpl() {
+  bool isNetworkRegisteredImpl() {
     RegStatus s = getRegistrationStatus();
     if (s == REG_OK) {
       IPAddress ip = localIP();
@@ -734,7 +734,7 @@ class SimpleNBXBee : public SimpleNBModem<SimpleNBXBee>,
     XBEE_COMMAND_START_DECORATOR(5, false)
     for (uint32_t start = millis(); millis() - start < timeout_ms;) {
       if (check_signal) { getSignalQuality(); }
-      if (isNetworkConnected()) {
+      if (isNetworkRegistered()) {
         retVal = true;
         break;
       }
@@ -856,7 +856,7 @@ class SimpleNBXBee : public SimpleNBModem<SimpleNBXBee>,
   }
 
   bool isGprsConnectedImpl() {
-    return isNetworkConnected();
+    return isNetworkRegistered();
   }
 
   String getOperatorImpl() {

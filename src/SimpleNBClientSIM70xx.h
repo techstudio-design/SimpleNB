@@ -155,7 +155,7 @@ protected:
   }
 
  protected:
-  bool isNetworkConnectedImpl() {
+  bool isNetworkRegisteredImpl() {
     RegStatus s = getRegistrationStatus();
     return (s == REG_OK_HOME || s == REG_OK_ROAMING);
   }

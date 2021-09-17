@@ -139,7 +139,7 @@ void loop() {
     return;
   }
 
-  if (modem.isNetworkConnected()) { DBG("Network connected"); }
+  if (modem.isNetworkRegistered()) { DBG("Network registered"); }
 
 #if SIMPLE_NB_TEST_GPRS
   DBG("Connecting to", apn);

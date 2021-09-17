@@ -211,7 +211,7 @@ void setup() {
   }
   SerialMon.println(" success");
 
-  if (modem.isNetworkConnected()) { SerialMon.println("Network connected"); }
+  if (modem.isNetworkRegistered()) { SerialMon.println("Network connected"); }
 
 #if SIMPLE_NB_USE_GPRS
   // GPRS connection parameters are usually set after network registration
@@ -234,15 +234,15 @@ void setup() {
 
 void loop() {
   // Make sure we're still registered on the network
-  if (!modem.isNetworkConnected()) {
-    SerialMon.println("Network disconnected");
+  if (!modem.isNetworkRegistered()) {
+    SerialMon.println("Network not registered");
     if (!modem.waitForNetwork(180000L, true)) {
       SerialMon.println(" fail");
       delay(10000);
       return;
     }
-    if (modem.isNetworkConnected()) {
-      SerialMon.println("Network re-connected");
+    if (modem.isNetworkRegistered()) {
+      SerialMon.println("Network registered");
     }
 
 #if SIMPLE_NB_USE_GPRS

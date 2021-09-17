@@ -202,18 +202,18 @@ class SimpleNBSim7000SSL
 public:
     String getNetworkModes() {
       // Get the help string, not the setting value
-      thisModem().sendAT(GF("+CNMP=?"));
-      if (thisModem().waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return ""; }
+      sendAT(GF("+CNMP=?"));
+      if (waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return ""; }
       String res = stream.readStringUntil('\n');
-      thisModem().waitResponse();
+      waitResponse();
       return res;
     }
 
     int16_t getNetworkMode() {
-      thisModem().sendAT(GF("+CNMP?"));
-      if (thisModem().waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return false; }
-      int16_t mode = thisModem().streamGetIntBefore('\n');
-      thisModem().waitResponse();
+      sendAT(GF("+CNMP?"));
+      if (waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return false; }
+      int16_t mode = streamGetIntBefore('\n');
+      waitResponse();
       return mode;
     }
 
@@ -222,24 +222,24 @@ public:
       // 13 GSM only
       // 38 LTE only
       // 51 GSM and LTE only
-      thisModem().sendAT(GF("+CNMP="), mode);
-      return thisModem().waitResponse() == 1;
+      sendAT(GF("+CNMP="), mode);
+      return waitResponse() == 1;
     }
 
     String getPreferredModes() {
       // Get the help string, not the setting value
-      thisModem().sendAT(GF("+CMNB=?"));
-      if (thisModem().waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return ""; }
+      sendAT(GF("+CMNB=?"));
+      if (waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return ""; }
       String res = stream.readStringUntil('\n');
-      thisModem().waitResponse();
+      waitResponse();
       return res;
     }
 
     int16_t getPreferredMode() {
-      thisModem().sendAT(GF("+CMNB?"));
-      if (thisModem().waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return false; }
-      int16_t mode = thisModem().streamGetIntBefore('\n');
-      thisModem().waitResponse();
+      sendAT(GF("+CMNB?"));
+      if (waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return false; }
+      int16_t mode = streamGetIntBefore('\n');
+      waitResponse();
       return mode;
     }
 
@@ -247,25 +247,25 @@ public:
       // 1 CAT-M
       // 2 NB-IoT
       // 3 CAT-M and NB-IoT
-      thisModem().sendAT(GF("+CMNB="), mode);
-      return thisModem().waitResponse() == 1;
+      sendAT(GF("+CMNB="), mode);
+      return waitResponse() == 1;
     }
 
     bool getNetworkSystemMode(bool& n, int16_t& stat) {
       // n: whether to automatically report the system mode info
       // stat: the current service. 0 if it not connected
-      thisModem().sendAT(GF("+CNSMOD?"));
-      if (thisModem().waitResponse(GF(ACK_NL "+CNSMOD:")) != 1) { return false; }
-      n    = thisModem().streamGetIntBefore(',') != 0;
-      stat = thisModem().streamGetIntBefore('\n');
-      thisModem().waitResponse();
+      sendAT(GF("+CNSMOD?"));
+      if (waitResponse(GF(ACK_NL "+CNSMOD:")) != 1) { return false; }
+      n    = streamGetIntBefore(',') != 0;
+      stat = streamGetIntBefore('\n');
+      waitResponse();
       return true;
     }
 
     bool setNetworkSystemMode(bool n) {
       // n: whether to automatically report the system mode info
-      thisModem().sendAT(GF("+CNSMOD="), int8_t(n));
-      return thisModem().waitResponse() == 1;
+      sendAT(GF("+CNSMOD="), int8_t(n));
+      return waitResponse() == 1;
     }
  protected:
   String getLocalIPImpl() {

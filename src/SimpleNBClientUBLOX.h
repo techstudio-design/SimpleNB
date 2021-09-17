@@ -294,7 +294,7 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
   }
 
  protected:
-  bool isNetworkConnectedImpl() {
+  bool isNetworkRegisteredImpl() {
     RegStatus s = getRegistrationStatus();
     if (s == REG_OK_HOME || s == REG_OK_ROAMING)
       return true;
