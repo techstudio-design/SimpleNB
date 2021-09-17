@@ -15,12 +15,10 @@
 // #define SIMPLE_NB_USE_HEX
 
 #include "SimpleNBBattery.tpp"
-#include "SimpleNBGPS.tpp"
 #include "SimpleNBModem.tpp"
 #include "SimpleNBSMS.tpp"
 #include "SimpleNBTime.tpp"
 #include "SimpleNBNTP.tpp"
-#include "SimpleNBGSMLocation.tpp"
 
 #define ACK_NL "\r\n"
 static const char ACK_OK[] SIMPLE_NB_PROGMEM    = "OK" ACK_NL;
@@ -43,19 +41,15 @@ enum RegStatus {
 template <class modemType>
 class SimpleNBSim70xx:public SimpleNBModem<SimpleNBSim70xx<modemType>>,
                       public SimpleNBSMS<SimpleNBSim70xx<modemType>>,
-                      public SimpleNBGPS<SimpleNBSim70xx<modemType>>,
                       public SimpleNBTime<SimpleNBSim70xx<modemType>>,
                       public SimpleNBNTP<SimpleNBSim70xx<modemType>>,
-                      public SimpleNBBattery<SimpleNBSim70xx<modemType>>,
-                      public SimpleNBGSMLocation<SimpleNBSim70xx<modemType>>
+                      public SimpleNBBattery<SimpleNBSim70xx<modemType>>
 {
   friend class SimpleNBModem<SimpleNBSim70xx<modemType>>;
   friend class SimpleNBSMS<SimpleNBSim70xx<modemType>>;
-  friend class SimpleNBGPS<SimpleNBSim70xx<modemType>>;
   friend class SimpleNBTime<SimpleNBSim70xx<modemType>>;
   friend class SimpleNBNTP<SimpleNBSim70xx<modemType>>;
   friend class SimpleNBBattery<SimpleNBSim70xx<modemType>>;
-  friend class SimpleNBGSMLocation<SimpleNBSim70xx<modemType>>;
 
   /*
    * CRTP Helper
@@ -276,78 +270,6 @@ protected:
   /*
    * GPS/GNSS/GLONASS location functions
    */
- protected:
-  // enable GPS
-  bool enableGPSImpl() {
-    thisModem().sendAT(GF("+CGNSPWR=1"));
-    if (thisModem().waitResponse() != 1) { return false; }
-    return true;
-  }
-
-  bool disableGPSImpl() {
-    thisModem().sendAT(GF("+CGNSPWR=0"));
-    if (thisModem().waitResponse() != 1) { return false; }
-    return true;
-  }
-
-  // get the RAW GPS output
-  String getGPSImpl() {
-    thisModem().sendAT(GF("+CGNSINF"));
-    if (thisModem().waitResponse(10000L, GF(ACK_NL "+CGNSINF:")) != 1) {
-      return "";
-    }
-    String res = stream.readStringUntil('\n');
-    thisModem().waitResponse();
-    res.trim();
-    return res;
-  }
-
-  // get GPS informations
-  bool getGPSImpl(GPS_t gps) {
-    thisModem().sendAT(GF("+CGNSINF"));
-    if (thisModem().waitResponse(10000L, GF(ACK_NL "+CGNSINF:")) != 1) {
-      return false;
-    }
-
-    thisModem().streamSkipUntil(',');                // GNSS run status
-    if (thisModem().streamGetIntBefore(',') == 1) {  // fix status
-
-      // UTC date & Time
-      gps.year   = thisModem().streamGetIntLength(4);  // Four digit year
-      if (gps.year < 2000) gps.year += 2000;
-      gps.month  = thisModem().streamGetIntLength(2);  // Two digit month
-      gps.day    = thisModem().streamGetIntLength(2);  // Two digit day
-      gps.hour   = thisModem().streamGetIntLength(2);  // Two digit hour
-      gps.minute = thisModem().streamGetIntLength(2);  // Two digit minute
-      gps.second = static_cast<int>(thisModem().streamGetFloatBefore(','));  // second only
-
-      gps.lat   = thisModem().streamGetFloatBefore(',');  // Latitude
-      gps.lon   = thisModem().streamGetFloatBefore(',');  // Longitude
-      gps.alt   = thisModem().streamGetFloatBefore(',');  // MSL Altitude. Unit is meters
-      gps.speed = thisModem().streamGetFloatBefore(','); // Speed in knots.
-      thisModem().streamSkipUntil(',');  // Course Over Ground. Degrees.
-      thisModem().streamSkipUntil(',');  // Fix Mode
-      thisModem().streamSkipUntil(',');  // Reserved1
-      gps.accuracy = thisModem().streamGetFloatBefore(','); // Horizontal Dilution Of Precision
-      thisModem().streamSkipUntil(',');  // Position Dilution Of Precision
-      thisModem().streamSkipUntil(',');  // Vertical Dilution Of Precision
-      thisModem().streamSkipUntil(',');  // Reserved2
-      gps.vsat = thisModem().streamGetIntBefore(',');  // GNSS Satellites in View
-      gps.usat = thisModem().streamGetIntBefore(',');  // GNSS Satellites Used
-      thisModem().streamSkipUntil(',');             // GLONASS Satellites Used
-      thisModem().streamSkipUntil(',');             // Reserved3
-      thisModem().streamSkipUntil(',');             // C/N0 max
-      thisModem().streamSkipUntil(',');             // HPA
-      thisModem().streamSkipUntil('\n');            // VPA
-
-      thisModem().waitResponse();
-      return true;
-    }
-
-    thisModem().streamSkipUntil('\n');  // toss the row of commas
-    thisModem().waitResponse();
-    return false;
-  }
 
   /*
    * Time functions

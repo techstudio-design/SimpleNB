@@ -20,13 +20,20 @@
 #include "SimpleNBClientSIM70xx.h"
 #include "SimpleNBTCP.tpp"
 #include "SimpleNBSSL.tpp"
+#include "SimpleNBGPS.tpp"
+#include "SimpleNBGSMLocation.tpp"
 
 class SimpleNBSim7080 : public SimpleNBSim70xx<SimpleNBSim7080>,
                        public SimpleNBTCP<SimpleNBSim7080, SIMPLE_NB_MUX_COUNT>,
-                       public SimpleNBSSL<SimpleNBSim7080> {
+                       public SimpleNBSSL<SimpleNBSim7080>,
+                       public SimpleNBGSMLocation<SimpleNBSim7080>,
+                      public SimpleNBGPS<SimpleNBSim7080> {
   friend class SimpleNBSim70xx<SimpleNBSim7080>;
   friend class SimpleNBTCP<SimpleNBSim7080, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBSSL<SimpleNBSim7080>;
+  friend class SimpleNBGPS<SimpleNBSim7080>;
+  friend class SimpleNBGSMLocation<SimpleNBSim7080>;
+
 
   /*
    * Inner Client
@@ -308,8 +315,78 @@ class SimpleNBSim7080 : public SimpleNBSim70xx<SimpleNBSim7080>,
   /*
    * GPS/GNSS/GLONASS location functions
    */
- protected:
-  // Follows the SIM70xx template
+protected:
+ // enable GPS
+ bool enableGPSImpl() {
+   sendAT(GF("+CGNSPWR=1"));
+   if (waitResponse() != 1) { return false; }
+   return true;
+ }
+
+ bool disableGPSImpl() {
+   sendAT(GF("+CGNSPWR=0"));
+   if (waitResponse() != 1) { return false; }
+   return true;
+ }
+
+ // get the RAW GPS output
+ String getGPSImpl() {
+   sendAT(GF("+CGNSINF"));
+   if (waitResponse(10000L, GF(ACK_NL "+CGNSINF:")) != 1) {
+     return "";
+   }
+   String res = stream.readStringUntil('\n');
+   waitResponse();
+   res.trim();
+   return res;
+ }
+
+ // get GPS informations
+ bool getGPSImpl(GPS_t gps) {
+   sendAT(GF("+CGNSINF"));
+   if (waitResponse(10000L, GF(ACK_NL "+CGNSINF:")) != 1) {
+     return false;
+   }
+
+   streamSkipUntil(',');                // GNSS run status
+   if (streamGetIntBefore(',') == 1) {  // fix status
+
+     // UTC date & Time
+     gps.year   = streamGetIntLength(4);  // Four digit year
+     if (gps.year < 2000) gps.year += 2000;
+     gps.month  = streamGetIntLength(2);  // Two digit month
+     gps.day    = streamGetIntLength(2);  // Two digit day
+     gps.hour   = streamGetIntLength(2);  // Two digit hour
+     gps.minute = streamGetIntLength(2);  // Two digit minute
+     gps.second = static_cast<int>(streamGetFloatBefore(','));  // second only
+
+     gps.lat   = streamGetFloatBefore(',');  // Latitude
+     gps.lon   = streamGetFloatBefore(',');  // Longitude
+     gps.alt   = streamGetFloatBefore(',');  // MSL Altitude. Unit is meters
+     gps.speed = streamGetFloatBefore(','); // Speed in knots.
+     streamSkipUntil(',');  // Course Over Ground. Degrees.
+     streamSkipUntil(',');  // Fix Mode
+     streamSkipUntil(',');  // Reserved1
+     gps.accuracy = streamGetFloatBefore(','); // Horizontal Dilution Of Precision
+     streamSkipUntil(',');  // Position Dilution Of Precision
+     streamSkipUntil(',');  // Vertical Dilution Of Precision
+     streamSkipUntil(',');  // Reserved2
+     gps.vsat = streamGetIntBefore(',');  // GNSS Satellites in View
+     gps.usat = streamGetIntBefore(',');  // GNSS Satellites Used
+     streamSkipUntil(',');             // GLONASS Satellites Used
+     streamSkipUntil(',');             // Reserved3
+     streamSkipUntil(',');             // C/N0 max
+     streamSkipUntil(',');             // HPA
+     streamSkipUntil('\n');            // VPA
+
+     waitResponse();
+     return true;
+   }
+
+   streamSkipUntil('\n');  // toss the row of commas
+   waitResponse();
+   return false;
+ }
 
   /*
    * Time functions

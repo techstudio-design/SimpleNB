@@ -5,9 +5,9 @@
  *
  **************************************************************/
 // #define SIMPLE_NB_MODEM_SIM7000
-#define SIMPLE_NB_MODEM_SIM7020
+// #define SIMPLE_NB_MODEM_SIM7020
 // #define SIMPLE_NB_MODEM_SIM7070
-// #define SIMPLE_NB_MODEM_SIM7080
+#define SIMPLE_NB_MODEM_SIM7080
 // #define SIMPLE_NB_MODEM_SIM7090
 // #define SIMPLE_NB_MODEM_BG96
 // #define SIMPLE_NB_MODEM_SARAR4
@@ -139,7 +139,8 @@ void loop() {
 #if defined(SIMPLE_NB_SUPPORT_SMS) && not defined(__AVR_ATmega32U4__)
   modem.sendSMS(String("+380000000000"), String("Hello from "));
 
-#if not defined(SIMPLE_NB_MODEM_XBEE) && not defined(SIMPLE_NB_MODEM_SARAR4)
+#if not defined(SIMPLE_NB_MODEM_XBEE) && not defined(SIMPLE_NB_MODEM_SARAR4) && \
+    not defined(SIMPLE_NB_MODEM_SIM7020)
   modem.sendUSSD("*111#");
 #endif
 
