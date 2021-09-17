@@ -401,7 +401,7 @@ protected:
  // get the RAW GPS output
  String getGPSImpl() {
    sendAT(GF("+SGNSCMD=1,0"));
-   if (waitResponse(10000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
+   if (waitResponse(120000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
      return "";
    }
    String res = stream.readStringUntil('\n');
@@ -437,7 +437,7 @@ protected:
  //                (before 9 seconds), the command will be lost without any response.
  bool getGPSImpl(GPS_t gps) {
    sendAT(GF("+SGNSCMD=1,0"));
-   if (waitResponse(10000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
+   if (waitResponse(120000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
      return false;
    }
 

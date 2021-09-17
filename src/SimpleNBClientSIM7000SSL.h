@@ -394,7 +394,7 @@ protected:
  // get the RAW GPS output
  String getGPSImpl() {
    sendAT(GF("+CGNSINF"));
-   if (waitResponse(10000L, GF(ACK_NL "+CGNSINF:")) != 1) {
+   if (waitResponse(120000L, GF(ACK_NL "+CGNSINF:")) != 1) {
      return "";
    }
    String res = stream.readStringUntil('\n');
@@ -406,7 +406,7 @@ protected:
  // get GPS informations
  bool getGPSImpl(GPS_t gps) {
    sendAT(GF("+CGNSINF"));
-   if (waitResponse(10000L, GF(ACK_NL "+CGNSINF:")) != 1) {
+   if (waitResponse(120000L, GF(ACK_NL "+CGNSINF:")) != 1) {
      return false;
    }
 
