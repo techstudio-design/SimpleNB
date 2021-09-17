@@ -386,74 +386,90 @@ public:
 protected:
  // enable GPS
  bool enableGPSImpl() {
-   sendAT(GF("+CGNSPWR=1"));
-   if (waitResponse() != 1) { return false; }
    return true;
+   // sendAT(GF("+CGNSPWR=1"));
+   // if (waitResponse() != 1) { return false; }
+   // return true;
  }
 
  bool disableGPSImpl() {
-   sendAT(GF("+CGNSPWR=0"));
+   sendAT(GF("+SGNSCMD=0"));
    if (waitResponse() != 1) { return false; }
    return true;
  }
 
  // get the RAW GPS output
  String getGPSImpl() {
-   sendAT(GF("+CGNSINF"));
-   if (waitResponse(10000L, GF(ACK_NL "+CGNSINF:")) != 1) {
+   sendAT(GF("+SGNSCMD=1,0"));
+   if (waitResponse(10000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
      return "";
    }
    String res = stream.readStringUntil('\n');
-   waitResponse();
+   //waitResponse();
    res.trim();
    return res;
  }
 
  // get GPS informations
+ // This function use AT+SGNSCMD to get GPS information instead of using AT+CGNSINF.
+ // According to Simcom, AT+CGNSINF is a legacy API inherited from previous generation
+ // Qualcomm chip , Qualcomm no longer support and do not recommend of using AT+CGSINF.
+ // Getting GSP modem suffers the issue mentioned here:
+ // https://stackoverflow.com/questions/61857667/sim7080g-module-cant-send-data-over-tcp-while-using-gnss/61884727#61884727
+ // if mode = 0, AT+SGNSCMD = <mode>
+ //    mode = 1, AT+SGNSCMD = <mode>, <powerlevel>
+ //    mode = 2, AT+SGNSCMD = <mode>, <minInterval>, <minDistance>, <accuracy>
+ // <mode>: 0 - Turn off GNSS
+ //         1 - Turn on GNSS and get location once
+ //         2 - Turn on GNSS and get location repeatly
+ // <powerlevel>:  0 - use all technologies available to calculate location
+ //                1 - use all low power technologies to calculate locaiton
+ //                2 - use only low and medium power technologies to calculate location
+ // <minInterval>: minimum interval in milliseconds, default 1000
+ // <minDistance>: minimum ditances in meters that must be traversed between reports.
+ //                set to 0 for pure time-based report
+ // <accuracy>:    0 - not specified, use default
+ //                1 - Low accuracy for location is acceptable
+ //                2 - Medium accuracy for location is acceptable
+ //                3 - Only high accuracy for location is acceptable
+ // return:        +SGNSERR: <erro code> or  ERROR
+ // known issue:   from our experience, if this +SGNSCMD is called too early from power on
+ //                (before 9 seconds), the command will be lost without any response.
  bool getGPSImpl(GPS_t gps) {
-   sendAT(GF("+CGNSINF"));
-   if (waitResponse(10000L, GF(ACK_NL "+CGNSINF:")) != 1) {
+   sendAT(GF("+SGNSCMD=1,0"));
+   if (waitResponse(10000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
      return false;
    }
 
-   streamSkipUntil(',');                // GNSS run status
-   if (streamGetIntBefore(',') == 1) {  // fix status
+   streamSkipUntil(',');                // GNSS mode
+   // Time
+   gps.hour   = streamGetIntLength(2);  // Two digit hour
+   gps.minute = streamGetIntLength(2);  // Two digit minute
+   gps.second = static_cast<int>(streamGetFloatBefore(','));  // second only
+   gps.lat   = streamGetFloatBefore(',');    // Latitude
+   gps.lon   = streamGetFloatBefore(',');    // Longitude
+   gps.accuracy = streamGetFloatBefore(','); // Accuracy
+   streamSkipUntil(',');                     // MSL Altitude in meter
+   gps.alt   = streamGetFloatBefore(',');    // MSL Altitude sea level in meters
+   gps.speed = streamGetFloatBefore(',');    // Speed over ground in km/hour
+   streamSkipUntil(',');                     // Course Over Ground. Degrees.
 
-     // UTC date & Time
-     gps.year   = streamGetIntLength(4);  // Four digit year
-     if (gps.year < 2000) gps.year += 2000;
-     gps.month  = streamGetIntLength(2);  // Two digit month
-     gps.day    = streamGetIntLength(2);  // Two digit day
-     gps.hour   = streamGetIntLength(2);  // Two digit hour
-     gps.minute = streamGetIntLength(2);  // Two digit minute
-     gps.second = static_cast<int>(streamGetFloatBefore(','));  // second only
+   streamSkipUntil(',');                     // timestamp in hex, e.g. 0x16dfc3dca78
+   // to-do, instead of skip this, get the timestamp to get the date value
+   // e.g. 0x16dfc3dca78 is 1571894971000, GMT: Thursday, 24 October 2019 05:29:31
+   // read the timestamp
+   // long timestamp = 0x16dfc3dca78L / 1000;
+   // tm *t = gmtime(&timestamp);
+   // gps.year = t->tm_year + 1900;
+   // gps.month = t->tm_mon + 1;
+   // gps.day = t->tm_mday;
 
-     gps.lat   = streamGetFloatBefore(',');  // Latitude
-     gps.lon   = streamGetFloatBefore(',');  // Longitude
-     gps.alt   = streamGetFloatBefore(',');  // MSL Altitude. Unit is meters
-     gps.speed = streamGetFloatBefore(','); // Speed in knots.
-     streamSkipUntil(',');  // Course Over Ground. Degrees.
-     streamSkipUntil(',');  // Fix Mode
-     streamSkipUntil(',');  // Reserved1
-     gps.accuracy = streamGetFloatBefore(','); // Horizontal Dilution Of Precision
-     streamSkipUntil(',');  // Position Dilution Of Precision
-     streamSkipUntil(',');  // Vertical Dilution Of Precision
-     streamSkipUntil(',');  // Reserved2
-     gps.vsat = streamGetIntBefore(',');  // GNSS Satellites in View
-     gps.usat = streamGetIntBefore(',');  // GNSS Satellites Used
-     streamSkipUntil(',');             // GLONASS Satellites Used
-     streamSkipUntil(',');             // Reserved3
-     streamSkipUntil(',');             // C/N0 max
-     streamSkipUntil(',');             // HPA
-     streamSkipUntil('\n');            // VPA
+   streamSkipUntil('\n');                    // flag
+   gps.vsat = 0;
+   gps.usat = 0;
 
-     waitResponse();
-     return true;
-   }
-
-   streamSkipUntil('\n');  // toss the row of commas
-   waitResponse();
-   return false;
+   //waitResponse();
+   return true;
  }
 
   /*
