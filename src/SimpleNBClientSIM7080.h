@@ -198,6 +198,74 @@ class SimpleNBSim7080 : public SimpleNBSim70xx<SimpleNBSim7080>,
   /*
    * Generic network functions
    */
+public:
+    String getNetworkModes() {
+      // Get the help string, not the setting value
+      sendAT(GF("+CNMP=?"));
+      if (waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return ""; }
+      String res = stream.readStringUntil('\n');
+      waitResponse();
+      return res;
+    }
+
+    int16_t getNetworkMode() {
+      sendAT(GF("+CNMP?"));
+      if (waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return false; }
+      int16_t mode = streamGetIntBefore('\n');
+      waitResponse();
+      return mode;
+    }
+
+    bool setNetworkMode(uint8_t mode) {
+      // 2 Automatic
+      // 13 GSM only
+      // 38 LTE only
+      // 51 GSM and LTE only
+      sendAT(GF("+CNMP="), mode);
+      return waitResponse() == 1;
+    }
+
+    String getPreferredModes() {
+      // Get the help string, not the setting value
+      sendAT(GF("+CMNB=?"));
+      if (waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return ""; }
+      String res = stream.readStringUntil('\n');
+      waitResponse();
+      return res;
+    }
+
+    int16_t getPreferredMode() {
+      sendAT(GF("+CMNB?"));
+      if (waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return false; }
+      int16_t mode = streamGetIntBefore('\n');
+      waitResponse();
+      return mode;
+    }
+
+    bool setPreferredMode(uint8_t mode) {
+      // 1 CAT-M
+      // 2 NB-IoT
+      // 3 CAT-M and NB-IoT
+      sendAT(GF("+CMNB="), mode);
+      return waitResponse() == 1;
+    }
+
+    bool getNetworkSystemMode(bool& n, int16_t& stat) {
+      // n: whether to automatically report the system mode info
+      // stat: the current service. 0 if it not connected
+      sendAT(GF("+CNSMOD?"));
+      if (waitResponse(GF(ACK_NL "+CNSMOD:")) != 1) { return false; }
+      n    = streamGetIntBefore(',') != 0;
+      stat = streamGetIntBefore('\n');
+      waitResponse();
+      return true;
+    }
+
+    bool setNetworkSystemMode(bool n) {
+      // n: whether to automatically report the system mode info
+      sendAT(GF("+CNSMOD="), int8_t(n));
+      return waitResponse() == 1;
+    }
  protected:
   String getLocalIPImpl() {
     sendAT(GF("+CNACT?"));

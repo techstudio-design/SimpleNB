@@ -167,85 +167,16 @@ class SimpleNBSim7020
   /*
    * Generic network functions
    */
-public:
-  // the following functions implemented in Sim70xx need double-check against SIM7020 documentation
-  // String getNetworkModes() {
-  //   // Get the help string, not the setting value
-  //   thisModem().sendAT(GF("+CNMP=?"));
-  //   if (thisModem().waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return ""; }
-  //   String res = stream.readStringUntil('\n');
-  //   thisModem().waitResponse();
-  //   return res;
-  // }
-  //
-  // int16_t getNetworkMode() {
-  //   thisModem().sendAT(GF("+CNMP?"));
-  //   if (thisModem().waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return false; }
-  //   int16_t mode = thisModem().streamGetIntBefore('\n');
-  //   thisModem().waitResponse();
-  //   return mode;
-  // }
-  //
-  // bool setNetworkMode(uint8_t mode) {
-  //   // 2 Automatic
-  //   // 13 GSM only
-  //   // 38 LTE only
-  //   // 51 GSM and LTE only
-  //   thisModem().sendAT(GF("+CNMP="), mode);
-  //   return thisModem().waitResponse() == 1;
-  // }
-  //
-  // String getPreferredModes() {
-  //   // Get the help string, not the setting value
-  //   thisModem().sendAT(GF("+CMNB=?"));
-  //   if (thisModem().waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return ""; }
-  //   String res = stream.readStringUntil('\n');
-  //   thisModem().waitResponse();
-  //   return res;
-  // }
-  //
-  // int16_t getPreferredMode() {
-  //   thisModem().sendAT(GF("+CMNB?"));
-  //   if (thisModem().waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return false; }
-  //   int16_t mode = thisModem().streamGetIntBefore('\n');
-  //   thisModem().waitResponse();
-  //   return mode;
-  // }
-  //
-  // bool setPreferredMode(uint8_t mode) {
-  //   // 1 CAT-M
-  //   // 2 NB-IoT
-  //   // 3 CAT-M and NB-IoT
-  //   thisModem().sendAT(GF("+CMNB="), mode);
-  //   return thisModem().waitResponse() == 1;
-  // }
-  //
-  // bool getNetworkSystemMode(bool& n, int16_t& stat) {
-  //   // n: whether to automatically report the system mode info
-  //   // stat: the current service. 0 if it not connected
-  //   thisModem().sendAT(GF("+CNSMOD?"));
-  //   if (thisModem().waitResponse(GF(ACK_NL "+CNSMOD:")) != 1) { return false; }
-  //   n    = thisModem().streamGetIntBefore(',') != 0;
-  //   stat = thisModem().streamGetIntBefore('\n');
-  //   thisModem().waitResponse();
-  //   return true;
-  // }
-  //
-  // bool setNetworkSystemMode(bool n) {
-  //   // n: whether to automatically report the system mode info
-  //   thisModem().sendAT(GF("+CNSMOD="), int8_t(n));
-  //   return thisModem().waitResponse() == 1;
-  // }
-  // String getLocalIPImpl() {
-  //   sendAT(GF("+CIFSR;E0"));
-  //   String res;
-  //   if (waitResponse(10000L, res) != 1) { return ""; }
-  //   res.replace(ACK_NL "OK" ACK_NL, "");
-  //   res.replace(ACK_NL, "");
-  //   res.trim();
-  //   return res;
-  // }
-
+ protected:
+  String getLocalIPImpl() {
+    sendAT(GF("+CIFSR;E0"));
+    String res;
+    if (waitResponse(10000L, res) != 1) { return ""; }
+    res.replace(ACK_NL "OK" ACK_NL, "");
+    res.replace(ACK_NL, "");
+    res.trim();
+    return res;
+  }
   /*
    * GPRS functions
    */
