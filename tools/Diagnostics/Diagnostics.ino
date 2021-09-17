@@ -156,8 +156,7 @@ void loop() {
 #endif
 
   Serial.print("Waiting for network...");
-  if (!modem.waitForNetwork(
-          600000L)) {  // You may need lengthen this in poor service areas
+  if (!modem.waitForRegistration(600000L)) {
     Serial.println(F(" [fail]"));
     Serial.println(F("************************"));
     Serial.println(F(" Is your sim card locked?"));

@@ -204,7 +204,7 @@ void setup() {
 #endif
 
   SerialMon.print("Waiting for network...");
-  if (!modem.waitForNetwork()) {
+  if (!modem.waitForRegistration()) {
     SerialMon.println(" fail");
     delay(10000);
     return;
@@ -236,7 +236,7 @@ void loop() {
   // Make sure we're still registered on the network
   if (!modem.isNetworkRegistered()) {
     SerialMon.println("Network not registered");
-    if (!modem.waitForNetwork(180000L, true)) {
+    if (!modem.waitForRegistration(180000L, true)) {
       SerialMon.println(" fail");
       delay(10000);
       return;

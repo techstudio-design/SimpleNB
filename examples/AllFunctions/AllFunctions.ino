@@ -134,7 +134,7 @@ void loop() {
 #endif
 
   DBG("Waiting for network...");
-  if (!modem.waitForNetwork(600000L, true)) {
+  if (!modem.waitForRegistration(600000L, true)) {
     delay(10000);
     return;
   }

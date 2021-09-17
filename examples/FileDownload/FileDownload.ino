@@ -169,7 +169,7 @@ void loop() {
 #endif
 
   Serial.print("Waiting for network...");
-  if (!modem.waitForNetwork()) {
+  if (!modem.waitForRegistration()) {
     Serial.println(" fail");
     delay(10000);
     return;

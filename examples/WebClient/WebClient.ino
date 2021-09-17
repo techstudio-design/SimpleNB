@@ -162,7 +162,7 @@ void loop() {
 #endif
 
   SerialMon.print("Waiting for network...");
-  if (!modem.waitForNetwork()) {
+  if (!modem.waitForRegistration()) {
     SerialMon.println(" fail");
     delay(10000);
     return;

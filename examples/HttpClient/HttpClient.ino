@@ -158,14 +158,14 @@ void loop() {
 #endif
 
   Serial.print("Waiting for network...");
-  if (!modem.waitForNetwork()) {
+  if (!modem.waitForRegistration()) {
     Serial.println(" fail");
     delay(10000);
     return;
   }
   Serial.println(" success");
 
-  if (modem.isNetworkConnected()) { Serial.println("Network connected"); }
+  if (modem.isNetworkRegistered()) { Serial.println("Network connected"); }
 
 #if SIMPLE_NB_USE_GPRS
   // GPRS connection parameters are usually set after network registration

@@ -128,8 +128,8 @@ class SimpleNBModem {
     return thisModem().isNetworkRegisteredImpl();
   }
   // Waits for network attachment
-  bool waitForNetwork(uint32_t timeout_ms = 60000L, bool check_signal = false) {
-    return thisModem().waitForNetworkImpl(timeout_ms, check_signal);
+  bool waitForRegistration(uint32_t timeout_ms = 60000L, bool check_signal = false) {
+    return thisModem().waitForRegistrationImpl(timeout_ms, check_signal);
   }
   // Gets signal quality report
   int16_t getSignalQuality() {
@@ -339,7 +339,7 @@ class SimpleNBModem {
     return status;
   }
 
-  bool waitForNetworkImpl(uint32_t timeout_ms   = 60000L,
+  bool waitForRegistrationImpl(uint32_t timeout_ms   = 60000L,
                           bool     check_signal = false) {
     for (uint32_t start = millis(); millis() - start < timeout_ms;) {
       if (check_signal) { thisModem().getSignalQuality(); }

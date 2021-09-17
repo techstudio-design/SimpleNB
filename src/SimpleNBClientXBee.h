@@ -728,7 +728,7 @@ class SimpleNBXBee : public SimpleNBModem<SimpleNBXBee>,
     }
   }
 
-  bool waitForNetworkImpl(uint32_t timeout_ms   = 60000L,
+  bool waitForRegistrationImpl(uint32_t timeout_ms   = 60000L,
                           bool     check_signal = false) {
     bool retVal = false;
     XBEE_COMMAND_START_DECORATOR(5, false)
