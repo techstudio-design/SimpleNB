@@ -5,9 +5,9 @@
  *
  **************************************************************/
 // #define SIMPLE_NB_MODEM_SIM7000
-#define SIMPLE_NB_MODEM_SIM7000SSL
+// #define SIMPLE_NB_MODEM_SIM7000SSL
 // #define SIMPLE_NB_MODEM_SIM7020
-// #define SIMPLE_NB_MODEM_SIM7070
+#define SIMPLE_NB_MODEM_SIM7070
 // #define SIMPLE_NB_MODEM_SIM7080
 // #define SIMPLE_NB_MODEM_SIM7090
 // #define SIMPLE_NB_MODEM_BG96
@@ -47,12 +47,22 @@ void loop() {
   // Test generic network functions
   modem.getRegistrationStatus();
   modem.isNetworkRegistered();
-  modem.waitForNetwork();
-  modem.waitForNetwork(15000L);
-  modem.waitForNetwork(15000L, true);
+  modem.waitForRegistration();
+  modem.waitForRegistration(15000L);
+  modem.waitForRegistration(15000L, true);
   modem.getSignalQuality();
   modem.getLocalIP();
   modem.localIP();
+
+#if defined(SIMPLE_NB_MODEM_SIM7000) || defined(SIMPLE_NB_MODEM_SIM7070) || \
+  defined(SIMPLE_NB_MODEM_SIM7080) || defined(SIMPLE_NB_MODEM_SIM7090)
+  modem.activateDataNetwork();
+  modem.deactivateDataNetwork();
+#endif
+
+#if defined(SIMPLE_NB_MODEM_SIM7020)
+  modem.activateDataNetwork("myAPN", 0);
+#endif
 
 // Test the GPRS and SIM card functions
 #if defined(SIMPLE_NB_SUPPORT_GPRS)

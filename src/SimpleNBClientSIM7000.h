@@ -157,73 +157,97 @@ class SimpleNBSim7000
    * Generic network functions
    */
  public:
-     String getNetworkModes() {
-       // Get the help string, not the setting value
-       sendAT(GF("+CNMP=?"));
-       if (waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return ""; }
-       String res = stream.readStringUntil('\n');
+   bool activateDataNetwork() {
+     // Activate application network connection
+     // AT+CNACT=<pdpidx>,<action>
+     // <pdpidx> PDP Context Identifier. i.e. mux
+     // <action> 0: Deactive
+     //          1: Active
+     //          2: Auto Active
+     bool res    = false;
+     int  ntries = 0;
+     while (!res && ntries < 5) {
+       sendAT(GF("+CNACT=0,1"));
+       res = waitResponse(60000L, GF(ACK_NL "+APP PDP: 0,ACTIVE"), GF(ACK_NL "+APP PDP: 0,DEACTIVE"));
        waitResponse();
-       return res;
+       ntries++;
      }
+     return res;
+   }
 
-     int16_t getNetworkMode() {
-       sendAT(GF("+CNMP?"));
-       if (waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return false; }
-       int16_t mode = streamGetIntBefore('\n');
-       waitResponse();
-       return mode;
-     }
+   bool deactivateDataNetwork() {
+     sendAT(GF("+CNACT=0,0"));
+     if (waitResponse(60000L) != 1) { return false; }
+     return true;
+   }
+   
+   String getNetworkModes() {
+     // Get the help string, not the setting value
+     sendAT(GF("+CNMP=?"));
+     if (waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return ""; }
+     String res = stream.readStringUntil('\n');
+     waitResponse();
+     return res;
+   }
 
-     bool setNetworkMode(uint8_t mode) {
-       // 2 Automatic
-       // 13 GSM only
-       // 38 LTE only
-       // 51 GSM and LTE only
-       sendAT(GF("+CNMP="), mode);
-       return waitResponse() == 1;
-     }
+   int16_t getNetworkMode() {
+     sendAT(GF("+CNMP?"));
+     if (waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return false; }
+     int16_t mode = streamGetIntBefore('\n');
+     waitResponse();
+     return mode;
+   }
 
-     String getPreferredModes() {
-       // Get the help string, not the setting value
-       sendAT(GF("+CMNB=?"));
-       if (waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return ""; }
-       String res = stream.readStringUntil('\n');
-       waitResponse();
-       return res;
-     }
+   bool setNetworkMode(uint8_t mode) {
+     // 2 Automatic
+     // 13 GSM only
+     // 38 LTE only
+     // 51 GSM and LTE only
+     sendAT(GF("+CNMP="), mode);
+     return waitResponse() == 1;
+   }
 
-     int16_t getPreferredMode() {
-       sendAT(GF("+CMNB?"));
-       if (waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return false; }
-       int16_t mode = streamGetIntBefore('\n');
-       waitResponse();
-       return mode;
-     }
+   String getPreferredModes() {
+     // Get the help string, not the setting value
+     sendAT(GF("+CMNB=?"));
+     if (waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return ""; }
+     String res = stream.readStringUntil('\n');
+     waitResponse();
+     return res;
+   }
 
-     bool setPreferredMode(uint8_t mode) {
-       // 1 CAT-M
-       // 2 NB-IoT
-       // 3 CAT-M and NB-IoT
-       sendAT(GF("+CMNB="), mode);
-       return waitResponse() == 1;
-     }
+   int16_t getPreferredMode() {
+     sendAT(GF("+CMNB?"));
+     if (waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return false; }
+     int16_t mode = streamGetIntBefore('\n');
+     waitResponse();
+     return mode;
+   }
 
-     bool getNetworkSystemMode(bool& n, int16_t& stat) {
-       // n: whether to automatically report the system mode info
-       // stat: the current service. 0 if it not connected
-       sendAT(GF("+CNSMOD?"));
-       if (waitResponse(GF(ACK_NL "+CNSMOD:")) != 1) { return false; }
-       n    = streamGetIntBefore(',') != 0;
-       stat = streamGetIntBefore('\n');
-       waitResponse();
-       return true;
-     }
+   bool setPreferredMode(uint8_t mode) {
+     // 1 CAT-M
+     // 2 NB-IoT
+     // 3 CAT-M and NB-IoT
+     sendAT(GF("+CMNB="), mode);
+     return waitResponse() == 1;
+   }
 
-     bool setNetworkSystemMode(bool n) {
-       // n: whether to automatically report the system mode info
-       sendAT(GF("+CNSMOD="), int8_t(n));
-       return waitResponse() == 1;
-     }
+   bool getNetworkSystemMode(bool& n, int16_t& stat) {
+     // n: whether to automatically report the system mode info
+     // stat: the current service. 0 if it not connected
+     sendAT(GF("+CNSMOD?"));
+     if (waitResponse(GF(ACK_NL "+CNSMOD:")) != 1) { return false; }
+     n    = streamGetIntBefore(',') != 0;
+     stat = streamGetIntBefore('\n');
+     waitResponse();
+     return true;
+   }
+
+   bool setNetworkSystemMode(bool n) {
+     // n: whether to automatically report the system mode info
+     sendAT(GF("+CNSMOD="), int8_t(n));
+     return waitResponse() == 1;
+   }
  protected:
   String getLocalIPImpl() {
     sendAT(GF("+CNACT?"));

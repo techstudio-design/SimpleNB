@@ -167,6 +167,23 @@ class SimpleNBSim7020
   /*
    * Generic network functions
    */
+ public:
+  bool activateDataNetwork(const char *apn, uint8_t band = 0) {
+     // Set APN
+     sendAT("*MCGDEFCONT=", GF("\"IP\",\""), apn, GF("\""));
+     if (waitResponse() != 1) {
+         return false;
+     }
+     // Set Band
+     sendAT("+CBAND=", band);
+     if (waitResponse() != 1) {
+         return false;
+     }
+     return true;
+  }
+  
+  bool deactivateDataNetwork() SIMPLE_NB_ATTR_NOT_AVAILABLE;
+
  protected:
   String getLocalIPImpl() {
     sendAT(GF("+CIFSR;E0"));
