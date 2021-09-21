@@ -52,7 +52,7 @@ If you like **SimpleNB** - give it a star, or fork it and contribute!
         - u-blox SARA R4/N4 - 7
         - Digi XBee - _only 1 connection supported!_
 - UDP
-    - Not yet supported on any module, though it may be some day <!-- this is not true -->
+    - Not yet supported on any module, though it may be some day
 - SSL/TLS (HTTPS)
     - Supported on:
         - SIM7000, u-Blox, and Sequans Monarch
