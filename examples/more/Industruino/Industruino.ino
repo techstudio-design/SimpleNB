@@ -94,7 +94,7 @@ void setup() {
 
 void loop() {
   Serial.print(F("Waiting for network..."));
-  if (!modem.waitForNetwork()) {
+  if (!modem.waitForRegistration()) {
     Serial.println(" fail");
     delay(10000);
     return;

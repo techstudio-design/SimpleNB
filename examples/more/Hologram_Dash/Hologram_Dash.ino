@@ -79,7 +79,7 @@ void setup() {
 
 void loop() {
   Serial.print(F("Waiting for network..."));
-  if (!mdm.waitForNetwork()) {
+  if (!mdm.waitForRegistration()) {
     Serial.println(" fail");
     delay(10000);
     return;
