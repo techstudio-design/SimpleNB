@@ -19,6 +19,7 @@
 .piolibdeps
 .pio/*
 .clang_complete
+.clang-format
 .gcc-flags.json
 platformio.ini
 extra_envs.ini
@@ -26,6 +27,7 @@ lib/readme.txt
 include/readme.txt
 .atomrc.cson
 .history
+cpplint.cfg
 
 # VSCode
 .vscode/*
