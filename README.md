@@ -71,7 +71,7 @@ Some of the modules does not support some of the features due to hardware design
 - SSL/TLS
     - Supported on:
         - SIM7000, u-Blox, and Sequans Monarch
-    - Not yet supported on:
+    - Not implemented on:
         - Quectel, SIM7020
     - Like TCP, most modules support simultaneous connections
     - TCP and SSL connections can usually be mixed up to the total number of possible connections
@@ -83,8 +83,8 @@ Some of the modules does not support some of the features due to hardware design
 **Voice Calls**
 - Supported on:
     - Quectel modems, u-blox
-- Not yet supported on:
-    - SIM7000
+- Not implemented on:
+    - SIM7000, SIM7020 and SIM7070/7080/7090
 - Not possible on:
     -  u-blox SARA R4/N4
 - Functions:
