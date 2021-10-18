@@ -41,6 +41,22 @@ With the exception of SIM7070/7080/7090 and SIM7020, the rest of supported modul
 
 ## Supported Features
 
+Some of the modules does not support some of the features due to hardware design (e.g. GNSS receiver), some functionality are available but not implemtented (those marked as `TBI`), here is a summary of features and functionalities supported by each modules:
+
+| Functionality  | BG96 | Sara 4 | uBlox | Sequans | SIM7000 | SIM7020 | SIM70x0 | Xbee |
+|----------------|:----:|:------:|:-----:|:-------:|:-------:|:-------:|:-------:|:----:|
+| TCP            |   x  |    x   |   x   |    x    |    x    |    x    |    x    |   x  |
+| SSL            |  TBI |    x   |   x   |    x    |    x    |   TBI   |    x    |   x  |
+| GNSS           |   x  |    x   |   x   |         |    x    |         |    x    |      |
+| GSM LBS        |      |    x   |   x   |         |    x    |         |    x    |      |
+| SMS            |   x  |    x   |   x   |    x    |    x    |    x    |    x    |   x  |
+| Voice Call     |   x  |        |   x   |    x    |         |         |         |      |
+| Network Time   |   x  |    x   |   x   |    x    |    x    |    x    |    x    |      |
+| NTP            |   x  |        |       |         |    x    |    x    |    x    |      |
+| Battery Status |   x  |    x   |   x   |         |    x    |    x    |    x    |   x  |
+| Temperature    |   x  |    x   |       |    x    |         |         |         |   x  |
+| GPRS           |   x  |    x   |   x   |    x    |    x    |    x    |    x    |   x  |
+
 **Data connections**
 - TCP (HTTP, MQTT, Blynk, ...)
     - ALL modules support TCP connections
