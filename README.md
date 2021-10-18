@@ -9,22 +9,22 @@ If you like **SimpleNB** - give it a star, or fork it and contribute!
 - [Supported modules](#supported-modules)
 - [Features](#features)
 - [Getting Started](#getting-started)
-    - [First Steps](#first-steps)
-    - [Writing your own code](#writing-your-own-code)
-    - [If you have any issues](#if-you-have-any-issues)
+  - [First Steps](#first-steps)
+  - [Writing your own code](#writing-your-own-code)
+  - [If you have any issues](#if-you-have-any-issues)
 - [How does it work?](#how-does-it-work)
 - [API Reference](#api-reference)
 - [Troubleshooting](#troubleshooting)
-  - [Ensure stable data & power connection](#ensure-stable-data--power-connection)
+  - [Adequate power source](#adequte-power-source)
+  - [Ensure correct Serial connection](#ensure-correct-serial-connection)
   - [Baud rates](#baud-rates)
-  - [Broken initial configuration](#broken-initial-configuration)
+    - [SoftwareSerial problems](#softwareserial-problems)
+    - [HardwareSerial](#hardwareserial)
+  - [Factory Reset](#factory-reset)
+  - [APN Configuration](#apn-configuration)
   - [Failed connection or no data received](#failed-connection-or-no-data-received)
   - [Diagnostics sketch](#diagnostics-sketch)
-  - [Web request formatting problems - "but it works with PostMan"](#web-request-formatting-problems---but-it-works-with-postman)
-  - [SoftwareSerial problems](#softwareserial-problems)
-  - [ESP32 Notes](#esp32-notes)
-    - [HardwareSerial](#hardwareserial)
-    - [HttpClient](#httpclient)
+  - [HTTP implementation problems - "but it works with PostMan"](#http-implementation-problems---but-it-works-with-postman)
   - [Which version of the SIM7000 code to use](#which-version-of-the-sim7000-code-to-use)
 - [License](#license)
 
@@ -95,7 +95,7 @@ With the exception of SIM7070/7080/7090 and SIM7020, the rest of supported modul
 
 ## Getting Started
 
-#### First Steps
+### First Steps
 
   1. Check your balance if you had an prepaid plan. Ensure that the PIN code on the SIM card is disable, the APN, Username and Password are correctly provisioned, contact your local carier if you are unsure.
   2. Ensure the SIM card is correctly inserted into the NB-IOT/CAT-M1 board that you used.
@@ -104,7 +104,7 @@ With the exception of SIM7070/7080/7090 and SIM7020, the rest of supported modul
   5. Check if serial connection is working (Hardware Serial is recommended). Use [AT Debug](tools/AT_Debug/AT_Debug.ino) tool to check if the module can response to an `AT` command.
   6. Try out the examples included in this Library.
 
-#### Writing your own code
+### Writing your own code
 
 Prior using the library, there is some boiler-plat configuration required. The general flow of your code should be:
 - Define the module that you are using (choose one and only one)
@@ -141,7 +141,7 @@ Prior using the library, there is some boiler-plat configuration required. The g
     `client.connect(server, port)`
 - Send out your data as TCP packet, or compose your HTTP request as per HTTP protocol.
 
-#### If you have any issues
+### If you have any issues
 
   1. Read the whole README (you're looking at it!), particularly the troubleshooting section below.
   2. Take a look at the example similar to your application.
@@ -190,10 +190,9 @@ Be sure to set correct TX/RX pins in the sketch. Please note that not every Ardu
 
 When using `HardwareSerial`, you may need to specify additional parameters to the `.begin()` call depend on your MCU's Arduino Core implementation. When using SAMD21-based boards, you may need to use a sercom uart port instead of `Serial1`. Check your MCU's Arduino implementation documentation.
 
-### Factor Reset
+### Factory Reset
 
-Sometimes (especially if you played with AT commands), your module configuration may become invalid.
-This may result in problems such as:
+Sometimes (especially if you played with AT commands), your module configuration may become invalid. This may result in problems such as:
 
  * Can't connect to the network
  * Can't connect to the server
