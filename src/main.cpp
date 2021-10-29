@@ -1,32 +1,98 @@
-/*****************************************************************
+/**************************************************************
  *
- * This example send a HTTP GET request to postman-echo.com, it
- * return the public IP address of the NB-IoT module.
+ * For this example, you need to install PubSubClient library:
+ *   https://github.com/knolleary/pubsubclient, or from
+ *   http://librarymanager/all#PubSubClient
  *
- * This demo is based on using SIM7080.
+ * This example is mainly to show the pre-requisition that is
+ * needed for establishing the NB-IoT connect in the setup().
+ * For the rest of the part, it is from PubSubClient. For more
+ * MQTT examples, see PubSubClient library.
  *
- *****************************************************************/
+ **************************************************************
+ * This example connects to HiveMQ's showcase broker.
+ *
+ * Test sending and receiving messages from the HiveMQ webclient
+ * available at http://www.hivemq.com/demos/websocket-client/.
+ *
+ * Publish 0 or 1 to the topic SimpleNB/led to toggle on-board LED,
+ * Subscribe to the topic SimpleNB/status to receive LED status
+ * send back by the mqtt client.
+ *
+ **************************************************************/
 
 // Select your modem: (See AllFunctions example for the definition of other modem)
 #define SIMPLE_NB_MODEM_SIM7080
 
-// Enbale DBG debug output to Serial Monitor for debug prints, if needed
-#define SIMPLE_NB_DEBUG Serial
+// Enbale Serial.print debug output to Serial Monitor for debug prints, if needed
+//#define SIMPLE_NB_DEBUG Serial
 
 // Select your Serial port for AT interface (See AllFunctions example for other port settings)
 #define SerialAT Serial2
 
 #include <SimpleNBClient.h>
+#include <PubSubClient.h>
 
-#define PWRKEY   23       // GPIO pin used for PWRKEY
+#define LED_PIN   2
+#define PWRKEY    23      // GPIO pin used for PWRKEY
 #define BAUD_RATE 115200  // Baud rate to be used for communicating with the modem
 
-// Server configuration
-const char host[] = "postman-echo.com";
-const char resource[] = "/ip";
-const int port = 80;
+// MQTT details
+const char* broker      = "broker.hivemq.com";
+const char* topicLed    = "SimpleNB/led";
+const char* topicStatus = "SimpleNB/status";
 
-SimpleNB modem(SerialAT);
+int ledStatus = LOW;
+uint32_t lastReconnectAttempt = 0;
+
+SimpleNB       modem(SerialAT);
+SimpleNBClient client(modem);
+PubSubClient   mqtt(client);
+
+void mqttCallback(char* topic, byte* payload, unsigned int len) {
+    Serial.print("Message arrived [");
+    Serial.print(topic);
+    Serial.print("]: ");
+    for (int i = 0; i < len; i++) {
+      Serial.print((char)payload[i]);
+    }
+    Serial.println();
+
+    // Only proceed if incoming message's topic matches
+    if (String(topic) == topicLed) {
+      ledStatus = !ledStatus;
+      digitalWrite(LED_PIN, ledStatus);
+      mqtt.publish(topicStatus, ledStatus ? "1" : "0");
+    }
+}
+
+bool mqttConnect() {
+    Serial.print("Connecting to ");
+    Serial.print(broker);
+
+    // Connect to MQTT Broker
+    bool status = mqtt.connect("SimpleNBClient");
+    // bool status = mqtt.connect("GsmClientName", "mqtt_user", "mqtt_pass");
+
+    if (status == false) {
+      Serial.println(" fail");
+      return false;
+    }
+    Serial.println(" success");
+
+    const char* initMsg = "MQTT Started";
+    mqtt.publish(topicStatus, initMsg);
+    Serial.print("Published topic [");
+    Serial.print(topicStatus);
+    Serial.print("]: ");
+    Serial.println(initMsg);
+
+    mqtt.subscribe(topicLed);
+    Serial.print("Subscribed to topic: ");
+    Serial.println(topicLed);
+
+    return mqtt.connected();
+}
 
 // different modem may have different time requirements, check datasheet of your modem
 void powerUp() {
@@ -36,80 +102,46 @@ void powerUp() {
     delay(2500);
 }
 
-void powerDown() {
-    digitalWrite(PWRKEY, LOW);
-    delay(1200);
-    digitalWrite(PWRKEY, HIGH);
-}
-
 void setup() {
     Serial.begin(115200);
-    digitalWrite(PWRKEY, HIGH);  // Keep PWRKEY off
+    Serial.println();
+
+    pinMode(LED_PIN, OUTPUT);
+
+    Serial.println("Powering Up...");
     pinMode(PWRKEY, OUTPUT);
+    powerUp();
+
+    Serial.println("Initializing modem...");
+    SimpleNBBegin(SerialAT, BAUD_RATE);
+    modem.init();
+
+    Serial.print("Network registration ");
+    if (!modem.waitForRegistration()) {
+      Serial.println("fail");
+      delay(1000);
+      return;
+    }
+    Serial.println("success");
+
+    Serial.println("Activate Data Network...");
+    modem.deactivateDataNetwork();    // disconnect any broken connection if there is one
+    if (!modem.activateDataNetwork()) {
+      delay(1000);
+      return;
+    }
+
+    // MQTT Broker setup
+    mqtt.setServer(broker, 1883);
+    mqtt.setCallback(mqttCallback);
+    mqtt.setKeepAlive(60);
 }
 
 void loop() {
-    DBG("Powering Up...");
-    powerUp();
 
-    // Set modem baud rate
-    SimpleNBBegin(SerialAT, BAUD_RATE);
+  if (!mqtt.connected()) {
+    mqttConnect();
+  }
 
-    DBG("Initializing modem...");
-    modem.init();
-
-    DBG("Waiting for network registration...");
-    if (!modem.waitForRegistration(60000L, true)) {
-      delay(1000);
-      return;  // network timeout, can't register to the mobile network, check your sim or carrier setup
-    }
-
-    DBG("Activate Data Network...");
-    if (!modem.activateDataNetwork()) {
-      delay(1000);
-      return;   // can't connect to the data network, check your APN and sim setup
-    }
-
-    SimpleNBClient client(modem, 0);
-
-    DBG("Connecting to", host);
-    if (!client.connect(host, port)) {
-      DBG("... failed");
-    } else {
-      // Make a HTTP POST request via TCP:
-      client.println("GET " + String(resource) + " HTTP/1.1");
-      client.println("Host: " + String(host));
-      client.println("Connection: close");
-      client.println();
-
-
-      // Wait for response to arrive
-      uint32_t start = millis();
-      while (client.connected() && !client.available() && millis() - start < 30000L) {
-        delay(100);
-      };
-
-      // Read and print the response data to Serial Monitor
-      char buff[400] = {'\0'};
-      int i = 0;
-      while (client.available()) {
-        buff[i++] = (char)client.read();
-      }
-      // Serial.println(buff);  //uncomment this out to see the entire response data
-
-      // return response is in a JSON format {"ip":"xxx.xxx.xxx.xxx"}
-      // parse the data to get the IP
-      strtok(buff, "{");
-      strtok(NULL, ":");
-      Serial.print("Your IP address is: ");
-      Serial.println(strtok(NULL, "}"));
-
-      client.stop();
-    }
-
-    DBG("Powering Down...");
-    powerDown();
-    DBG("Done!\n\n");
-
-    delay(120000);  //wait for 2 minutes
+  mqtt.loop();
 }

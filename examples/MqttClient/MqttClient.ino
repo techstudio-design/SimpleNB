@@ -1,276 +1,146 @@
 /**************************************************************
  *
  * For this example, you need to install PubSubClient library:
- *   https://github.com/knolleary/pubsubclient
- *   or from http://librarymanager/all#PubSubClient
+ *   https://github.com/knolleary/pubsubclient, or from
+ *   http://librarymanager/all#PubSubClient
  *
- * SimpleNB README:
- *   https://github.com/techstudio-design/SimpleNB/blob/master/README.md
- *
- * For more MQTT examples, see PubSubClient library
+ * This example is mainly to show the pre-requisition that is
+ * needed for establishing the NB-IoT connect in the setup().
+ * For the rest of the part, it is from PubSubClient. For more
+ * MQTT examples, see PubSubClient library.
  *
  **************************************************************
  * This example connects to HiveMQ's showcase broker.
  *
- * You can quickly test sending and receiving messages from the HiveMQ webclient
+ * Test sending and receiving messages from the HiveMQ webclient
  * available at http://www.hivemq.com/demos/websocket-client/.
  *
- * Subscribe to the topic GsmClientTest/ledStatus
- * Publish "toggle" to the topic GsmClientTest/led and the LED on your board
- * should toggle and you should see a new message published to
- * GsmClientTest/ledStatus with the newest LED status.
+ * Publish 0 or 1 to the topic SimpleNB/led to toggle on-board LED,
+ * Subscribe to the topic SimpleNB/status to receive LED status
+ * send back by the mqtt client.
  *
  **************************************************************/
 
-// Select your modem:
-#define SIMPLE_NB_MODEM_SIM7000
-// #define SIMPLE_NB_MODEM_SIM7000SSL
-// #define SIMPLE_NB_MODEM_SIM7080
-// #define SIMPLE_NB_MODEM_UBLOX
-// #define SIMPLE_NB_MODEM_SARAR4
-// #define SIMPLE_NB_MODEM_BG96
-// #define SIMPLE_NB_MODEM_XBEE
-// #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
+// Select your modem: (See AllFunctions example for the definition of other modem)
+#define SIMPLE_NB_MODEM_SIM7080
 
-// Set serial for debug console (to the Serial Monitor, default speed 115200)
-#define SerialMon Serial
+// Enbale Serial.print debug output to Serial Monitor for debug prints, if needed
+//#define SIMPLE_NB_DEBUG Serial
 
-// Set serial for AT commands (to the module)
-// Use Hardware Serial on Mega, Leonardo, Micro
-#ifndef __AVR_ATmega328P__
-#define SerialAT Serial1
-
-// or Software Serial on Uno, Nano
-#else
-#include <SoftwareSerial.h>
-SoftwareSerial SerialAT(2, 3);  // RX, TX
-#endif
-
-// See all AT commands, if wanted
-// #define DUMP_AT_COMMANDS
-
-// Define the serial console for debug prints, if needed
-#define SIMPLE_NB_DEBUG SerialMon
-
-// Range to attempt to autobaud
-// NOTE:  DO NOT AUTOBAUD in production code.  Once you've established
-// communication, set a fixed baud rate using modem.setBaud(#).
-#define GSM_AUTOBAUD_MIN 9600
-#define GSM_AUTOBAUD_MAX 115200
-
-// Add a reception delay, if needed.
-// This may be needed for a fast processor at a slow baud rate.
-// #define SIMPLE_NB_YIELD() { delay(2); }
-
-// Define how you're planning to connect to the internet.
-// This is only needed for this example, not in other code.
-#define SIMPLE_NB_USE_GPRS true
-#define SIMPLE_NB_USE_WIFI false
-
-// set GSM PIN, if any
-#define GSM_PIN ""
-
-// Your GPRS credentials, if any
-const char apn[]      = "YourAPN";
-const char gprsUser[] = "";
-const char gprsPass[] = "";
-
-// Your WiFi connection credentials, if applicable
-const char wifiSSID[] = "YourSSID";
-const char wifiPass[] = "YourWiFiPass";
-
-// MQTT details
-const char* broker = "broker.hivemq.com";
-
-const char* topicLed       = "GsmClientTest/led";
-const char* topicInit      = "GsmClientTest/init";
-const char* topicLedStatus = "GsmClientTest/ledStatus";
+// Select your Serial port for AT interface (See AllFunctions example for other port settings)
+#define SerialAT Serial2
 
 #include <SimpleNBClient.h>
 #include <PubSubClient.h>
 
-// Just in case someone defined the wrong thing..
-#if SIMPLE_NB_USE_GPRS && not defined SIMPLE_NB_SUPPORT_GPRS
-#undef SIMPLE_NB_USE_GPRS
-#undef SIMPLE_NB_USE_WIFI
-#define SIMPLE_NB_USE_GPRS false
-#define SIMPLE_NB_USE_WIFI true
-#endif
-#if SIMPLE_NB_USE_WIFI && not defined SIMPLE_NB_SUPPORT_WIFI
-#undef SIMPLE_NB_USE_GPRS
-#undef SIMPLE_NB_USE_WIFI
-#define SIMPLE_NB_USE_GPRS true
-#define SIMPLE_NB_USE_WIFI false
-#endif
+#define LED_PIN   2
+#define PWRKEY    23      // GPIO pin used for PWRKEY
+#define BAUD_RATE 115200  // Baud rate to be used for communicating with the modem
 
-#ifdef DUMP_AT_COMMANDS
-#include <StreamDebugger.h>
-StreamDebugger debugger(SerialAT, SerialMon);
-SimpleNB        modem(debugger);
-#else
-SimpleNB        modem(SerialAT);
-#endif
-SimpleNBClient client(modem);
-PubSubClient  mqtt(client);
+// MQTT details
+const char* broker      = "broker.hivemq.com";
+const char* topicLed    = "SimpleNB/led";
+const char* topicStatus = "SimpleNB/status";
 
-#define LED_PIN 13
 int ledStatus = LOW;
-
 uint32_t lastReconnectAttempt = 0;
 
+SimpleNB       modem(SerialAT);
+SimpleNBClient client(modem);
+PubSubClient   mqtt(client);
+
 void mqttCallback(char* topic, byte* payload, unsigned int len) {
-  SerialMon.print("Message arrived [");
-  SerialMon.print(topic);
-  SerialMon.print("]: ");
-  SerialMon.write(payload, len);
-  SerialMon.println();
+    Serial.print("Message arrived [");
+    Serial.print(topic);
+    Serial.print("]: ");
+    for (int i = 0; i < len; i++) {
+      Serial.print((char)payload[i]);
+    }
+    Serial.println();
 
-  // Only proceed if incoming message's topic matches
-  if (String(topic) == topicLed) {
-    ledStatus = !ledStatus;
-    digitalWrite(LED_PIN, ledStatus);
-    mqtt.publish(topicLedStatus, ledStatus ? "1" : "0");
-  }
+    // Only proceed if incoming message's topic matches
+    if (String(topic) == topicLed) {
+      ledStatus = !ledStatus;
+      digitalWrite(LED_PIN, ledStatus);
+      mqtt.publish(topicStatus, ledStatus ? "1" : "0");
+    }
 }
 
-boolean mqttConnect() {
-  SerialMon.print("Connecting to ");
-  SerialMon.print(broker);
+bool mqttConnect() {
+    Serial.print("Connecting to ");
+    Serial.print(broker);
 
-  // Connect to MQTT Broker
-  boolean status = mqtt.connect("GsmClientTest");
+    // Connect to MQTT Broker
+    bool status = mqtt.connect("SimpleNBClient");
+    // bool status = mqtt.connect("GsmClientName", "mqtt_user", "mqtt_pass");
 
-  // Or, if you want to authenticate MQTT:
-  // boolean status = mqtt.connect("GsmClientName", "mqtt_user", "mqtt_pass");
+    if (status == false) {
+      Serial.println(" fail");
+      return false;
+    }
+    Serial.println(" success");
 
-  if (status == false) {
-    SerialMon.println(" fail");
-    return false;
-  }
-  SerialMon.println(" success");
-  mqtt.publish(topicInit, "GsmClientTest started");
-  mqtt.subscribe(topicLed);
-  return mqtt.connected();
+    const char* initMsg = "MQTT Started";
+    mqtt.publish(topicStatus, initMsg);
+    Serial.print("Published topic [");
+    Serial.print(topicStatus);
+    Serial.print("]: ");
+    Serial.println(initMsg);
+
+    mqtt.subscribe(topicLed);
+    Serial.print("Subscribed to topic: ");
+    Serial.println(topicLed);
+
+    return mqtt.connected();
 }
 
+// different modem may have different time requirements, check datasheet of your modem
+void powerUp() {
+    digitalWrite(PWRKEY, LOW);
+    delay(1000);
+    digitalWrite(PWRKEY, HIGH);
+    delay(2500);
+}
 
 void setup() {
-  // Set console baud rate
-  SerialMon.begin(115200);
-  delay(10);
+    Serial.begin(115200);
+    Serial.println();
 
-  pinMode(LED_PIN, OUTPUT);
+    pinMode(LED_PIN, OUTPUT);
 
-  // !!!!!!!!!!!
-  // Set your reset, enable, power pins here
-  // !!!!!!!!!!!
+    Serial.println("Powering Up...");
+    pinMode(PWRKEY, OUTPUT);
+    powerUp();
 
-  SerialMon.println("Wait...");
+    Serial.println("Initializing modem...");
+    SimpleNBBegin(SerialAT, BAUD_RATE);
+    modem.init();
 
-  // Set GSM module baud rate
-  SimpleNBAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX);
-  // SerialAT.begin(9600);
-  delay(6000);
+    Serial.print("Network registration ");
+    if (!modem.waitForRegistration()) {
+      Serial.println("fail");
+      delay(1000);
+      return;
+    }
+    Serial.println("success");
 
-  // Restart takes quite some time
-  // To skip it, call init() instead of restart()
-  SerialMon.println("Initializing modem...");
-  modem.restart();
-  // modem.init();
+    Serial.println("Activate Data Network...");
+    modem.deactivateDataNetwork();    // disconnect any broken connection if there is one
+    if (!modem.activateDataNetwork()) {
+      delay(1000);
+      return;
+    }
 
-  String modemInfo = modem.getModemInfo();
-  SerialMon.print("Modem Info: ");
-  SerialMon.println(modemInfo);
-
-#if SIMPLE_NB_USE_GPRS
-  // Unlock your SIM card with a PIN if needed
-  if (GSM_PIN && modem.getSimStatus() != 3) { modem.simUnlock(GSM_PIN); }
-#endif
-
-#if SIMPLE_NB_USE_WIFI
-  // Wifi connection parameters must be set before waiting for the network
-  SerialMon.print(F("Setting SSID/password..."));
-  if (!modem.networkConnect(wifiSSID, wifiPass)) {
-    SerialMon.println(" fail");
-    delay(10000);
-    return;
-  }
-  SerialMon.println(" success");
-#endif
-
-#if SIMPLE_NB_USE_GPRS && defined SIMPLE_NB_MODEM_XBEE
-  // The XBee must run the gprsConnect function BEFORE waiting for network!
-  modem.gprsConnect(apn, gprsUser, gprsPass);
-#endif
-
-  SerialMon.print("Waiting for network...");
-  if (!modem.waitForRegistration()) {
-    SerialMon.println(" fail");
-    delay(10000);
-    return;
-  }
-  SerialMon.println(" success");
-
-  if (modem.isNetworkRegistered()) { SerialMon.println("Network connected"); }
-
-#if SIMPLE_NB_USE_GPRS
-  // GPRS connection parameters are usually set after network registration
-  SerialMon.print(F("Connecting to "));
-  SerialMon.print(apn);
-  if (!modem.gprsConnect(apn, gprsUser, gprsPass)) {
-    SerialMon.println(" fail");
-    delay(10000);
-    return;
-  }
-  SerialMon.println(" success");
-
-  if (modem.isGprsConnected()) { SerialMon.println("GPRS connected"); }
-#endif
-
-  // MQTT Broker setup
-  mqtt.setServer(broker, 1883);
-  mqtt.setCallback(mqttCallback);
+    // MQTT Broker setup
+    mqtt.setServer(broker, 1883);
+    mqtt.setCallback(mqttCallback);
+    mqtt.setKeepAlive(60);
 }
 
 void loop() {
-  // Make sure we're still registered on the network
-  if (!modem.isNetworkRegistered()) {
-    SerialMon.println("Network not registered");
-    if (!modem.waitForRegistration(180000L, true)) {
-      SerialMon.println(" fail");
-      delay(10000);
-      return;
-    }
-    if (modem.isNetworkRegistered()) {
-      SerialMon.println("Network registered");
-    }
-
-#if SIMPLE_NB_USE_GPRS
-    // and make sure GPRS/EPS is still connected
-    if (!modem.isGprsConnected()) {
-      SerialMon.println("GPRS disconnected!");
-      SerialMon.print(F("Connecting to "));
-      SerialMon.print(apn);
-      if (!modem.gprsConnect(apn, gprsUser, gprsPass)) {
-        SerialMon.println(" fail");
-        delay(10000);
-        return;
-      }
-      if (modem.isGprsConnected()) { SerialMon.println("GPRS reconnected"); }
-    }
-#endif
-  }
 
   if (!mqtt.connected()) {
-    SerialMon.println("=== MQTT NOT CONNECTED ===");
-    // Reconnect every 10 seconds
-    uint32_t t = millis();
-    if (t - lastReconnectAttempt > 10000L) {
-      lastReconnectAttempt = t;
-      if (mqttConnect()) { lastReconnectAttempt = 0; }
-    }
-    delay(100);
-    return;
+    mqttConnect();
   }
 
   mqtt.loop();
