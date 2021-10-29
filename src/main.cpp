@@ -1,14 +1,12 @@
 /*****************************************************************
  *
- * This example send a HTTP POST request to httpbin.org/post with
- * a JSON object {"msg":"Hello World"} using a TCP connection. the
- * server will echo back what you sent together with response code,
- * http headers, etc.
+ * This example send a HTTP GET request to postman-echo.com, it
+ * return the public IP address of the NB-IoT module.
  *
  * This demo is based on using SIM7080.
  *
  *****************************************************************/
- 
+
 // Select your modem: (See AllFunctions example for the definition of other modem)
 #define SIMPLE_NB_MODEM_SIM7080
 
@@ -24,8 +22,8 @@
 #define BAUD_RATE 115200  // Baud rate to be used for communicating with the modem
 
 // Server configuration
-const char host[] = "httpbin.org";
-const char resource[] = "/post";
+const char host[] = "postman-echo.com";
+const char resource[] = "/ip";
 const int port = 80;
 
 SimpleNB modem(SerialAT);
@@ -79,15 +77,11 @@ void loop() {
       DBG("... failed");
     } else {
       // Make a HTTP POST request via TCP:
-      client.println("POST " + String(resource) + " HTTP/1.1");
+      client.println("GET " + String(resource) + " HTTP/1.1");
       client.println("Host: " + String(host));
-      client.println("Content-Type: application/json");
       client.println("Connection: close");
-      client.print("Content-Length: ");
-      String payload = "{\"msg\":\"Hello World\"}";
-      client.println(payload.length());
       client.println();
-      client.println(payload);
+
 
       // Wait for response to arrive
       uint32_t start = millis();
@@ -95,20 +89,20 @@ void loop() {
         delay(100);
       };
 
-      // Read response data, the response data consists of headers, payload acho backed so can be quite long
-      start = millis();
-      char received[680] = {'\0'};  // adjust the length accordingly as per your payload size
-      int read_chars = 0;
-      while (client.connected() && millis() - start < 10000L) {
-        while (client.available()) {
-          received[read_chars] = client.read();
-          received[read_chars + 1] = '\0';
-          read_chars++;
-          start = millis();
-        }
+      // Read and print the response data to Serial Monitor
+      char buff[400] = {'\0'};
+      int i = 0;
+      while (client.available()) {
+        buff[i++] = (char)client.read();
       }
-      DBG(received);
-      DBG("Data received:", strlen(received), "characters");
+      // Serial.println(buff);  //uncomment this out to see the entire response data
+
+      // return response is in a JSON format {"ip":"xxx.xxx.xxx.xxx"}
+      // parse the data to get the IP
+      strtok(buff, "{");
+      strtok(NULL, ":");
+      Serial.print("Your IP address is: ");
+      Serial.println(strtok(NULL, "}"));
 
       client.stop();
     }
