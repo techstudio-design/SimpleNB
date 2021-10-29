@@ -1,203 +1,121 @@
-/**************************************************************
+/*****************************************************************
  *
- *  DO NOT USE THIS - this is just a compilation test!
- *  This is NOT an example for use of this library!
+ * This example send a HTTP POST request to httpbin.org/post with
+ * a JSON object {"msg":"Hello World"} using a TCP connection. the
+ * server will echo back what you sent together with response code,
+ * http headers, etc.
  *
- **************************************************************/
-// #define SIMPLE_NB_MODEM_SIM7000
-#define SIMPLE_NB_MODEM_SIM7000SSL
-// #define SIMPLE_NB_MODEM_SIM7020
-// #define SIMPLE_NB_MODEM_SIM7070
-// #define SIMPLE_NB_MODEM_SIM7080
-// #define SIMPLE_NB_MODEM_SIM7090
-// #define SIMPLE_NB_MODEM_BG96
-// #define SIMPLE_NB_MODEM_SARAR4
-// #define SIMPLE_NB_MODEM_UBLOX
-// #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
-// #define SIMPLE_NB_MODEM_XBEE
+ * This demo is based on using SIM7080.
+ *
+ *****************************************************************/
+ 
+// Select your modem: (See AllFunctions example for the definition of other modem)
+#define SIMPLE_NB_MODEM_SIM7080
+
+// Enbale DBG debug output to Serial Monitor for debug prints, if needed
+#define SIMPLE_NB_DEBUG Serial
+
+// Select your Serial port for AT interface (See AllFunctions example for other port settings)
+#define SerialAT Serial2
 
 #include <SimpleNBClient.h>
 
-SimpleNB modem(Serial);
+#define PWRKEY   23       // GPIO pin used for PWRKEY
+#define BAUD_RATE 115200  // Baud rate to be used for communicating with the modem
+
+// Server configuration
+const char host[] = "httpbin.org";
+const char resource[] = "/post";
+const int port = 80;
+
+SimpleNB modem(SerialAT);
+
+// different modem may have different time requirements, check datasheet of your modem
+void powerUp() {
+    digitalWrite(PWRKEY, LOW);
+    delay(1000);
+    digitalWrite(PWRKEY, HIGH);
+    delay(2500);
+}
+
+void powerDown() {
+    digitalWrite(PWRKEY, LOW);
+    delay(1200);
+    digitalWrite(PWRKEY, HIGH);
+}
 
 void setup() {
-  Serial.begin(115200);
-  delay(6000);
+    Serial.begin(115200);
+    digitalWrite(PWRKEY, HIGH);  // Keep PWRKEY off
+    pinMode(PWRKEY, OUTPUT);
 }
 
 void loop() {
-  // Test the basic functions
-  modem.begin();
-  modem.begin("1234");
-  modem.init();
-  modem.init("1234");
-  modem.setBaud(115200);
-  modem.testAT();
+    DBG("Powering Up...");
+    powerUp();
 
-  modem.getModemInfo();
-  modem.getModemName();
-  modem.factoryDefault();
+    // Set modem baud rate
+    SimpleNBBegin(SerialAT, BAUD_RATE);
 
-  // Test Power functions
-  modem.restart();
-  // modem.sleepEnable();  // Not available for all modems
-  // modem.radioOff();  // Not available for all modems
-  modem.poweroff();
+    DBG("Initializing modem...");
+    modem.init();
 
-  // Test generic network functions
-  modem.getRegistrationStatus();
-  modem.isNetworkRegistered();
-  modem.waitForRegistration();
-  modem.waitForRegistration(15000L);
-  modem.waitForRegistration(15000L, true);
-  modem.getSignalQuality();
-  modem.getLocalIP();
-  modem.localIP();
-
-#if defined(SIMPLE_NB_MODEM_SIM7000) || defined(SIMPLE_NB_MODEM_SIM7070) || \
-  defined(SIMPLE_NB_MODEM_SIM7080) || defined(SIMPLE_NB_MODEM_SIM7090)
-  modem.activateDataNetwork();
-  modem.deactivateDataNetwork();
-#endif
-
-#if defined(SIMPLE_NB_MODEM_SIM7020)
-  modem.activateDataNetwork("myAPN", 0);
-#endif
-
-// Test the GPRS and SIM card functions
-#if defined(SIMPLE_NB_SUPPORT_GPRS)
-  modem.simUnlock("1234");
-  modem.getSimCCID();
-  modem.getIMEI();
-  modem.getIMSI();
-  modem.getSimStatus();
-
-  modem.gprsConnect("myAPN");
-  modem.gprsConnect("myAPN", "myUser");
-  modem.gprsConnect("myAPN", "myAPNUser", "myAPNPass");
-  modem.gprsDisconnect();
-  modem.getOperator();
-#endif
-
-  // Test TCP functions
-  modem.maintain();
-  SimpleNBClient client;
-  SimpleNBClient client2(modem);
-  SimpleNBClient client3(modem, 1);
-  client.init(&modem);
-  client.init(&modem, 1);
-
-  char server[]   = "somewhere";
-  char resource[] = "something";
-
-  client.connect(server, 80);
-
-  // Make a HTTP GET request:
-  client.print(String("GET ") + resource + " HTTP/1.0\r\n");
-  client.print(String("Host: ") + server + "\r\n");
-  client.print("Connection: close\r\n\r\n");
-
-  uint32_t timeout = millis();
-  while (client.connected() && millis() - timeout < 10000L) {
-    while (client.available()) {
-      client.read();
-      timeout = millis();
+    DBG("Waiting for network registration...");
+    if (!modem.waitForRegistration(60000L, true)) {
+      delay(1000);
+      return;  // network timeout, can't register to the mobile network, check your sim or carrier setup
     }
-  }
 
-  client.stop();
-
-#if defined(SIMPLE_NB_SUPPORT_SSL)
-  // modem.addCertificate();  // not yet impemented
-  // modem.deleteCertificate();  // not yet impemented
-  SimpleNBClientSecure client_secure(modem);
-  SimpleNBClientSecure client_secure2(modem);
-  SimpleNBClientSecure client_secure3(modem, 1);
-  client_secure.init(&modem);
-  client_secure.init(&modem, 1);
-
-  client_secure.connect(server, 443);
-
-  // Make a HTTP GET request:
-  client_secure.print(String("GET ") + resource + " HTTP/1.0\r\n");
-  client_secure.print(String("Host: ") + server + "\r\n");
-  client_secure.print("Connection: close\r\n\r\n");
-
-  timeout = millis();
-  while (client_secure.connected() && millis() - timeout < 10000L) {
-    while (client_secure.available()) {
-      client_secure.read();
-      timeout = millis();
+    DBG("Activate Data Network...");
+    if (!modem.activateDataNetwork()) {
+      delay(1000);
+      return;   // can't connect to the data network, check your APN and sim setup
     }
-  }
 
-  client_secure.stop();
-#endif
+    SimpleNBClient client(modem, 0);
 
-// Test the calling functions
-#if defined(SIMPLE_NB_SUPPORT_CALLING) && not defined(__AVR_ATmega32U4__)
-  modem.callNumber(String("+380000000000"));
-  modem.callHangup();
+    DBG("Connecting to", host);
+    if (!client.connect(host, port)) {
+      DBG("... failed");
+    } else {
+      // Make a HTTP POST request via TCP:
+      client.println("POST " + String(resource) + " HTTP/1.1");
+      client.println("Host: " + String(host));
+      client.println("Content-Type: application/json");
+      client.println("Connection: close");
+      client.print("Content-Length: ");
+      String payload = "{\"msg\":\"Hello World\"}";
+      client.println(payload.length());
+      client.println();
+      client.println(payload);
 
-#if not defined(SIMPLE_NB_MODEM_SEQUANS_MONARCH)
-  modem.callAnswer();
-  modem.dtmfSend('A', 1000);
-#endif
+      // Wait for response to arrive
+      uint32_t start = millis();
+      while (client.connected() && !client.available() && millis() - start < 30000L) {
+        delay(100);
+      };
 
-#endif
+      // Read response data, the response data consists of headers, payload acho backed so can be quite long
+      start = millis();
+      char received[680] = {'\0'};  // adjust the length accordingly as per your payload size
+      int read_chars = 0;
+      while (client.connected() && millis() - start < 10000L) {
+        while (client.available()) {
+          received[read_chars] = client.read();
+          received[read_chars + 1] = '\0';
+          read_chars++;
+          start = millis();
+        }
+      }
+      DBG(received);
+      DBG("Data received:", strlen(received), "characters");
 
-// Test the SMS functions
-#if defined(SIMPLE_NB_SUPPORT_SMS) && not defined(__AVR_ATmega32U4__)
-  modem.sendSMS(String("+380000000000"), String("Hello from "));
+      client.stop();
+    }
 
-#if not defined(SIMPLE_NB_MODEM_XBEE) && not defined(SIMPLE_NB_MODEM_SARAR4) && \
-    not defined(SIMPLE_NB_MODEM_SIM7020)
-  modem.sendUSSD("*111#");
-#endif
+    DBG("Powering Down...");
+    powerDown();
+    DBG("Done!\n\n");
 
-#if not defined(SIMPLE_NB_MODEM_XBEE) && not defined(SIMPLE_NB_MODEM_M590) && \
-    not defined(SIMPLE_NB_MODEM_SARAR4)
-  modem.sendSMS_UTF16("+380000000000", "Hello", 5);
-#endif
-
-#endif
-
-// Test the GSM location functions
-#if defined(SIMPLE_NB_SUPPORT_GSM_LOCATION) && not defined(__AVR_ATmega32U4__)
-  modem.getGsmLocation();
-  CellLBS_t lbs;
-  modem.getGsmLocation(lbs);
-#endif
-
-// Test the GPS functions
-#if defined(SIMPLE_NB_SUPPORT_GPS) && not defined(__AVR_ATmega32U4__)
-  modem.enableGPS();
-  modem.getGPS();
-  GPS_t gps;
-  modem.getGPS(gps);
-  modem.disableGPS();
-#endif
-
-// Test the Network time function
-#if defined(SIMPLE_NB_SUPPORT_NTP) && not defined(__AVR_ATmega32U4__)
-  modem.NTPServerSync("pool.ntp.org", 32);
-#endif
-
-// Test the Network time function
-#if defined(SIMPLE_NB_SUPPORT_TIME) && not defined(__AVR_ATmega32U4__)
-  modem.getNetworkTime();
-  DateTime_t dt;
-  modem.getNetworkTime(dt);
-#endif
-
-// Test Battery functions
-#if defined(SIMPLE_NB_SUPPORT_BATTERY)
-  Battery_t batt;
-  modem.getBatteryStatus(batt);
-#endif
-
-// Test the temperature function
-#if defined(SIMPLE_NB_SUPPORT_TEMPERATURE)
-  modem.getTemperature();
-#endif
+    delay(120000);  //wait for 2 minutes
 }
