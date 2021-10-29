@@ -82,14 +82,15 @@ bool mqttConnect() {
 
     const char* initMsg = "MQTT Started";
     mqtt.publish(topicStatus, initMsg);
-    Serial.print("Published topic [");
+    Serial.print("Publish topic [");
     Serial.print(topicStatus);
     Serial.print("]: ");
     Serial.println(initMsg);
 
     mqtt.subscribe(topicLed);
-    Serial.print("Subscribed to topic: ");
-    Serial.println(topicLed);
+    Serial.print("Subscribe to topic [");
+    Serial.print(topicLed);
+    Serial.println("]");
 
     return mqtt.connected();
 }
@@ -100,6 +101,25 @@ void powerUp() {
     delay(1000);
     digitalWrite(PWRKEY, HIGH);
     delay(2500);
+}
+
+void modemConnect() {
+      Serial.print("Network registration... ");
+      if (!modem.waitForRegistration()) {
+        Serial.println("fail");
+        delay(1000);
+        return;
+      }
+      Serial.println("success");
+
+      Serial.println("Activate Data Network... ");
+      modem.deactivateDataNetwork();    // disconnect any broken connection if there is one
+      if (!modem.activateDataNetwork()) {
+        Serial.println("fail");
+        delay(1000);
+        return;
+      }
+      Serial.println("success");
 }
 
 void setup() {
@@ -116,20 +136,7 @@ void setup() {
     SimpleNBBegin(SerialAT, BAUD_RATE);
     modem.init();
 
-    Serial.print("Network registration ");
-    if (!modem.waitForRegistration()) {
-      Serial.println("fail");
-      delay(1000);
-      return;
-    }
-    Serial.println("success");
-
-    Serial.println("Activate Data Network...");
-    modem.deactivateDataNetwork();    // disconnect any broken connection if there is one
-    if (!modem.activateDataNetwork()) {
-      delay(1000);
-      return;
-    }
+    modemConnect();
 
     // MQTT Broker setup
     mqtt.setServer(broker, 1883);
@@ -138,6 +145,10 @@ void setup() {
 }
 
 void loop() {
+
+  if ( !(client.connected() || modem.isNetworkRegistered()) ) {
+    modemConnect();
+  }
 
   if (!mqtt.connected()) {
     mqttConnect();
