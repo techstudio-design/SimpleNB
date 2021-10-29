@@ -15,9 +15,10 @@
  * Test sending and receiving messages from the HiveMQ webclient
  * available at http://www.hivemq.com/demos/websocket-client/.
  *
- * Publish 0 or 1 to the topic SimpleNB/led to toggle on-board LED,
+ * Publish anything to the topic SimpleNB/led will toggle the
+ * on-board LED,
  * Subscribe to the topic SimpleNB/status to receive LED status
- * send back by the mqtt client.
+ * send back by the mqtt client after the toggling.
  *
  **************************************************************/
 
@@ -42,9 +43,6 @@ const char* broker      = "broker.hivemq.com";
 const char* topicLed    = "SimpleNB/led";
 const char* topicStatus = "SimpleNB/status";
 
-int ledStatus = LOW;
-uint32_t lastReconnectAttempt = 0;
-
 SimpleNB       modem(SerialAT);
 SimpleNBClient client(modem);
 PubSubClient   mqtt(client);
@@ -60,39 +58,38 @@ void mqttCallback(char* topic, byte* payload, unsigned int len) {
 
     // Only proceed if incoming message's topic matches
     if (String(topic) == topicLed) {
-      ledStatus = !ledStatus;
+      uint8_t ledStatus = !digitalRead(LED_PIN);
       digitalWrite(LED_PIN, ledStatus);
-      mqtt.publish(topicStatus, ledStatus ? "1" : "0");
+      mqtt.publish(topicStatus, ledStatus ? "status=1" : "status=0");
     }
 }
 
-bool mqttConnect() {
-    Serial.print("Connecting to ");
-    Serial.print(broker);
+void mqttConnect() {
+    while (!client.connected()) {
+      Serial.print("Connecting to ");
+      Serial.print(broker);
+      if (mqtt.connect("SimpleNBClient")) {
+      // if (mqtt.connect("SimpleNBClient", "mqtt_user", "mqtt_pass")) {
+        Serial.println(" connected");
 
-    // Connect to MQTT Broker
-    bool status = mqtt.connect("SimpleNBClient");
-    // bool status = mqtt.connect("GsmClientName", "mqtt_user", "mqtt_pass");
+        const char* initMsg = "MQTT Started";
+        mqtt.publish(topicStatus, initMsg);
+        Serial.print("Publish topic [");
+        Serial.print(topicStatus);
+        Serial.print("]: ");
+        Serial.println(initMsg);
 
-    if (status == false) {
-      Serial.println(" fail");
-      return false;
+        mqtt.subscribe(topicLed);
+        Serial.print("Subscribe to topic [");
+        Serial.print(topicLed);
+        Serial.println("]");
+      } else {
+        Serial.print(" fail, rc=");
+        Serial.println(mqtt.state());
+        Serial.println(" try again in 5 seconds");
+        delay(5000);
+      }
     }
-    Serial.println(" success");
-
-    const char* initMsg = "MQTT Started";
-    mqtt.publish(topicStatus, initMsg);
-    Serial.print("Publish topic [");
-    Serial.print(topicStatus);
-    Serial.print("]: ");
-    Serial.println(initMsg);
-
-    mqtt.subscribe(topicLed);
-    Serial.print("Subscribe to topic [");
-    Serial.print(topicLed);
-    Serial.println("]");
-
-    return mqtt.connected();
 }
 
 // different modem may have different time requirements, check datasheet of your modem
@@ -104,22 +101,22 @@ void powerUp() {
 }
 
 void modemConnect() {
-      Serial.print("Network registration... ");
-      if (!modem.waitForRegistration()) {
-        Serial.println("fail");
-        delay(1000);
-        return;
-      }
-      Serial.println("success");
+    Serial.print("Network registration... ");
+    if (!modem.waitForRegistration()) {
+      Serial.println("fail");
+      delay(1000);
+      return;
+    }
+    Serial.println("success");
 
-      Serial.println("Activate Data Network... ");
-      modem.deactivateDataNetwork();    // disconnect any broken connection if there is one
-      if (!modem.activateDataNetwork()) {
-        Serial.println("fail");
-        delay(1000);
-        return;
-      }
-      Serial.println("success");
+    Serial.print("Activate Data Network... ");
+    modem.deactivateDataNetwork();    // disconnect any broken connection if there is one
+    if (!modem.activateDataNetwork()) {
+      Serial.println("fail");
+      delay(1000);
+      return;
+    }
+    Serial.println("success");
 }
 
 void setup() {
@@ -145,14 +142,13 @@ void setup() {
 }
 
 void loop() {
+    if ( !(client.connected() || modem.isNetworkRegistered()) ) {
+      modemConnect();
+    }
 
-  if ( !(client.connected() || modem.isNetworkRegistered()) ) {
-    modemConnect();
-  }
+    if (!mqtt.connected()) {
+      mqttConnect();
+    }
 
-  if (!mqtt.connected()) {
-    mqttConnect();
-  }
-
-  mqtt.loop();
+    mqtt.loop();
 }
