@@ -254,18 +254,18 @@ void loop() {
 
      // Read data
      startS = millis();
-     char logoS[640] = {'\0'};
-     int read_charsS = 0;
+     char response[640] = {'\0'};
+     int read_res = 0;
      while (secureClient.connected() && millis() - startS < 10000L) {
        while (secureClient.available()) {
-         logoS[read_charsS] = secureClient.read();
-         logoS[read_charsS + 1] = '\0';
-         read_charsS++;
+         response[read_res] = secureClient.read();
+         response[read_res + 1] = '\0';
+         read_res++;
          startS = millis();
        }
      }
-     Serial.println(logoS);
-     DBG("#####  RECEIVED:", strlen(logoS), "CHARACTERS");
+     Serial.println(response);
+     DBG("#####  RECEIVED:", strlen(response), "CHARACTERS");
      secureClient.stop();
    }
  #endif
@@ -331,31 +331,17 @@ void loop() {
 
  #if SIMPLE_NB_TEST_GPS && defined SIMPLE_NB_SUPPORT_GPS
    DBG("Enabling GPS/GNSS/GLONASS and waiting 15s for warm-up");
+   GPS_t gps;
    modem.enableGPS();
-   delay(15000L);
-   float lat2      = 0;
-   float lon2      = 0;
-   float speed2    = 0;
-   float alt2      = 0;
-   int   vsat2     = 0;
-   int   usat2     = 0;
-   float accuracy2 = 0;
-   int   year2     = 0;
-   int   month2    = 0;
-   int   day2      = 0;
-   int   hour2     = 0;
-   int   min2      = 0;
-   int   sec2      = 0;
    for (int8_t i = 15; i; i--) {
      DBG("Requesting current GPS/GNSS/GLONASS location");
-     if (modem.getGPS(&lat2, &lon2, &speed2, &alt2, &vsat2, &usat2, &accuracy2,
-                      &year2, &month2, &day2, &hour2, &min2, &sec2)) {
-       DBG("Latitude:", String(lat2, 8), "\tLongitude:", String(lon2, 8));
-       DBG("Speed:", speed2, "\tAltitude:", alt2);
-       DBG("Visible Satellites:", vsat2, "\tUsed Satellites:", usat2);
-       DBG("Accuracy:", accuracy2);
-       DBG("Year:", year2, "\tMonth:", month2, "\tDay:", day2);
-       DBG("Hour:", hour2, "\tMinute:", min2, "\tSecond:", sec2);
+     if (modem.getGPS(&gps)) {
+       DBG("Latitude:", String(gps.lat, 8), "\tLongitude:", String(gps.lon, 8));
+       DBG("Speed:", gps.speed, "\tAltitude:", gps.alt);
+       DBG("Visible Satellites:", gps.vsat, "\tUsed Satellites:", gps.usat);
+       DBG("Accuracy:", gps.accuracy);
+       DBG("Year:", gps.year, "\tMonth:", gps.month, "\tDay:", gps.day);
+       DBG("Hour:", gps.hour, "\tMinute:", gps.minute, "\tSecond:", gps.second);
        break;
      } else {
        DBG("Couldn't get GPS/GNSS/GLONASS location, retrying in 15s.");
