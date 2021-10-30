@@ -297,6 +297,7 @@ protected:
     streamSkipUntil('\"');
     String res = stream.readStringUntil('\"');
     waitResponse();
+    Serial.println(res);
     return res;
   }
 

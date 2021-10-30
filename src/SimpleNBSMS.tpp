@@ -113,6 +113,38 @@ class SimpleNBSMS {
     return result;
   }
 
+  // Common methods for UTF8/UTF16 SMS.
+  // Supported by: BG96, M95, MC60, SIM5360, SIM7000, SIM7600, SIM800
+  class UTF8Print : public Print {
+   public:
+    explicit UTF8Print(Print& p) : p(p) {}
+    size_t write(const uint8_t c) override {
+      if (prv < 0xC0) {
+        if (c < 0xC0) printHex(c);
+        prv = c;
+      } else {
+        uint16_t v = uint16_t(prv) << 8 | c;
+        v -= (v >> 8 == 0xD0) ? 0xCC80 : 0xCD40;
+        printHex(v);
+        prv = 0;
+      }
+      return 1;
+    }
+
+   private:
+    Print&  p;
+    uint8_t prv = 0;
+    void    printHex(const uint16_t v) {
+      uint8_t c = v >> 8;
+      if (c < 0x10) p.print('0');
+      p.print(c, HEX);
+      c = v & 0xFF;
+      if (c < 0x10) p.print('0');
+      p.print(c, HEX);
+    }
+  };
+
+public:
   String sendUSSDImpl(const String& code) {
     // Set preferred message format to text mode
     thisModem().sendAT(GF("+CMGF=1"));
@@ -153,37 +185,6 @@ class SimpleNBSMS {
     return thisModem().waitResponse(60000L) == 1;
   }
 
-  // Common methods for UTF8/UTF16 SMS.
-  // Supported by: BG96, M95, MC60, SIM5360, SIM7000, SIM7600, SIM800
-  class UTF8Print : public Print {
-   public:
-    explicit UTF8Print(Print& p) : p(p) {}
-    size_t write(const uint8_t c) override {
-      if (prv < 0xC0) {
-        if (c < 0xC0) printHex(c);
-        prv = c;
-      } else {
-        uint16_t v = uint16_t(prv) << 8 | c;
-        v -= (v >> 8 == 0xD0) ? 0xCC80 : 0xCD40;
-        printHex(v);
-        prv = 0;
-      }
-      return 1;
-    }
-
-   private:
-    Print&  p;
-    uint8_t prv = 0;
-    void    printHex(const uint16_t v) {
-      uint8_t c = v >> 8;
-      if (c < 0x10) p.print('0');
-      p.print(c, HEX);
-      c = v & 0xFF;
-      if (c < 0x10) p.print('0');
-      p.print(c, HEX);
-    }
-  };
-
   bool sendSMS_UTF8_begin(const char* const number) {
     thisModem().sendAT(GF("+CMGF=1"));
     thisModem().waitResponse();
@@ -195,11 +196,13 @@ class SimpleNBSMS {
     thisModem().sendAT(GF("+CMGS=\""), number, GF("\""));
     return thisModem().waitResponse(GF(">")) == 1;
   }
+
   bool sendSMS_UTF8_end() {
     thisModem().stream.write(static_cast<char>(0x1A));
     thisModem().stream.flush();
     return thisModem().waitResponse(60000L) == 1;
   }
+
   UTF8Print sendSMS_UTF8_stream() {
     return UTF8Print(thisModem().stream);
   }
@@ -221,6 +224,7 @@ class SimpleNBSMS {
 
     return sendSMS_UTF8_end();
   }
+
 };
 
 #endif  // SRC_SIMPLE_NB_SMS_H_
