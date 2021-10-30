@@ -180,7 +180,7 @@ class SimpleNBSim7000
      if (waitResponse(60000L) != 1) { return false; }
      return true;
    }
-   
+
    String getNetworkModes() {
      // Get the help string, not the setting value
      sendAT(GF("+CNMP=?"));
@@ -615,7 +615,7 @@ protected:
               sockets[mux]->got_data = true;
             }
             data = "";
-            // DBG("### Got Data:", mux);
+            DBG("### Got Data on socket:", mux);
           } else {
             data += mode;
           }
@@ -627,7 +627,7 @@ protected:
             if (len >= 0 && len <= 1024) { sockets[mux]->sock_available = len; }
           }
           data = "";
-          // DBG("### Got Data:", len, "on", mux);
+          DBG("### READ: " + String(len) + " from " + String(mux));
         } else if (data.endsWith(GF("CLOSED" ACK_NL))) {
           int8_t nl   = data.lastIndexOf(ACK_NL, data.length() - 8);
           int8_t coma = data.indexOf(',', nl + 2);
@@ -636,7 +636,7 @@ protected:
             sockets[mux]->sock_connected = false;
           }
           data = "";
-          DBG("### Closed: ", mux);
+          DBG("### Closed socket: ", mux);
         } else if (data.endsWith(GF("*PSNWID:"))) {
           streamSkipUntil('\n');  // Refresh network name by network
           data = "";

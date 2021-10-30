@@ -22,6 +22,7 @@
 .clang-format
 .gcc-flags.json
 platformio.ini
+src/main.cpp
 extra_envs.ini
 lib/readme.txt
 include/readme.txt

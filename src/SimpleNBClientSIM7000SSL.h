@@ -101,8 +101,7 @@ class SimpleNBSim7000SSL
    public:
     GsmClientSecureSIM7000SSL() {}
 
-    explicit GsmClientSecureSIM7000SSL(SimpleNBSim7000SSL& modem,
-                                       uint8_t            mux = 0)
+    explicit GsmClientSecureSIM7000SSL(SimpleNBSim7000SSL& modem, uint8_t mux = 0)
         : GsmClientSim7000SSL(modem, mux) {}
 
    public:
@@ -813,14 +812,14 @@ protected:
             if (len >= 0 && len <= 1024) { sockets[mux]->sock_available = len; }
           }
           data = "";
-          DBG("### Got Data:", len, "on", mux);
+          DBG("### READ: " + String(len) + " from " + String(mux));
         } else if (data.endsWith(GF("+CADATAIND:"))) {
           int8_t mux = streamGetIntBefore('\n');
           if (mux >= 0 && mux < SIMPLE_NB_MUX_COUNT && sockets[mux]) {
             sockets[mux]->got_data = true;
           }
           data = "";
-          DBG("### Got Data:", mux);
+          DBG("### Got Data on socket:", mux);
         } else if (data.endsWith(GF("+CASTATE:"))) {
           int8_t mux   = streamGetIntBefore(',');
           int8_t state = streamGetIntBefore('\n');

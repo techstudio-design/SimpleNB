@@ -506,7 +506,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
 
     for (int i = 0; i < len; i++) { moveCharFromStreamToFifo(mux); }
     waitResponse();
-    // DBG("### READ:", len, "from", mux);
+    DBG("### READ:", len, "from", mux);
     sockets[mux]->sock_available = modemGetAvailable(mux);
     return len;
   }

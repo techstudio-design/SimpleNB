@@ -827,21 +827,21 @@ protected:
             if (len >= 0 && len <= 1024) { sockets[mux]->sock_available = len; }
           }
           data = "";
-          DBG("### Got Data:", len, "on", mux);
+          DBG("### READ:" + String(len) + " on " + String(mux));
         } else if (data.endsWith(GF("+CADATAIND:"))) {
           int8_t mux = streamGetIntBefore('\n');
           if (mux >= 0 && mux < SIMPLE_NB_MUX_COUNT && sockets[mux]) {
             sockets[mux]->got_data = true;
           }
           data = "";
-          DBG("### Got Data:", mux);
+          DBG("### Got Data on socket: " + String(mux));
         } else if (data.endsWith(GF("+CASTATE:"))) {
           int8_t mux   = streamGetIntBefore(',');
           int8_t state = streamGetIntBefore('\n');
           if (mux >= 0 && mux < SIMPLE_NB_MUX_COUNT && sockets[mux]) {
             if (state != 1) {
               sockets[mux]->sock_connected = false;
-              DBG("### Closed: ", mux);
+              DBG("### Closed socket:", mux);
             }
           }
           data = "";
