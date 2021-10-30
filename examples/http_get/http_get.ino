@@ -101,8 +101,8 @@ void loop() {
       // parse the data to get the IP
       strtok(buff, "{");
       strtok(NULL, ":");
-      Serial.print("Your IP address is: ");
-      Serial.println(strtok(NULL, "}"));
+      char * p = strtok(NULL, "\"");
+      DBG("Your IP address is: " + String(strtok(p, "\"")) );
 
       client.stop();
     }
