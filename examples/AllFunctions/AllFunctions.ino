@@ -51,7 +51,7 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 #define SIMPLE_NB_TEST_TCP true
 #define SIMPLE_NB_TEST_SSL false
 #define SIMPLE_NB_TEST_BATTERY true
-#define SIMPLE_NB_TEST_GSM_LOCATION false
+#define SIMPLE_NB_TEST_GSM_LOCATION true
 #define SIMPLE_NB_TEST_NTP true
 #define SIMPLE_NB_TEST_TIME true
 #define SIMPLE_NB_TEST_GPS false
@@ -314,8 +314,8 @@ void loop() {
  #if SIMPLE_NB_TEST_GSM_LOCATION && defined SIMPLE_NB_SUPPORT_GSM_LOCATION
    CellLBS_t lbs;
    for (int8_t i = 15; i; i--) {
-     DBG("Requesting current GSM location");
-     if (modem.getGsmLocation(lbs)) {
+     DBG("Requesting current GSM location (with GMT time)");
+     if (modem.getGsmLocation(lbs, 0)) {
        DBG("Latitude:", String(lbs.lat, 8), "\tLongitude:", String(lbs.lon, 8));
        DBG("Accuracy:", lbs.accuracy);
        DBG("Year:", lbs.year, "\tMonth:", lbs.month, "\tDay:", lbs.day);
@@ -326,8 +326,8 @@ void loop() {
        delay(15000L);
      }
    }
-   DBG("Retrieving GSM location again as a string");
-   String location = modem.getGsmLocation();
+   DBG("Retrieving GSM location again as a string (without time)");
+   String location = modem.getGsmLocation(0);
    DBG("GSM Based Location String:", location);
  #endif
 

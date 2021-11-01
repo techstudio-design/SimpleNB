@@ -33,12 +33,12 @@ class SimpleNBGSMLocation {
   /*
    * GSM Location functions
    */
-  String getGsmLocation() {
-    return thisModem().getGsmLocationImpl();
+  String getGsmLocation(int cid) {
+    return thisModem().getGsmLocationImpl(cid);
   }
 
-  bool getGsmLocation(CellLBS_t& lbs) {
-    return thisModem().getGsmLocationImpl(lbs);
+  bool getGsmLocation(CellLBS_t& lbs, int cid) {
+    return thisModem().getGsmLocationImpl(lbs, cid);
   };
 
   /*
@@ -53,14 +53,14 @@ class SimpleNBGSMLocation {
    return static_cast<modemType&>(*this);
   }
 
-  String getGsmLocationImpl() {
+  String getGsmLocationImpl(int cid) {
     // AT+CLBS=<type>,<cid>
     // <type> 1 = location using 3 cell's information
-    //        3 = get number of times location has been accessed
     //        4 = Get longitude latitude and date time
-    thisModem().sendAT(GF("+CLBS=1,1"));
+    // <cid>  context id, that is, data network must be activated at <cid>
+    thisModem().sendAT(GF("+CLBS=1,") + String(cid));
     // Should get a location code of "0" indicating success
-    if (thisModem().waitResponse(120000L, GF("+CLBS: ")) != 1) { return ""; }
+    if (thisModem().waitResponse(30000L, GF("+CLBS: ")) != 1) { return ""; }
     int8_t locationCode = thisModem().streamGetIntLength(2);
     // 0 = success, else, error
     if (locationCode != 0) {
@@ -73,14 +73,14 @@ class SimpleNBGSMLocation {
     return res;
   }
 
-  bool getGsmLocationImpl(CellLBS_t& lbs) {
+  bool getGsmLocationImpl(CellLBS_t& lbs, int cid) {
     // AT+CLBS=<type>,<cid>
     // <type> 1 = location using 3 cell's information
-    //        3 = get number of times location has been accessed
     //        4 = Get longitude latitude and date time
-    thisModem().sendAT(GF("+CLBS=4,1"));
+    // <cid>  context id, that is, data network must be activated at <cid>
+    thisModem().sendAT(GF("+CLBS=4,") + String(cid));
     // Should get a location code of "0" indicating success
-    if (thisModem().waitResponse(120000L, GF("+CLBS: ")) != 1) { return false; }
+    if (thisModem().waitResponse(30000L, GF("+CLBS: ")) != 1) { return false; }
     int8_t locationCode = thisModem().streamGetIntLength(2);
     // 0 = success, else, error
     if (locationCode != 0) {
