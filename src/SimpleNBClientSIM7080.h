@@ -290,16 +290,6 @@ public:
     sendAT(GF("+CNSMOD="), int8_t(n));
     return waitResponse() == 1;
   }
-protected:
-  String getLocalIPImpl() {
-    sendAT(GF("+CNACT?"));
-    if (waitResponse(GF(ACK_NL "+CNACT:")) != 1) { return ""; }
-    streamSkipUntil('\"');
-    String res = stream.readStringUntil('\"');
-    waitResponse();
-    Serial.println(res);
-    return res;
-  }
 
   /*
    * Secure socket layer functions
