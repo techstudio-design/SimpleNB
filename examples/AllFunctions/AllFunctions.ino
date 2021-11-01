@@ -190,8 +190,10 @@ void loop() {
   int csq = modem.getSignalQuality();
   DBG("Signal quality:", csq);
 
+  // Use the following to get IP as a String
   // String local = modem.getLocalIP();
-  // DBG("Local IP:", local);
+  IPAddress local = modem.localIP();
+  DBG("Local IP:", local);
 
 #if SIMPLE_NB_TEST_USSD && defined SIMPLE_NB_SUPPORT_SMS
    String mobile_imei = modem.sendUSSD("*#06#"); //this is universal USSD for getting IMEI

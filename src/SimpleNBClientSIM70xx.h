@@ -160,12 +160,6 @@ protected:
     return (s == REG_OK_HOME || s == REG_OK_ROAMING);
   }
 
- public:
-
-  String getLocalIPImpl() {
-    return getLocalIPImpl();
-  }
-
   /*
    * GPRS functions
    */
