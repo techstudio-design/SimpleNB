@@ -1,16 +1,21 @@
-/*****************************************************************
+/*********************************************************************
  *
- * This example retrieve latitude and longitude based on GSM LBS
- * (Location Based Service) commands. This functonalities may not
- * available on your NB-IoT/CAT M1 modules, check with module's
- * manual prior proceed. The data network must be activated prior
- * calling the GSM location function.
+ * This example retrieve latitude and longitude from the GPS receiver
+ * This functonalities may not available on your NB-IoT/CAT M1 modules,
+ * check with module's manual prior proceed.
+ *
+ * Make sure this is test at outdoor where GPS signal can be reached.
+ * The time it takes to get the GPS TTFF (Time-to-first-fix) could be
+ * any where between 30 - 60 seconds, depends on antenna sensitivity,
+ * the visibility of sky, and many other factors, each call to
+ * modem.getGPS() will timeout at 2 minutes.
  *
  * This demo is based on using SIM7080.
  *
- *****************************************************************/
+ ********************************************************************/
 
-// Select your modem: (See AllFunctions example for the definition of other modem)
+// Select your modem:
+// GPS functionality is not available on SIM7020 and BG96
 #define SIMPLE_NB_MODEM_SIM7080
 
 // Enbale DBG debug output to Serial Monitor for debug prints, if needed
@@ -24,6 +29,8 @@
 #define PWRKEY    23      // GPIO pin used for PWRKEY
 #define BAUD_RATE 115200  // Baud rate to be used for communicating with the modem
 #define ANT_CTRL  12      // For GPS Antenna Control, make sure it match to the GPIO pin you use
+
+const unsigned long _startTime = millis();
 
 SimpleNB modem(SerialAT);
 
@@ -61,27 +68,29 @@ void loop() {
     DBG("Initializing modem...");
     modem.init();
 
-    DBG("Waiting for network registration...");
+    DBG("Registrating to mobile network...");
     if (!modem.waitForRegistration(60000L, true)) {
       delay(1000);
-      return;  // network timeout, can't register to the mobile network, check your sim or carrier setup
+      return;
     }
 
-    // DBG("Activate Data Network...");
-    // if (!modem.activateDataNetwork()) {
-    //   delay(1000);
-    //   return;   // can't connect to the data network, check your APN and sim setup
-    // }
-
-    // Make sure this is test at outdoor where GPS signal can be reached. The time
-    // it takes to get the GPS TTFF (Time-to-first-fix) could be any where between
-    // 30 - 60 seconds, depends on antenna sensitivity, the visibility of sky, and
-    // many other factors, each call to modem.getGPS() will timeout at 2 minutes.
-
-    // Enable GPS receiver and turn on GPS Active-antenna power control
+    DBG("Enabling GSP Reciver...");
     digitalWrite(ANT_CTRL, HIGH);
     modem.enableGPS();
     delay(1000);
+
+    // GPS won't accept any AT command before 9 seconds from boot-up
+    while (millis() - _startTime < 9000L) {};
+
+    // Getting GPS data as a String
+    // DBG("Requesting current GPS location and GMT time");
+    // String gpsData = modem.getGPS();
+    // if (gpsData != "") {
+    //   DBG(gpsData);
+    // } else {
+    //   Serial.println("Couldn't get GPS location, retrying in 15s.");
+    //   delay(15000L);
+    // }
 
     // Getting GPS data with parsed data in GPS_t object
     GPS_t gps;
@@ -89,7 +98,7 @@ void loop() {
       DBG("Requesting current GPS location and GMT time");
       if (modem.getGPS(gps)) {
         DBG("Latitude:", String(gps.lat, 8), "\tLongitude:", String(gps.lon, 8));
-        DBG("Accuracy:", gps.accuracy);
+        DBG("Accuracy:", gps.accuracy, "\tAltitude(MSL):", gps.alt);
         DBG("Year:", gps.year, "\tMonth:", gps.month, "\tDay:", gps.day);
         DBG("Hour:", gps.hour, "\tMinute:", gps.minute, "\tSecond:", gps.second);
         break;
@@ -99,11 +108,7 @@ void loop() {
       }
     }
 
-    // Getting GPS data as a String
-    // String gpsData = modem.getGPS();
-    // Serial.println(gpsData);
-
-    // Disable GPS receiver and Turn off GPS antenna control
+    DBG("Disable GPS Receiver");
     modem.disableGPS();
     digitalWrite(ANT_CTRL, LOW);
 

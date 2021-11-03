@@ -22,6 +22,7 @@
 #include "SimpleNBSSL.tpp"
 #include "SimpleNBGPS.tpp"
 #include "SimpleNBGSMLocation.tpp"
+#include <ctime>
 
 class SimpleNBSim7080 : public SimpleNBSim70xx<SimpleNBSim7080>,
                        public SimpleNBTCP<SimpleNBSim7080, SIMPLE_NB_MUX_COUNT>,
@@ -397,93 +398,96 @@ public:
    * GPS/GNSS/GLONASS location functions
    */
 protected:
- // enable GPS
- bool enableGPSImpl() {
+  // enable GPS
+  bool enableGPSImpl() {
    return true;
    // sendAT(GF("+CGNSPWR=1"));
    // if (waitResponse() != 1) { return false; }
    // return true;
- }
+  }
 
- bool disableGPSImpl() {
+  bool disableGPSImpl() {
    sendAT(GF("+SGNSCMD=0"));
    if (waitResponse() != 1) { return false; }
    return true;
- }
+  }
 
- // get the RAW GPS output
- String getGPSImpl() {
-   sendAT(GF("+SGNSCMD=1,0"));
-   if (waitResponse(120000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
-     return "";
-   }
-   String res = stream.readStringUntil('\n');
-   //waitResponse();
-   res.trim();
-   return res;
- }
+  // get GPS output as a String, data format like this:
+  // 1,05:29:31,31.22213,121.35575,16.62,40.15,30.69,0.0,0.0,0x16dfc3dca78,311
+  // known issue:   from our experience, if this +SGNSCMD is called too early from power on
+  //                (before 9 seconds), the command will be lost without any response.
+  String getGPSImpl() {
+    sendAT(GF("+SGNSCMD=1,0"));
+    if (waitResponse(60000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
+      waitResponse();
+      return "";
+    }
+    String res = stream.readStringUntil('\n');
+    waitResponse();
+    res.trim();
+    return res;
+  }
 
- // get GPS informations
- // This function use AT+SGNSCMD to get GPS information instead of using AT+CGNSINF.
- // According to Simcom, AT+CGNSINF is a legacy API inherited from previous generation
- // Qualcomm chip , Qualcomm no longer support and do not recommend of using AT+CGSINF.
- // Getting GSP modem suffers the issue mentioned here:
- // https://stackoverflow.com/questions/61857667/sim7080g-module-cant-send-data-over-tcp-while-using-gnss/61884727#61884727
- // if mode = 0, AT+SGNSCMD = <mode>
- //    mode = 1, AT+SGNSCMD = <mode>, <powerlevel>
- //    mode = 2, AT+SGNSCMD = <mode>, <minInterval>, <minDistance>, <accuracy>
- // <mode>: 0 - Turn off GNSS
- //         1 - Turn on GNSS and get location once
- //         2 - Turn on GNSS and get location repeatly
- // <powerlevel>:  0 - use all technologies available to calculate location
- //                1 - use all low power technologies to calculate locaiton
- //                2 - use only low and medium power technologies to calculate location
- // <minInterval>: minimum interval in milliseconds, default 1000
- // <minDistance>: minimum ditances in meters that must be traversed between reports.
- //                set to 0 for pure time-based report
- // <accuracy>:    0 - not specified, use default
- //                1 - Low accuracy for location is acceptable
- //                2 - Medium accuracy for location is acceptable
- //                3 - Only high accuracy for location is acceptable
- // return:        +SGNSERR: <erro code> or  ERROR
- // known issue:   from our experience, if this +SGNSCMD is called too early from power on
- //                (before 9 seconds), the command will be lost without any response.
- bool getGPSImpl(GPS_t gps) {
-   sendAT(GF("+SGNSCMD=1,0"));
-   if (waitResponse(120000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
-     return false;
-   }
+  // get GPS informations
+  // This function use AT+SGNSCMD to get GPS information instead of using AT+CGNSINF.
+  // According to Simcom, AT+CGNSINF is a legacy API inherited from previous generation
+  // Qualcomm chip , Qualcomm no longer support and do not recommend of using AT+CGSINF.
+  // Getting GSP modem suffers the issue mentioned here:
+  // https://stackoverflow.com/questions/61857667/sim7080g-module-cant-send-data-over-tcp-while-using-gnss/61884727#61884727
+  // if mode = 0, AT+SGNSCMD = <mode>
+  //    mode = 1, AT+SGNSCMD = <mode>, <powerlevel>
+  //    mode = 2, AT+SGNSCMD = <mode>, <minInterval>, <minDistance>, <accuracy>
+  // <mode>: 0 - Turn off GNSS
+  //         1 - Turn on GNSS and get location once
+  //         2 - Turn on GNSS and get location repeatly
+  // <powerlevel>:  0 - use all technologies available to calculate location
+  //                1 - use all low power technologies to calculate locaiton
+  //                2 - use only low and medium power technologies to calculate location
+  // <minInterval>: minimum interval in milliseconds, default 1000
+  // <minDistance>: minimum ditances in meters that must be traversed between reports.
+  //                set to 0 for pure time-based report
+  // <accuracy>:    0 - not specified, use default
+  //                1 - Low accuracy for location is acceptable
+  //                2 - Medium accuracy for location is acceptable
+  //                3 - Only high accuracy for location is acceptable
+  // return:        +SGNSERR: <erro code> or  ERROR
+  // known issue:   from our experience, if this +SGNSCMD is called too early from power on
+  //                (before 9 seconds), the command will be lost without any response.
+  bool getGPSImpl(GPS_t& gps) {
+    sendAT(GF("+SGNSCMD=1,0"));
+    if (waitResponse(60000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
+      return false;
+    }
 
-   streamSkipUntil(',');                // GNSS mode
-   // Time
-   gps.hour   = streamGetIntLength(2);  // Two digit hour
-   gps.minute = streamGetIntLength(2);  // Two digit minute
-   gps.second = static_cast<int>(streamGetFloatBefore(','));  // second only
-   gps.lat   = streamGetFloatBefore(',');    // Latitude
-   gps.lon   = streamGetFloatBefore(',');    // Longitude
-   gps.accuracy = streamGetFloatBefore(','); // Accuracy
-   streamSkipUntil(',');                     // MSL Altitude in meter
-   gps.alt   = streamGetFloatBefore(',');    // MSL Altitude sea level in meters
-   gps.speed = streamGetFloatBefore(',');    // Speed over ground in km/hour
-   streamSkipUntil(',');                     // Course Over Ground. Degrees.
+    streamSkipUntil(',');                // GNSS mode
+    gps.hour   = streamGetIntLength(2);  // Two digit hour
+    streamSkipUntil(':');
+    gps.minute = streamGetIntLength(2);  // Two digit minute
+    streamSkipUntil(':');
+    gps.second = static_cast<int>(streamGetFloatBefore(','));  // second only
+    gps.lat   = streamGetFloatBefore(',');    // Latitude
+    gps.lon   = streamGetFloatBefore(',');    // Longitude
+    gps.accuracy = streamGetFloatBefore(','); // Accuracy
+    streamSkipUntil(',');                     // MSL Altitude in meter
+    gps.alt   = streamGetFloatBefore(',');    // MSL Altitude sea level in meters
+    gps.speed = streamGetFloatBefore(',');    // Speed over ground in km/hour
+    streamSkipUntil(',');                     // Course Over Ground. Degrees.
 
-   streamSkipUntil(',');                     // timestamp in hex, e.g. 0x16dfc3dca78
-   // to-do, instead of skip this, get the timestamp to get the date value
-   // e.g. 0x16dfc3dca78 is 1571894971000, GMT: Thursday, 24 October 2019 05:29:31
-   // read the timestamp
-   // long timestamp = 0x16dfc3dca78L / 1000;
-   // tm *t = gmtime(&timestamp);
-   // gps.year = t->tm_year + 1900;
-   // gps.month = t->tm_mon + 1;
-   // gps.day = t->tm_mday;
+    // timestamp is in the form of a string representation of a hex value '0x17ce3f579c0'
+    String tStr = stream.readStringUntil(',');
+    const long tstmp = strtoll(tStr.c_str(), (char**)0, 0)/1000;
+    tm *t = gmtime(&tstmp);
+    gps.year = t->tm_year + 1900;
+    gps.month = t->tm_mon + 1;
+    gps.day = t->tm_mday;
 
-   streamSkipUntil('\n');                    // flag
-   gps.vsat = 0;
-   gps.usat = 0;
+    streamSkipUntil('\n');  // flag
+    gps.vsat = 0;           // AT+SGNSCMD does not provide vsat value
+    gps.usat = 0;           // AT_SGNSCMD does not provide usat value
 
-   //waitResponse();
-   return true;
- }
+    waitResponse();
+    return true;
+  }
 
   /*
    * Time functions

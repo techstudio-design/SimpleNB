@@ -17,7 +17,7 @@
 
 typedef struct {
   uint8_t  chargeState = 0;
-  uint8_t   percent     = 0;
+  uint8_t  percent     = 0;
   uint16_t milliVolts  = 0;
 } Battery_t;
 
