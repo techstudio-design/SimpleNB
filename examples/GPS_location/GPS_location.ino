@@ -80,7 +80,7 @@ void loop() {
     delay(1000);
 
     // GPS won't accept any AT command before 9 seconds from boot-up
-    while (millis() - _startTime < 9000L) {};
+    delay(3000);
 
     // Getting GPS data as a String
     // DBG("Requesting current GPS location and GMT time");
@@ -88,23 +88,23 @@ void loop() {
     // if (gpsData != "") {
     //   DBG(gpsData);
     // } else {
-    //   Serial.println("Couldn't get GPS location, retrying in 15s.");
-    //   delay(15000L);
+    //   Serial.println("Couldn't get GPS location, retrying in 5s.");
+    //   delay(5000L);
     // }
 
     // Getting GPS data with parsed data in GPS_t object
     GPS_t gps;
-    for (int8_t i = 3; i; i--) {
+    for (int8_t i = 0; i < 3; i++) {
       DBG("Requesting current GPS location and GMT time");
       if (modem.getGPS(gps)) {
         DBG("Latitude:", String(gps.lat, 8), "\tLongitude:", String(gps.lon, 8));
-        DBG("Accuracy:", gps.accuracy, "\tAltitude(MSL):", gps.alt);
+        DBG("Accuracy:", gps.accuracy);
         DBG("Year:", gps.year, "\tMonth:", gps.month, "\tDay:", gps.day);
         DBG("Hour:", gps.hour, "\tMinute:", gps.minute, "\tSecond:", gps.second);
         break;
       } else {
-        DBG("Couldn't get GPS location, retrying in 15s.");
-        delay(15000L);
+        DBG("Couldn't get GPS location, retrying in 5s.");
+        delay(5000L);
       }
     }
 

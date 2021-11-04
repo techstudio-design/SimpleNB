@@ -328,10 +328,8 @@ public:
 protected:
   // enable GPS
   bool enableGPSImpl() {
-   return true;
-   // sendAT(GF("+CGNSPWR=1"));
-   // if (waitResponse() != 1) { return false; }
-   // return true;
+    // not in use for SIM7080
+    return true;
   }
 
   bool disableGPSImpl() {
@@ -346,7 +344,7 @@ protected:
   //                (before 9 seconds), the command will be lost without any response.
   String getGPSImpl() {
     sendAT(GF("+SGNSCMD=1,0"));
-    if (waitResponse(60000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
+    if (waitResponse(120000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
       waitResponse();
       return "";
     }
@@ -383,7 +381,8 @@ protected:
   //                (before 9 seconds), the command will be lost without any response.
   bool getGPSImpl(GPS_t& gps) {
     sendAT(GF("+SGNSCMD=1,0"));
-    if (waitResponse(60000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
+    if (waitResponse(120000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
+      waitResponse();
       return false;
     }
 
