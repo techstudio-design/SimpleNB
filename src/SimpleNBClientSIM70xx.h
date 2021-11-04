@@ -189,6 +189,16 @@ protected:
   }
 
   /*
+   * Phone Call functions
+   */
+ protected:
+  // Can follow all of the phone call functions from the template
+  bool callAnswerImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
+  bool callNumberImpl(const String& number) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
+  bool callHangupImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
+  bool dtmfSendImpl(char cmd, int duration_ms = 100) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
+
+  /*
    * Messaging functions
    */
  protected:

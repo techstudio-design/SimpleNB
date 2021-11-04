@@ -389,6 +389,12 @@ public:
   // Follows the SIM70xx template
 
   /*
+   * Phone Call functions
+   */
+ protected:
+  // Follow all of phone call functions from the template
+
+  /*
    * Messaging functions
    */
  protected:
