@@ -300,80 +300,9 @@ public:
    */
  protected:
   bool gprsConnectImpl(const char* apn, const char* user = NULL,
-                       const char* pwd = NULL) {
-    gprsDisconnect();
+                       const char* pwd = NULL) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 
-    // Define the PDP context
-    sendAT(GF("+CGDCONT=1,\"IP\",\""), apn, '"');
-    waitResponse();
-
-    // Attach to GPRS
-    sendAT(GF("+CGATT=1"));
-    if (waitResponse(60000L) != 1) { return false; }
-
-    // NOTE:  **DO NOT** activate the PDP context
-    // For who only knows what reason, doing so screws up the rest of the
-    // process
-
-    // Check the APN returned by the server
-    // not sure why, but the connection is more consistent with this
-    sendAT(GF("+CGNAPN"));
-    waitResponse();
-
-    // Bearer settings for applications based on IP
-    // Set the user name and password
-    // AT+CNCFG=<pdpidx>,<ip_type>,[<APN>,[<usename>,<password>,[<authentication>]]]
-    // <pdpidx> PDP Context Identifier - for reasons not understood by me,
-    //          use PDP context identifier of 0 for what we defined as 1 above
-    // <ip_type> 0: Dual PDN Stack
-    //           1: Internet Protocol Version 4
-    //           2: Internet Protocol Version 6
-    // <authentication> 0: NONE
-    //                  1: PAP
-    //                  2: CHAP
-    //                  3: PAP or CHAP
-    if (pwd && strlen(pwd) > 0 && user && strlen(user) > 0) {
-      sendAT(GF("+CNCFG=0,1,\""), apn, "\",\"", "\",\"", user, pwd, '"');
-      waitResponse();
-    } else if (user && strlen(user) > 0) {
-      // Set the user name only
-      sendAT(GF("+CNCFG=0,1,\""), apn, "\",\"", user, '"');
-      waitResponse();
-    } else {
-      // Set the APN only
-      sendAT(GF("+CNCFG=0,1,\""), apn, '"');
-      waitResponse();
-    }
-
-    // Activate application network connection
-    // AT+CNACT=<pdpidx>,<action>
-    // <pdpidx> PDP Context Identifier
-    // <action> 0: Deactive
-    //          1: Active
-    //          2: Auto Active
-    bool res    = false;
-    int  ntries = 0;
-    while (!res && ntries < 5) {
-      sendAT(GF("+CNACT=0,1"));
-      res = waitResponse(60000L, GF(ACK_NL "+APP PDP: 0,ACTIVE"), GF(ACK_NL "+APP PDP: 0,DEACTIVE"));
-      waitResponse();
-      ntries++;
-    }
-
-    return res;
-  }
-
-  bool gprsDisconnectImpl() {
-    // Shut down the general application TCP/IP connection
-    // CNACT will close *all* open application connections
-    sendAT(GF("+CNACT=0,0"));
-    if (waitResponse(60000L) != 1) { return false; }
-
-    sendAT(GF("+CGATT=0"));  // Deactivate the bearer context
-    if (waitResponse(60000L) != 1) { return false; }
-
-    return true;
-  }
+  bool gprsDisconnectImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 
   /*
    * SIM card functions
