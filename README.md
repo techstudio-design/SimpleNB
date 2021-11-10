@@ -70,7 +70,7 @@ Some of the modules does not support some of the features due to hardware design
         - Digi XBee - _only 1 connection supported!_
 - SSL/TLS
     - Supported on:
-        - SIM7000, u-Blox, and Sequans Monarch
+        - SIM7000, SIM7070/80/90, u-Blox, and Sequans Monarch
     - Not implemented on:
         - Quectel, SIM7020
     - Like TCP, most modules support simultaneous connections
