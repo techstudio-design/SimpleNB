@@ -42,12 +42,6 @@ void powerUp() {
     delay(2500);
 }
 
-void powerDown() {
-    digitalWrite(PWRKEY, LOW);
-    delay(1200);
-    digitalWrite(PWRKEY, HIGH);
-}
-
 void setup() {
     Serial.begin(115200);
     digitalWrite(PWRKEY, HIGH);   // Keep PWRKEY off
@@ -112,8 +106,8 @@ void loop() {
     modem.disableGPS();
     digitalWrite(ANT_CTRL, LOW);
 
-    DBG("Powering Down...");
-    powerDown();
+    DBG("Powering Off...");
+    powerOff();
     DBG("Done!\n\n");
 
     delay(120000);  //wait for 2 minutes

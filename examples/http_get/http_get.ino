@@ -117,6 +117,9 @@ void loop() {
     }
 
     DBG("Powering Down...");
+    // turn off module with AT command
+    // modem.powerOff();
+    // alternatively, you could implmenent your power down function by triggering PWRKEY
     powerDown();
     DBG("Done!\n\n");
 

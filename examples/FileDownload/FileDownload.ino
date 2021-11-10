@@ -46,12 +46,6 @@ void powerUp() {
     delay(2500);
 }
 
-void powerDown() {
-    digitalWrite(PWRKEY, LOW);
-    delay(1200);
-    digitalWrite(PWRKEY, HIGH);
-}
-
 void printPercent(uint32_t readLength, uint32_t contentLength) {
     // If we know the total length
     if (contentLength != (uint32_t)-1) {

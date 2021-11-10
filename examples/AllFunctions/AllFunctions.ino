@@ -413,8 +413,8 @@ void loop() {
 
    // Try to power-off (modem may decide to restart automatically)
    // To turn off modem completely, please use Reset/Enable pins
-   modem.poweroff();
-   DBG("Poweroff.");
+   modem.powerOff();
+   DBG("Power Off.");
  #endif
 
    DBG("End of tests.");

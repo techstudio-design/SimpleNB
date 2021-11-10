@@ -107,7 +107,7 @@ class SimpleNBModem {
   bool restart(const char* pin = NULL) {
     return thisModem().restartImpl(pin);
   }
-  bool poweroff() {
+  bool powerOff() {
     return thisModem().powerOffImpl();
   }
   bool radioOff() {
