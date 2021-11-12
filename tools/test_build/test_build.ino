@@ -42,7 +42,7 @@ void loop() {
   modem.restart();
   // modem.sleepEnable();  // Not available for all modems
   // modem.radioOff();  // Not available for all modems
-  modem.poweroff();
+  modem.powerOff();
 
   // Test generic network functions
   modem.getRegistrationStatus();
