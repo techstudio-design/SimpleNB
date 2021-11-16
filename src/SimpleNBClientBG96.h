@@ -398,7 +398,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   // The BG96 returns UTC time instead of local time as other modules do in
   // response to CCLK, so we're using QLTS where we can specifically request
   // local time.
-  bool getNetworkTimeImpl(DateTime_t dt) {
+  bool getNetworkTimeImpl(DateTime_t& dt) {
     sendAT(GF("+QLTS=2"));
     if (waitResponse(2000L, GF("+QLTS: \"")) != 1) { return false; }
 

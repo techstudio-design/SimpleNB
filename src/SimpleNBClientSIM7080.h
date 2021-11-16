@@ -444,7 +444,6 @@ protected:
     sendAT(GF("+CACID="), mux);
     if (waitResponse(timeout_ms) != 1) return false;
 
-
     if (ssl) {
       // set the ssl version
       // AT+CSSLCFG="SSLVERSION",<ctxindex>,<sslversion>
@@ -486,7 +485,7 @@ protected:
         // <certname> certificate name
         sendAT(GF("+CASSLCFG="), mux, ",CACERT,\"", certificates[mux].c_str(),
                "\"");
-        if (waitResponse(5000L) != 1) return false;
+        if (waitResponse(5000L) != 1) return false;        
       }
 
       // set the SSL SNI (server name indication)
