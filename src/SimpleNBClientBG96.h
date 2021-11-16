@@ -126,8 +126,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   /*
    * Inner Secure Client
    */
-
-  /*
+/*
   class GsmClientSecureBG96 : public GsmClientBG96
   {
   public:
@@ -148,7 +147,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
     }
     SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
   };
-  */
+*/
 
   /*
    * Constructor
@@ -426,14 +425,14 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   byte NTPServerSyncImpl(String server = "pool.ntp.org", byte = -5) {
     // Request network synchronization
     // AT+QNTP=<contextID>,<server>[,<port>][,<autosettime>]
-    sendAT(GF("+QNTP=1,\""), server, '"');
+    sendAT(GF("+QNTP=0,\""), server, '"');
     if (waitResponse(10000L, GF("+QNTP:"))) {
       String result = stream.readStringUntil(',');
       streamSkipUntil('\n');
       result.trim();
-      if (SimpleNBIsValidNumber(result)) { return result.toInt(); }
-    } else {
-      return -1;
+      if (SimpleNBIsValidNumber(result)) {
+        return result.toInt();
+      }
     }
     return -1;
   }

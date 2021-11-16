@@ -359,7 +359,7 @@ void loop() {
 
  #if SIMPLE_NB_TEST_NTP && defined SIMPLE_NB_SUPPORT_NTP
    DBG("Asking modem to sync with NTP");
-   modem.NTPServerSync("132.163.96.5", 32);
+   modem.NTPServerSync("pool.ntp.org", 32);
  #endif
 
  #if SIMPLE_NB_TEST_TIME && defined SIMPLE_NB_SUPPORT_TIME

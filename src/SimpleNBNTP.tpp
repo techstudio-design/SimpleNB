@@ -4,7 +4,7 @@
  * @author     Henry Cheung
  * @license    LGPL-3.0
  * @copyright  Copyright (c) 2016 Volodymyr Shymanskyy
- * @copyright  Copyright (c) 2021 Henry Cheung 
+ * @copyright  Copyright (c) 2021 Henry Cheung
  * @date       Nov 2016
  */
 
@@ -64,7 +64,9 @@ class SimpleNBNTP {
 
     // Set NTP server and timezone
     thisModem().sendAT(GF("+CNTP=\""), server, "\",", String(TimeZone));
-    if (thisModem().waitResponse(10000L) != 1) { return -1; }
+    if (thisModem().waitResponse(10000L) != 1) {
+      return -1;
+    }
 
     // Request network synchronization
     thisModem().sendAT(GF("+CNTP"));
@@ -72,8 +74,6 @@ class SimpleNBNTP {
       String result = thisModem().stream.readStringUntil('\n');
       result.trim();
       if (SimpleNBIsValidNumber(result)) { return result.toInt(); }
-    } else {
-      return -1;
     }
     return -1;
   }
