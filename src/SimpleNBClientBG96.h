@@ -212,7 +212,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
 
   bool powerOffImpl() {
     sendAT(GF("+QPOWD=1"));
-    waitResponse(300);  // returns OK first
+    //waitResponse(300);  // returns OK first
     return waitResponse(300, GF("POWERED DOWN")) == 1;
   }
 
@@ -235,6 +235,27 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
    * Generic network functions
    */
  public:
+  bool activateDataNetwork() {
+    sendAT(GF("+QIACT=1"));
+    if (waitResponse(150000L) != 1) { return false; }
+
+    // check if activation success? it returns +CGACT: <cid>,<state>
+    // <state> = 1, activated
+    sendAT(GF("+QIACT?"));
+    if (waitResponse(60000L, GF(ACK_NL "+QIACT:")) != 1) { return false; }
+    streamSkipUntil(',');
+    int16_t state = streamGetIntBefore(',');
+    waitResponse();
+    return state == 1;
+  }
+
+  bool deactivateDataNetwork() {
+    sendAT(GF("+QIDEACT=1"));  // Deactivate the bearer context
+    if (waitResponse(40000L) != 1) { return false; }
+
+    return true;
+  }
+
   RegStatus getRegistrationStatus() {
     // Check first for EPS registration
     RegStatus epsStatus = (RegStatus)getRegistrationStatusXREG("CEREG");
@@ -260,30 +281,36 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
  protected:
   bool gprsConnectImpl(const char* apn, const char* user = NULL,
                        const char* pwd = NULL) {
-    gprsDisconnect();
+
+    sendAT(GF("+CGATT=1"));  // attach to GPRS
+    if (waitResponse(360000L) != 1) { return false; }
 
     // Configure the TCPIP Context
-    sendAT(GF("+QICSGP=1,1,\""), apn, GF("\",\""), user, GF("\",\""), pwd,
-           GF("\""));
+    sendAT(GF("+CGDCONT=1,1,\""), apn, GF("\",\""), user, GF("\",\""), pwd, GF("\""));
     if (waitResponse() != 1) { return false; }
 
     // Activate GPRS/CSD Context
-    // TO-DO: THIS SHOULD BE USING +CGACT=1,1
-    sendAT(GF("+QIACT=1"));
+    sendAT(GF("+CGACT=1,1"));
     if (waitResponse(150000L) != 1) { return false; }
 
-    // Attach to Packet Domain service - is this necessary?
-    // TO-DO: USE +CGACT? IT RETURN +CGACT:1,1 FOR CONNECTED
-    sendAT(GF("+CGATT=1"));
-    if (waitResponse(60000L) != 1) { return false; }
-
     return true;
+
+    // check if activation success? it returns +CGACT: <cid>,<state>
+    // <state> = 1, activated
+    sendAT(GF("+CGACT?"));
+    if (waitResponse(60000L, GF(ACK_NL "+CGACT:")) != 1) { return false; }
+    streamSkipUntil(',');
+    int16_t state = streamGetIntBefore('\n');
+    waitResponse();
+    return state == 1;
   }
 
   bool gprsDisconnectImpl() {
-    // TO-DO; THIS SHOULD BE USING +CGAC=0,1
-    sendAT(GF("+QIDEACT=1"));  // Deactivate the bearer context
+    sendAT(GF("+CGACT=0,1"));
     if (waitResponse(40000L) != 1) { return false; }
+
+    sendAT(GF("+CGATT=0"));  // detach from GPRS
+    if (waitResponse(360000L) != 1) { return false; }
 
     return true;
   }
@@ -428,7 +455,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   byte NTPServerSyncImpl(String server = "pool.ntp.org", byte = -5) {
     // Request network synchronization
     // AT+QNTP=<contextID>,<server>[,<port>][,<autosettime>]
-    sendAT(GF("+QNTP=0,\""), server, '"');
+    sendAT(GF("+QNTP=1,\""), server, '"');
     if (waitResponse(10000L, GF("+QNTP:"))) {
       String result = stream.readStringUntil(',');
       streamSkipUntil('\n');

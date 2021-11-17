@@ -406,7 +406,11 @@ void loop() {
  #endif
 
  #if SIMPLE_NB_TEST_DATA
-   modem.deactivateDataNetwork();
+   if (modem.deactivateDataNetwork()) {
+     DBG("Data Network Deactivated");
+   } else {
+     DBG("Network Deactivation Failed");
+   }
    delay(2000);
  #endif
 

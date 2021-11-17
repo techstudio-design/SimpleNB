@@ -341,7 +341,7 @@ class SimpleNBModem {
   bool waitForRegistrationImpl(uint32_t timeout_ms   = 60000L, bool check_signal = false) {
     for (uint32_t start = millis(); millis() - start < timeout_ms;) {
       if (check_signal) {
-        while (thisModem().getSignalQuality() == 99) {}
+        while (thisModem().getSignalQuality() == 99) { delay(100); }
       }
       if (thisModem().isNetworkRegistered()) { return true; }
       delay(250);
