@@ -177,7 +177,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
 #endif
     waitResponse();
 
-    DBG(GF("### Modem:"), getModemName());
+    getModemName();
 
     // Disable time and time zone URC's
     sendAT(GF("+CTZR=0"));
@@ -268,10 +268,12 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
     if (waitResponse() != 1) { return false; }
 
     // Activate GPRS/CSD Context
+    // TO-DO: THIS SHOULD BE USING +CGACT=1,1
     sendAT(GF("+QIACT=1"));
     if (waitResponse(150000L) != 1) { return false; }
 
     // Attach to Packet Domain service - is this necessary?
+    // TO-DO: USE +CGACT? IT RETURN +CGACT:1,1 FOR CONNECTED
     sendAT(GF("+CGATT=1"));
     if (waitResponse(60000L) != 1) { return false; }
 
@@ -279,6 +281,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   }
 
   bool gprsDisconnectImpl() {
+    // TO-DO; THIS SHOULD BE USING +CGAC=0,1
     sendAT(GF("+QIDEACT=1"));  // Deactivate the bearer context
     if (waitResponse(40000L) != 1) { return false; }
 

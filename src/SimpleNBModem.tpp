@@ -290,7 +290,6 @@ class SimpleNBModem {
     int8_t res = thisModem().streamGetIntBefore('\n');
     thisModem().waitResponse();
     if (res != 1) { return false; }
-
     return thisModem().localIP() != IPAddress(0, 0, 0, 0);
   }
 

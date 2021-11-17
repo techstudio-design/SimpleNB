@@ -233,7 +233,7 @@ class SimpleNBSaraR4 : public SimpleNBModem<SimpleNBSaraR4>,
     waitResponse();
 
     String modemName = getModemName();
-    DBG(GF("### Modem:"), modemName);
+
     if (modemName.startsWith("u-blox SARA-R412")) {
       has2GFallback = true;
     } else {

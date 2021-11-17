@@ -220,18 +220,18 @@ void loop() {
 
      // Read data
      start = millis();
-     char logo[640] = {'\0'};
+     char response[640] = {'\0'};
      int read_chars = 0;
      while (client.connected() && millis() - start < 10000L) {
        while (client.available()) {
-         logo[read_chars] = client.read();
-         logo[read_chars + 1] = '\0';
+         response[read_chars] = client.read();
+         response[read_chars + 1] = '\0';
          read_chars++;
          start = millis();
        }
      }
-     Serial.println(logo);
-     DBG("#####  RECEIVED:", strlen(logo), "CHARACTERS");
+     Serial.println(response);
+     DBG("#####  RECEIVED:", strlen(response), "CHARACTERS");
      client.stop();
    }
 #endif
@@ -275,7 +275,6 @@ void loop() {
  #if SIMPLE_NB_TEST_CALL && defined SIMPLE_NB_SUPPORT_CALLING && defined CALL_TARGET
    DBG("Calling:", CALL_TARGET);
 
-   // This is NOT supported on M590
    res = modem.callNumber(CALL_TARGET);
    DBG("Call:", res ? "OK" : "fail");
 

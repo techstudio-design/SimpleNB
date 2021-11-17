@@ -151,7 +151,7 @@ class SimpleNBSim7080 : public SimpleNBSim70xx<SimpleNBSim7080>,
 #endif
     waitResponse();
 
-    DBG(GF("### Modem:"), getModemName());
+    getModemName();
 
     // Enable Local Time Stamp for getting network time
     sendAT(GF("+CLTS=1"));
@@ -485,7 +485,7 @@ protected:
         // <certname> certificate name
         sendAT(GF("+CASSLCFG="), mux, ",CACERT,\"", certificates[mux].c_str(),
                "\"");
-        if (waitResponse(5000L) != 1) return false;        
+        if (waitResponse(5000L) != 1) return false;
       }
 
       // set the SSL SNI (server name indication)

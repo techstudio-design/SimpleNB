@@ -188,7 +188,7 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
 #endif
     waitResponse();
 
-    DBG(GF("### Modem:"), getModemName());
+    getModemName();
 
     // Enable automatic time zome update
     sendAT(GF("+CTZU=1"));

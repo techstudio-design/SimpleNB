@@ -206,7 +206,7 @@ class SimpleNBSequansMonarch :
 #endif
     waitResponse();
 
-    DBG(GF("### Modem:"), getModemName());
+    getModemName();
 
     // Make sure the module is enabled. Unlike others, the VZN20Q powers on
     // with CFUN=0 not CFUN=1 (that is, at minimum functionality instead of full
