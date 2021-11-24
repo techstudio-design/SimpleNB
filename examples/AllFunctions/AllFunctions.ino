@@ -336,7 +336,7 @@ void loop() {
    modem.enableGPS();
    for (int8_t i = 15; i; i--) {
      DBG("Requesting current GPS/GNSS/GLONASS location");
-     if (modem.getGPS(&gps)) {
+     if (modem.getGPS(gps)) {
        DBG("Latitude:", String(gps.lat, 8), "\tLongitude:", String(gps.lon, 8));
        DBG("Speed:", gps.speed, "\tAltitude:", gps.alt);
        DBG("Visible Satellites:", gps.vsat, "\tUsed Satellites:", gps.usat);
@@ -350,7 +350,7 @@ void loop() {
      }
    }
    DBG("Retrieving GPS/GNSS/GLONASS location again as a string");
-   String gps_raw = modem.getGPSraw();
+   String gps_raw = modem.getGPS();
    DBG("GPS/GNSS Based Location String:", gps_raw);
    DBG("Disabling GPS");
    modem.disableGPS();
