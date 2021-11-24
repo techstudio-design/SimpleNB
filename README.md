@@ -37,7 +37,7 @@ If you like **SimpleNB** - give it a star, or fork it and contribute!
 - Sequans Monarch LTE Cat M1/NB1 (VZM20Q)
 - Quectel BG96
 
-With the exception of SIM7070/7080/7090 and SIM7020, the rest of supported modules are inherited from TinyGSM without further test.
+With the exception of SIM7000, SIM7070/7080/7090, SIM7020 and BG96, the rest of supported modules are inherited from TinyGSM without further test.
 
 ## Supported Features
 
@@ -46,7 +46,7 @@ Some of the modules does not support some of the features due to hardware design
 | Functionality  | BG96 | Sara 4 | uBlox | Sequans | SIM7000 | SIM7020 | SIM70x0 | Xbee |
 |----------------|:----:|:------:|:-----:|:-------:|:-------:|:-------:|:-------:|:----:|
 | TCP            |   x  |    x   |   x   |    x    |    x    |    x    |    x    |   x  |
-| SSL            |  TBI |    x   |   x   |    x    |    x    |   TBI   |    x    |   x  |
+| SSL            |   x  |    x   |   x   |    x    |    x    |   TBI   |    x    |   x  |
 | GNSS           |   x  |    x   |   x   |         |    x    |         |    x    |      |
 | GSM LBS        |      |    x   |   x   |         |    x    |         |    x    |      |
 | SMS            |   x  |    x   |   x   |    x    |    x    |    x    |    x    |   x  |
@@ -70,9 +70,9 @@ Some of the modules does not support some of the features due to hardware design
         - Digi XBee - _only 1 connection supported!_
 - SSL/TLS
     - Supported on:
-        - SIM7000, SIM7070/80/90, u-Blox, and Sequans Monarch
+        - SIM7000, SIM7070/80/90, Quectel, u-Blox, and Sequans Monarch
     - Not implemented on:
-        - Quectel, SIM7020
+        - SIM7020
     - Like TCP, most modules support simultaneous connections
     - TCP and SSL connections can usually be mixed up to the total number of possible connections
 
@@ -225,7 +225,7 @@ Try using the `gprsConnect(APN)` function to set an initial APN if you are unabl
 
 The first connection with a new SIM card, a new module, or at a new location/tower may take a *LONG* time, especially if the signal quality isn't excellent. If it is your first connection, you may need to adjust your wait times (timeout) timing.
 
-If you are able to open a TCP connection but have the connection close before receiving data, try adding a keep-alive header to your request. Some modules (ie, the SIM7000 in SSL mode) will immediately throw away any un-read data when the remote server closes the connection - sometimes without even giving a notification that data arrived in the first place.
+If you are able to open a TCP connection but have the connection close before receiving data, try adding a keep-alive header to your request. Some modules (e.g, the SIM7000 in SSL mode) will immediately throw away any un-read data when the remote server closes the connection - sometimes without even giving a notification that data arrived in the first place.
 
 When using MQTT, to keep a continuous connection you may need set the correct keep-alive interval (PINGREQ/PINGRESP).
 

@@ -26,6 +26,7 @@
 #include "SimpleNBTemperature.tpp"
 #include "SimpleNBTime.tpp"
 #include "SimpleNBNTP.tpp"
+#include "SimpleNBSSL.tpp"
 
 #define ACK_NL "\r\n"
 static const char ACK_OK[] SIMPLE_NB_PROGMEM    = "OK" ACK_NL;
@@ -53,6 +54,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
                     public SimpleNBNTP<SimpleNBBG96>,
                     public SimpleNBGPS<SimpleNBBG96>,
                     public SimpleNBBattery<SimpleNBBG96>,
+                    public SimpleNBSSL<SimpleNBBG96>,
                     public SimpleNBTemperature<SimpleNBBG96> {
   friend class SimpleNBModem<SimpleNBBG96>;
   friend class SimpleNBTCP<SimpleNBBG96, SIMPLE_NB_MUX_COUNT>;
@@ -62,6 +64,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   friend class SimpleNBNTP<SimpleNBBG96>;
   friend class SimpleNBGPS<SimpleNBBG96>;
   friend class SimpleNBBattery<SimpleNBBG96>;
+  friend class SimpleNBSSL<SimpleNBBG96>;
   friend class SimpleNBTemperature<SimpleNBBG96>;
 
   /*
@@ -126,18 +129,18 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   /*
    * Inner Secure Client
    */
-/*
-  class GsmClientSecureBG96 : public GsmClientBG96
-  {
-  public:
-    GsmClientSecure() {}
 
-    GsmClientSecure(SimpleNBBG96& modem, uint8_t mux = 0)
-     : public GsmClient(modem, mux)
-    {}
+  class GsmClientSecureBG96 : public GsmClientBG96 {
+   public:
+    GsmClientSecureBG96() {}
 
+    explicit GsmClientSecureBG96(SimpleNBBG96& modem, uint8_t mux = 0) : GsmClientBG96(modem, mux) {}
 
-  public:
+   public:
+    bool setCertificate(const String& certificateName) {
+      return at->setCertificate(certificateName, mux);
+    }
+
     int connect(const char* host, uint16_t port, int timeout_s) override {
       stop();
       SIMPLE_NB_YIELD();
@@ -147,7 +150,6 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
     }
     SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
   };
-*/
 
   /*
    * Constructor
@@ -273,6 +275,16 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   bool isNetworkRegisteredImpl() {
     RegStatus s = getRegistrationStatus();
     return (s == REG_OK_HOME || s == REG_OK_ROAMING);
+  }
+
+  /*
+   * Secure socket layer functions
+   */
+ protected:
+  bool setCertificate(const String& certificateName, const uint8_t mux = 0) {
+    if (mux >= SIMPLE_NB_MUX_COUNT) return false;
+    certificates[mux] = certificateName;
+    return true;
   }
 
   /*
@@ -497,28 +509,83 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
    * Client related functions
    */
  protected:
-  bool modemConnect(const char* host, uint16_t port, uint8_t mux,
-                    bool ssl = false, int timeout_s = 150) {
-    if (ssl) { DBG("SSL not yet supported on this module!"); }
+  bool modemConnect(const char* host, uint16_t port, uint8_t mux, bool ssl = false, int timeout_s = 150) {
 
     uint32_t timeout_ms = ((uint32_t)timeout_s) * 1000;
+    _ssl = ssl;
 
-    // <PDPcontextID>(1-16), <connectID>(0-11),
-    // "TCP/UDP/TCP LISTENER/UDPSERVICE", "<IP_address>/<domain_name>",
-    // <remote_port>,<local_port>,<access_mode>(0-2; 0=buffer)
-    sendAT(GF("+QIOPEN=1,"), mux, GF(",\""), GF("TCP"), GF("\",\""), host,
-           GF("\","), port, GF(",0,0"));
-    waitResponse();
+    if (ssl) {
+      // set the ssl version
+      // AT+QSSLCFG="sslversion",<SSL_ctxID>[,<SSL_version>]
+      // <SSL_ctxID>  SSL context ID. The range is 0-5.
+      // <sslversion> 0: SSL3.0
+      //              1: TLS1.0
+      //              2: TLS1.1
+      //              3: TLS1.2
+      //              4: All
+      sendAT(GF("+QSSLCFG=\"sslversion\",0,3"));  // TLS 1.2
+      if (waitResponse(5000L) != 1) return false;
 
-    if (waitResponse(timeout_ms, GF(ACK_NL "+QIOPEN:")) != 1) { return false; }
+      if (certificates[mux] != "") {
+        // apply the correct certificate to the connection
+        // AT+QSSLCFG="cacert",<SSL_ctxID>[, <cacertpath>]
+        // <SSL_ctxID> SSL context ID, range is 0-5.
+        // <cacertpath> The path of the trusted CA certificate
+        sendAT(GF("+QSSLCFG=0,cacert,\""), certificates[mux].c_str(), GF("\""));
+        if (waitResponse(5000L) != 1) return false;
+      }
 
+      // set the SSL SNI (server name indication)
+      // AT+QSSLCFG="sni",<SSL_ctxID>[,<SNI>]
+      // To-Do: could not get sni config to work, it return ERROR
+      // sendAT(GF("+QSSLCFG=\"sni\",0,"), GF("\""), host, GF("\""));
+      // waitResponse();
+
+      // Open the SSL connection
+      // AT+QSSLOPEN=<PDP_ctxID>,<SSL_ctxID>,<clientID>,<serveraddr>,<server_port>[,<access_mode>]
+      // <PDP_ctxID>   PDP context identifier. The range is 1-16
+      // <SSL_ctxID>   SSL context ID.
+      // <clientID>    Socket index. The range is 0-11.
+      // <serveraddr>  Server name or IP
+      // <server_port> Server SSL port
+      // <recv_mode>   The access mode of SSL connection.
+      //               0 Buffer access mode
+      //               1 Direct push mode
+      //               2 Transparent mode
+      sendAT(GF("+QSSLOPEN=1,0,"), mux, GF(",\""), host, GF("\","), port, GF(",0"));
+      waitResponse();
+      if (waitResponse(timeout_ms, GF(ACK_NL "+QSSLOPEN:")) != 1) { return false; }
+    }
+    // for non SSL connection
+    else {
+      // <PDPcontextID>(1-16), <connectID>(0-11),
+      // "TCP/UDP/TCP LISTENER/UDPSERVICE", "<IP_address>/<domain_name>",
+      // <remote_port>,<local_port>,<access_mode>(0-2; 0=buffer)
+      sendAT(GF("+QIOPEN=1,"), mux, GF(",\""), GF("TCP"), GF("\",\""), host,
+             GF("\","), port, GF(",0,0"));
+      waitResponse();
+      if (waitResponse(timeout_ms, GF(ACK_NL "+QIOPEN:")) != 1) { return false; }
+    }
+
+    // For Non-SSL, return data is +QIOPEN: <clientID>,<result>
+    // For SSL, return data is +QSSLOPEN: <clientID>,<result>
+    // <result> 0: Success
+    // If ERROR is returned after executing SSL AT commands, the details of error
+    // can be queried with AT+QIGETERROR.
     if (streamGetIntBefore(',') != mux) { return false; }
     // Read status
-    return (0 == streamGetIntBefore('\n'));
+    int8_t res = streamGetIntBefore('\n');
+    waitResponse();
+    return 0 == res;
   }
 
   int16_t modemSend(const void* buff, size_t len, uint8_t mux) {
-    sendAT(GF("+QISEND="), mux, ',', (uint16_t)len);
+    if (_ssl) {
+      sendAT(GF("+QSSLSEND="), mux, ',', (uint16_t) len);
+    }
+    else {
+      sendAT(GF("+QISEND="), mux, ',', (uint16_t) len);
+    }
     if (waitResponse(GF(">")) != 1) { return 0; }
     stream.write(reinterpret_cast<const uint8_t*>(buff), len);
     stream.flush();
@@ -529,37 +596,68 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
 
   size_t modemRead(size_t size, uint8_t mux) {
     if (!sockets[mux]) return 0;
-    sendAT(GF("+QIRD="), mux, ',', (uint16_t)size);
-    if (waitResponse(GF("+QIRD:")) != 1) { return 0; }
-    int16_t len = streamGetIntBefore('\n');
 
+    if (_ssl) {
+      sendAT(GF("+QSSLRECV="), mux, ',', (uint16_t) size);
+      if (waitResponse(300L, GF("+QSSLRECV: ")) != 1) { return false; }
+    }
+    else {
+      sendAT(GF("+QIRD="), mux, ',', (uint16_t) size);
+      if (waitResponse(GF("+QIRD:")) != 1) { return false; }
+    }
+    const int16_t len = streamGetIntBefore('\n');
     for (int i = 0; i < len; i++) { moveCharFromStreamToFifo(mux); }
     waitResponse();
-    DBG("### READ:", len, "from", mux);
+    // make sure the sock available number is accurate again
     sockets[mux]->sock_available = modemGetAvailable(mux);
+    DBG("### READ:", len, "from", mux);
     return len;
   }
 
   size_t modemGetAvailable(uint8_t mux) {
     if (!sockets[mux]) return 0;
-    sendAT(GF("+QIRD="), mux, GF(",0"));
+
     size_t result = 0;
-    if (waitResponse(GF("+QIRD:")) == 1) {
-      streamSkipUntil(',');  // Skip total received
-      streamSkipUntil(',');  // Skip have read
-      result = streamGetIntBefore('\n');
-      if (result) { DBG("### DATA AVAILABLE:", result, "on", mux); }
-      waitResponse();
+
+    if (_ssl) {
+        sendAT(GF("+QSSLRECV="), mux, ",", SIMPLE_NB_RX_BUFFER-1);
+        // if empty, it return +QSSLRECV: 0
+        if (waitResponse(GF("+QSSLRECV:")) == 1) {
+          result = streamGetIntBefore('\n');
+          for (int i = 0; i < result; i++) { moveCharFromStreamToFifo(mux); }
+        }
     }
+    else {
+      sendAT(GF("+QIRD="), mux, GF(",0"));
+      if (waitResponse(GF("+QIRD:")) == 1) {
+        streamSkipUntil(',');  // Skip total received
+        streamSkipUntil(',');  // Skip have read
+        result = streamGetIntBefore('\n');
+      }
+    }
+    waitResponse();
+
     if (!result) { sockets[mux]->sock_connected = modemGetConnected(mux); }
+    if (result >= 0 && result <= 1500) {
+      sockets[mux]->sock_available = result;
+    }
+
+    if (result) { DBG("### DATA AVAILABLE:", result, "on", mux); }
+
     return result;
   }
 
   bool modemGetConnected(uint8_t mux) {
-    sendAT(GF("+QISTATE=1,"), mux);
-    // +QISTATE: 0,"TCP","151.139.237.11",80,5087,4,1,0,0,"uart1"
-
-    if (waitResponse(GF("+QISTATE:")) != 1) { return false; }
+    if (_ssl) {
+      sendAT(GF("+QSSLSTATE="), mux);
+      // +QSSLSTATE: 0,"SSLClient","18.208.13.248",443,6888,2,1,0,0,"uart1",0
+      if (waitResponse(GF("+QSSLSTATE:")) != 1) { return false; }
+    }
+    else {
+      sendAT(GF("+QISTATE=1,"), mux);
+      // +QISTATE: 0,"TCP","151.139.237.11",80,5087,2,1,0,0,"uart1"
+      if (waitResponse(GF("+QISTATE:")) != 1) { return false; }
+    }
 
     streamSkipUntil(',');                  // Skip mux
     streamSkipUntil(',');                  // Skip socket type
@@ -625,11 +723,13 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
         } else if (r5 && data.endsWith(r5)) {
           index = 5;
           goto finish;
-        } else if (data.endsWith(GF(ACK_NL "+QIURC:"))) {
+        } else if (data.endsWith(GF(ACK_NL "+QIURC:")) || data.endsWith(GF(ACK_NL "+QSSLURC:"))) {
           streamSkipUntil('\"');
           String urc = stream.readStringUntil('\"');
           streamSkipUntil(',');
-          if (urc == "recv") {
+          if (urc == "pdpdeact") {
+            DBG("### URC DEACT:", streamGetIntBefore('\n'));
+          } else if (urc == "recv") {
             int8_t mux = streamGetIntBefore('\n');
             DBG("### URC RECV:", mux);
             if (mux >= 0 && mux < SIMPLE_NB_MUX_COUNT && sockets[mux]) {
@@ -644,6 +744,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
           } else {
             streamSkipUntil('\n');
           }
+
           data = "";
         }
       }
@@ -689,6 +790,8 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
 
  protected:
   GsmClientBG96* sockets[SIMPLE_NB_MUX_COUNT];
+  String         certificates[SIMPLE_NB_MUX_COUNT];
+  uint8_t        _ssl = 0;
   const char*    gsmNL = ACK_NL;
 };
 

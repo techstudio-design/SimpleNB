@@ -37,8 +37,9 @@ typedef SimpleNBSim7080::GsmClientSecureSIM7080 SimpleNBClientSecure;
 
 #elif defined(SIMPLE_NB_MODEM_BG96)
 #include "SimpleNBClientBG96.h"
-typedef SimpleNBBG96                SimpleNB;
-typedef SimpleNBBG96::GsmClientBG96 SimpleNBClient;
+typedef SimpleNBBG96                      SimpleNB;
+typedef SimpleNBBG96::GsmClientBG96       SimpleNBClient;
+typedef SimpleNBBG96::GsmClientSecureBG96 SimpleNBClientSecure;
 
 #elif defined(SIMPLE_NB_MODEM_UBLOX)
 #include "SimpleNBClientUBLOX.h"

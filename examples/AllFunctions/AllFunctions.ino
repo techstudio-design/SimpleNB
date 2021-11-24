@@ -202,7 +202,7 @@ void loop() {
 
 #if SIMPLE_NB_TEST_TCP && defined SIMPLE_NB_SUPPORT_TCP
    SimpleNBClient client(modem, 0);
-   DBG("Connecting to", server);
+   DBG("Connecting to", server, "port", port);
    if (!client.connect(server, port)) {
      DBG("... failed");
    } else {
@@ -238,7 +238,7 @@ void loop() {
 
 #if SIMPLE_NB_TEST_SSL && defined SIMPLE_NB_SUPPORT_SSL
    SimpleNBClientSecure secureClient(modem, 1);
-   DBG("Connecting securely to", server);
+   DBG("Connecting securely to", server, "port", securePort);
    if (!secureClient.connect(server, securePort)) {
      DBG("... failed");
    } else {
@@ -393,34 +393,31 @@ void loop() {
    DBG("Chip temperature:", temp);
  #endif
 
- #if SIMPLE_NB_POWERDOWN
+#if SIMPLE_NB_TEST_GPRS
+  if (modem.gprsDisconnect()) {
+    DBG("GPRS disconnected");
+  } else {
+   DBG("GPRS disconnect: Failed.");
+  }
+#endif
 
- #if SIMPLE_NB_TEST_GPRS
-   modem.gprsDisconnect();
-   delay(5000L);
-   if (!modem.isGprsConnected()) {
-     DBG("GPRS disconnected");
-   } else {
-     DBG("GPRS disconnect: Failed.");
-   }
- #endif
+#if SIMPLE_NB_TEST_DATA
+  if (modem.deactivateDataNetwork()) {
+   DBG("Data Network Deactivated");
+  } else {
+   DBG("Network Deactivation Failed");
+  }
+#endif
 
- #if SIMPLE_NB_TEST_DATA
-   if (modem.deactivateDataNetwork()) {
-     DBG("Data Network Deactivated");
-   } else {
-     DBG("Network Deactivation Failed");
-   }
-   delay(2000);
- #endif
 
-   // Try to power-off (modem may decide to restart automatically)
-   // To turn off modem completely, please use Reset/Enable pins
-   modem.powerOff();
-   DBG("Power Off.");
- #endif
+#if SIMPLE_NB_POWERDOWN
+  // Try to power-off (modem may decide to restart automatically)
+  // To turn off modem completely, please use Reset/Enable pins
+  modem.powerOff();
+  DBG("Power Off.");
+#endif
 
-   DBG("End of tests.");
+  DBG("End of tests.");
 
   // Do nothing forevermore
   while (true) { modem.maintain(); }
