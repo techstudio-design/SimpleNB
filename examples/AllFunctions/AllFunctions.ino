@@ -312,7 +312,7 @@ void loop() {
 
  #if SIMPLE_NB_TEST_GSM_LOCATION && defined SIMPLE_NB_SUPPORT_GSM_LOCATION
    CellLBS_t lbs;
-   for (int8_t i = 15; i; i--) {
+   for (int8_t i = 0; i < 3; i++) {
      DBG("Requesting current GSM location (with GMT time)");
      if (modem.getGsmLocation(lbs, 0)) {
        DBG("Latitude:", String(lbs.lat, 8), "\tLongitude:", String(lbs.lon, 8));
@@ -334,7 +334,7 @@ void loop() {
    DBG("Enabling GPS/GNSS/GLONASS and waiting 15s for warm-up");
    GPS_t gps;
    modem.enableGPS();
-   for (int8_t i = 15; i; i--) {
+   for (int8_t i = 0; i < 3; i++) {
      DBG("Requesting current GPS/GNSS/GLONASS location");
      if (modem.getGPS(gps)) {
        DBG("Latitude:", String(gps.lat, 8), "\tLongitude:", String(gps.lon, 8));
@@ -363,7 +363,7 @@ void loop() {
 
  #if SIMPLE_NB_TEST_TIME && defined SIMPLE_NB_SUPPORT_TIME
    DateTime_t dt;
-   for (int8_t i = 5; i; i--) {
+   for (int8_t i = 0; i < 3; i++) {
      DBG("Requesting current network time");
      if (modem.getNetworkTime(dt)) {
        DBG("Year:", dt.year, "\tMonth:", dt.month, "\tDay:", dt.day);
