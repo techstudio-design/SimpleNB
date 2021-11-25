@@ -47,7 +47,7 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
  * Tests enabled
  */
 #define SIMPLE_NB_TEST_GPRS false
-#define SIMPLE_NB_TEST_DATA true  // only for SIM70x0 series
+#define SIMPLE_NB_TEST_DATA true  // not implemented on UBlox, Sara4, SequansMonarch and XBee
 #define SIMPLE_NB_TEST_TCP true
 #define SIMPLE_NB_TEST_SSL false
 #define SIMPLE_NB_TEST_BATTERY true
@@ -55,7 +55,6 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 #define SIMPLE_NB_TEST_NTP true
 #define SIMPLE_NB_TEST_TIME true
 #define SIMPLE_NB_TEST_GPS false
-// disconnect and power down modem after tests
 #define SIMPLE_NB_POWERDOWN true
 #define SIMPLE_NB_TEST_TEMPERATURE false
 #define SIMPLE_NB_TEST_CALL false
@@ -237,7 +236,9 @@ void loop() {
 #endif
 
 #if SIMPLE_NB_TEST_SSL && defined SIMPLE_NB_SUPPORT_SSL
+
    SimpleNBClientSecure secureClient(modem, 1);
+   
    DBG("Connecting securely to", server, "port", securePort);
    if (!secureClient.connect(server, securePort)) {
      DBG("... failed");
