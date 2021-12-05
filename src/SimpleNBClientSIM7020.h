@@ -9,7 +9,7 @@
 #ifndef SRC_SIMPLE_NB_CLIENTSIM7020_H_
 #define SRC_SIMPLE_NB_CLIENTSIM7020_H_
 
-#define SIMPLE_NB_MUX_COUNT 1
+#define SIMPLE_NB_MUX_COUNT 6
 #define SIMPLE_NB_BUFFER_READ_AND_CHECK_SIZE
 
 #include "SimpleNBClientSIM70xx.h"
@@ -168,21 +168,30 @@ class SimpleNBSim7020
    * Generic network functions
    */
  public:
-  bool activateDataNetwork(const char *apn, uint8_t band = 0) {
-     // Set APN
-     sendAT("*MCGDEFCONT=", GF("\"IP\",\""), apn, GF("\""));
-     if (waitResponse() != 1) {
-         return false;
-     }
-     // Set Band
-     sendAT("+CBAND=", band);
-     if (waitResponse() != 1) {
-         return false;
-     }
-     return true;
-  }
+   bool activateDataNetwork() {
+     // SIM7020 supports multiple TCP/IP client up to 6 sockets. To create a TCP/UDP Socket
+     // AT+CSOC=<domain>,<type>,<protocol>[,<cid>]
+     // +CSOC: <cid> is returned as the socket ID
+     // that has been created.
+     // <domain>: 1=IPv4, 2=IPv6
+     // <type>: 1=TCP, 2=UDP, 3=RAW
+     // <protocol>: 1=IP, 2=ICMP
+     // <cid>: Optional. Although the documenation say can passing-in a <cid>, but actual
+     // implementation dos not allowed (you get an ERROR).
+     sendAT(GF("+CSOC=1,1,1"));
+     if (waitResponse(60000L) != 1) { return false; }
+     int16_t cid = streamGetIntBefore('\n');
+     waitResponse();
+     if (cid < SIMPLE_NB_MUX_COUNT)
+       return true;
+     return false;
+   }
 
-  bool deactivateDataNetwork() SIMPLE_NB_ATTR_NOT_AVAILABLE;
+   bool deactivateDataNetwork() {
+     sendAT(GF("+CSOC=0"));
+     if (waitResponse(60000L) != 1) { return false; }
+     return true;
+   }
 
  protected:
   String getLocalIPImpl() {
@@ -505,6 +514,7 @@ class SimpleNBSim7020
 
  protected:
   GsmClientSim7020* sockets[SIMPLE_NB_MUX_COUNT];
+  String            certificates[SIMPLE_NB_MUX_COUNT];
 };
 
 #endif  // SRC_SIMPLE_NB_CLIENTSim7020_H_
