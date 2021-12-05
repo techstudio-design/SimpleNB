@@ -125,7 +125,7 @@ class SimpleNBSim7000
 #endif
     waitResponse();
 
-    DBG(GF("### Modem:"), getModemName());
+    getModemName();
 
     // Enable Local Time Stamp for getting network time
     sendAT(GF("+CLTS=1"));

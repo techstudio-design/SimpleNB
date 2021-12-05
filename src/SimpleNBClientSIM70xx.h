@@ -77,7 +77,7 @@ class SimpleNBSim70xx:public SimpleNBModem<SimpleNBSim70xx<modemType>>,
   }
 
   String getModemNameImpl() {
-    String name = "SIMCom SIM7000";
+    String name = "SIMCom SIM70XX";
 
     thisModem().sendAT(GF("+GMM"));
     String res2;
