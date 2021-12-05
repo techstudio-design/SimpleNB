@@ -48,7 +48,7 @@ Some of the modules does not support some of the features due to hardware design
 | TCP            |   x  |    x   |   x   |    x    |    x    |    x    |    x    |   x  |
 | SSL            |   x  |    x   |   x   |    x    |    x    |   TBI   |    x    |   x  |
 | GNSS           |   x  |    x   |   x   |         |    x    |         |    x    |      |
-| GSM LBS        |      |    x   |   x   |         |    x    |         |    x    |      |
+| GSM LBS        |      |    x   |   x   |         |         |         |    x    |      |
 | SMS            |   x  |    x   |   x   |    x    |    x    |    x    |    x    |   x  |
 | Voice Call     |   x  |        |   x   |    x    |         |         |         |      |
 | Network Time   |   x  |    x   |   x   |    x    |    x    |    x    |    x    |      |
@@ -96,7 +96,7 @@ Some of the modules does not support some of the features due to hardware design
     - SIM7000, SIM7070/SIM7080/SIM7090, BG96, u-blox
     - NOTE:  u-blox chips do _NOT_ have embedded GPS - this functionality only works if a secondary GPS is connected to primary cellular chip over I2C
 - GSM LBS location service
-    - SIM7000, SIM7070/SIM7080/SIM7090, u-blox
+    - SIM7070/SIM7080/SIM7090, u-blox
 
 ## Credits
 

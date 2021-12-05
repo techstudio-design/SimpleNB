@@ -20,18 +20,14 @@
 #include "SimpleNBClientSIM70xx.h"
 #include "SimpleNBTCP.tpp"
 #include "SimpleNBGPS.tpp"
-#include "SimpleNBGSMLocation.tpp"
-
 
 class SimpleNBSim7000
   : public SimpleNBSim70xx<SimpleNBSim7000>,
     public SimpleNBTCP<SimpleNBSim7000, SIMPLE_NB_MUX_COUNT>,
-    public SimpleNBGPS<SimpleNBSim7000>,
-    public SimpleNBGSMLocation<SimpleNBSim7000> {
+    public SimpleNBGPS<SimpleNBSim7000> {
   friend class SimpleNBSim70xx<SimpleNBSim7000>;
   friend class SimpleNBTCP<SimpleNBSim7000, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBGPS<SimpleNBSim7000>;
-  friend class SimpleNBGSMLocation<SimpleNBSim7000>;
 
   /*
    * Inner Client
@@ -131,7 +127,7 @@ class SimpleNBSim7000
     sendAT(GF("+CLTS=1"));
     if (waitResponse(10000L) != 1) { return false; }
 
-    // Enable battery checks
+    // Enable battery checks TO-DO: this command caused error
     //sendAT(GF("+CBATCHK=1"));
     //if (waitResponse() != 1) { return false; }
 
