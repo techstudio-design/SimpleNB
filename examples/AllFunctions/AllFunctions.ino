@@ -114,7 +114,7 @@ void setup() {
   powerUp();
 
   // Set GSM module baud rate
-  SimpleNBBegin(SerialAT, 115200);
+  SimpleNBBegin(SerialAT, BAUD_RATE);
   // If unsure the baud rate work, alternatively use
   // SimpleNBAutoBaud(SerialAT, 9600, 115200);
 }
@@ -238,7 +238,7 @@ void loop() {
 #if SIMPLE_NB_TEST_SSL && defined SIMPLE_NB_SUPPORT_SSL
 
    SimpleNBClientSecure secureClient(modem, 1);
-   
+
    DBG("Connecting securely to", server, "port", securePort);
    if (!secureClient.connect(server, securePort)) {
      DBG("... failed");

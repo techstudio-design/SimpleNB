@@ -11,6 +11,7 @@
  *****************************************************************/
 
 // Select your modem: (See AllFunctions example for the definition of other modem)
+// GSM Location is only available on selective modems. See README.md for supported modems
 #define SIMPLE_NB_MODEM_SIM7080
 
 // Enbale DBG debug output to Serial Monitor for debug prints, if needed
