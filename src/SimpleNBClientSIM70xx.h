@@ -179,12 +179,14 @@ protected:
    * SIM card functions
    */
  protected:
-  // Doesn't return the "+CCID" before the number
   String getSimCCIDImpl() {
     thisModem().sendAT(GF("+CCID"));
     if (thisModem().waitResponse(GF(ACK_NL)) != 1) { return ""; }
+    // Doesn't return the "+CCID" before the number
     String res = stream.readStringUntil('\n');
     thisModem().waitResponse();
+    // SIM7080 AT+CCID return an extra f after the number
+    if (res.indexOf('f')) res.replace("f", "");
     res.trim();
     return res;
   }

@@ -205,7 +205,7 @@ class SimpleNBModem {
   }
 
   bool factoryDefaultImpl() {
-    thisModem().sendAT(GF("&FZE0&W"));  // Factory + Reset + Echo Off + Write
+    thisModem().sendAT(GF("&F0Z0E0&W"));  // Factory + Reset + Echo Off + Write
     thisModem().waitResponse();
     thisModem().sendAT(GF("+IPR=0"));  // Auto-baud
     thisModem().waitResponse();

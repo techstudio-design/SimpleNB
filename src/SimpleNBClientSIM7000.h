@@ -132,8 +132,8 @@ class SimpleNBSim7000
     if (waitResponse(10000L) != 1) { return false; }
 
     // Enable battery checks
-    sendAT(GF("+CBATCHK=1"));
-    if (waitResponse() != 1) { return false; }
+    //sendAT(GF("+CBATCHK=1"));
+    //if (waitResponse() != 1) { return false; }
 
     SimStatus ret = getSimStatus();
     // if the sim isn't ready and a pin has been provided, try to unlock the sim
@@ -167,8 +167,8 @@ class SimpleNBSim7000
      bool res    = false;
      int  ntries = 0;
      while (!res && ntries < 5) {
-       sendAT(GF("+CNACT=0,1"));
-       res = waitResponse(60000L, GF(ACK_NL "+APP PDP: 0,ACTIVE"), GF(ACK_NL "+APP PDP: 0,DEACTIVE"));
+       sendAT(GF("+CNACT=1"));
+       res = waitResponse(60000L, GF(ACK_NL "+APP PDP: ACTIVE"), GF(ACK_NL "+APP PDP: DEACTIVE"));
        waitResponse();
        ntries++;
      }
@@ -176,8 +176,9 @@ class SimpleNBSim7000
    }
 
    bool deactivateDataNetwork() {
-     sendAT(GF("+CNACT=0,0"));
-     if (waitResponse(60000L) != 1) { return false; }
+     sendAT(GF("+CNACT=0"));
+     waitResponse(60000L, GF(ACK_NL "+APP PDP: DEACTIVE"));
+     waitResponse();
      return true;
    }
 
