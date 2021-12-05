@@ -62,7 +62,7 @@ class SimpleNBSim7000
 
    public:
     virtual int connect(const char* host, uint16_t port, int timeout_s) {
-      stop();
+      //stop();
       SIMPLE_NB_YIELD();
       rx.clear();
       sock_connected = at->modemConnect(host, port, mux, false, timeout_s);
@@ -76,6 +76,7 @@ class SimpleNBSim7000
       sock_connected = false;
       at->waitResponse(3000);
     }
+
     void stop() override {
       stop(15000L);
     }
@@ -172,6 +173,8 @@ class SimpleNBSim7000
    }
 
    bool deactivateDataNetwork() {
+     sendAT(GF("+CIPSHUT"));   // Deactivate PDP Connection
+     waitResponse(5000L);
      sendAT(GF("+CNACT=0"));
      waitResponse(60000L, GF(ACK_NL "+APP PDP: DEACTIVE"));
      waitResponse();
@@ -447,14 +450,38 @@ protected:
     if (ssl) { DBG("SSL only supported using application on SIM7000!"); }
     uint32_t timeout_ms = ((uint32_t)timeout_s) * 1000;
 
-    // when not using SSL, the TCP application toolkit is more stable
-    sendAT(GF("+CIPSTART="), mux, ',', GF("\"TCP"), GF("\",\""), host,
-           GF("\","), port);
-    return (1 ==
-            waitResponse(timeout_ms, GF("CONNECT OK" ACK_NL),
-                         GF("CONNECT FAIL" ACK_NL),
-                         GF("ALREADY CONNECT" ACK_NL), GF("ERROR" ACK_NL),
-                         GF("CLOSE OK" ACK_NL)));
+    // Set multiple connection mode
+    sendAT(GF("+CIPMUX=1"));
+    if (waitResponse() != 1) { return false; }
+
+    // Set "quick send" mode, CIPSEND will response with "DATA ACCEPT: <mux>, <len>"
+    // instead of ""<mux>, Send OK"
+    sendAT(GF("+CIPQSEND=1"));
+    if (waitResponse() != 1) { return false; }
+
+    // Set the TCP application toolkit to get data manually
+    sendAT(GF("+CIPRXGET=1"));
+    if (waitResponse() != 1) { return false; }
+
+    // Start the TCP application toolkit task and set APN, USER NAME, PASSWORD
+    sendAT(GF("+CSTT=\"stmiot\""));    //TO-DO: temperary hardcoded APN
+    if (waitResponse() != 1) { return false; }
+
+    // Bring up wireless connection with GPRS
+    sendAT(GF("+CIICR"));
+    if (waitResponse() != 1) { return false; }
+
+    // Get local IP address (this can't be skipt as it moves from one state to another)
+    sendAT(GF("+CIFSR;E0"));
+    if (waitResponse(10000L) != 1) { return false; }
+
+    sendAT(GF("+CIPSTART="), mux, GF(",\"TCP\",\""), host, GF("\",\""), port, GF("\""));
+    return (1 == waitResponse(timeout_ms, GF("CONNECT OK" ACK_NL),
+              GF("CONNECT FAIL" ACK_NL),
+              GF("ALREADY CONNECT" ACK_NL),
+              GF("ERROR" ACK_NL),
+              GF("CLOSE OK" ACK_NL))
+            );
   }
 
   int16_t modemSend(const void* buff, size_t len, uint8_t mux) {
