@@ -136,8 +136,20 @@ class SimpleNBSim7020
     }
   }
 
-  bool factoryDefaultImpl()
-  {
+  String getModemNameImpl() {
+    String name = "SIMCom SIM70XX";
+
+    sendAT(GF("+GMM"));
+    String res2;
+    if (waitResponse(5000L, res2) != 1) { return name; }
+    res2.replace(ACK_NL "OK" ACK_NL, "");
+    res2.trim();
+
+    name = res2;
+    return name;
+  }
+
+  bool factoryDefaultImpl() {
       sendAT(GF("&F0"));     // Factory
       waitResponse();
       sendAT(GF("Z0"));     // Reset

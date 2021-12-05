@@ -12,14 +12,17 @@
 // Select your modem:
 #define SIMPLE_NB_MODEM_SIM7000
 // #define SIMPLE_NB_MODEM_SIM7000SSL
+// #define SIMPLE_NB_MODEM_SIM7020
+// #define SIMPLE_NB_MODEM_SIM7070
 // #define SIMPLE_NB_MODEM_SIM7080
+// #define SIMPLE_NB_MODEM_SIM7090
 // #define SIMPLE_NB_MODEM_UBLOX
 // #define SIMPLE_NB_MODEM_SARAR4
 // #define SIMPLE_NB_MODEM_BG96
 // #define SIMPLE_NB_MODEM_XBEE
 // #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
 
-#include <SimpeNBClient.h>
+#include <SimpleNBClient.h>
 
 // Set serial for AT commands (to the module)
 // Use Hardware Serial on Mega, Leonardo, Micro
@@ -34,7 +37,7 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 
 #include <StreamDebugger.h>
 StreamDebugger debugger(SerialAT, Serial);
-SimpeNB modem(debugger);
+SimpleNB modem(debugger);
 
 void setup() {
   // Set console baud rate

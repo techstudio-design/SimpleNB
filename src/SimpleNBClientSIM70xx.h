@@ -90,19 +90,20 @@ class SimpleNBSim70xx:public SimpleNBModem<SimpleNBSim70xx<modemType>>,
     return name;
   }
 
-  bool factoryDefaultImpl() {           // these commands aren't supported
-    thisModem().sendAT(GF("&FZE0&W"));  // Factory + Reset + Echo Off + Write
-    thisModem().waitResponse();
-    thisModem().sendAT(GF("+IPR=0"));  // Auto-baud
-    thisModem().waitResponse();
-    thisModem().sendAT(GF("+IFC=0,0"));  // No Flow Control
-    thisModem().waitResponse();
-    thisModem().sendAT(GF("+ICF=3,3"));  // 8 data 0 parity 1 stop
-    thisModem().waitResponse();
-    thisModem().sendAT(GF("+CSCLK=0"));  // Disable Slow Clock
-    thisModem().waitResponse();
-    thisModem().sendAT(GF("&W"));  // Write configuration
-    return thisModem().waitResponse() == 1;
+  bool factoryDefaultImpl() {
+    return thisModem().factoryDefaultImpl();
+    // thisModem().sendAT(GF("&F0ZE0&W"));  // Factory + Reset + Echo Off + Write
+    // thisModem().waitResponse();
+    // thisModem().sendAT(GF("+IPR=0"));  // Auto-baud
+    // thisModem().waitResponse();
+    // thisModem().sendAT(GF("+IFC=0,0"));  // No Flow Control
+    // thisModem().waitResponse();
+    // thisModem().sendAT(GF("+ICF=3,3"));  // 8 data 0 parity 1 stop
+    // thisModem().waitResponse();
+    // thisModem().sendAT(GF("+CSCLK=0"));  // Disable Slow Clock
+    // thisModem().waitResponse();
+    // thisModem().sendAT(GF("&W"));  // Write configuration
+    // return thisModem().waitResponse() == 1;
   }
 
   /*
