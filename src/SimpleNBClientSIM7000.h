@@ -128,9 +128,11 @@ class SimpleNBSim7000
     sendAT(GF("+CLTS=1"));
     if (waitResponse(10000L) != 1) { return false; }
 
-    // Enable battery checks TO-DO: this command caused error
-    //sendAT(GF("+CBATCHK=1"));
-    //if (waitResponse() != 1) { return false; }
+    // Enable battery check
+    // This command return +CME ERROR: Call index error
+    // Battery Status is available even without this command
+    // sendAT(GF("+CBATCHK=1"));
+    // if (waitResponse() != 1) { return false; }
 
     SimStatus ret = getSimStatus();
     // if the sim isn't ready and a pin has been provided, try to unlock the sim

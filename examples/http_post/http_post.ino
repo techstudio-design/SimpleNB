@@ -23,7 +23,7 @@
 #define PWRKEY   23       // GPIO pin used for PWRKEY
 #define BAUD_RATE 115200  // Baud rate to be used for communicating with the modem
 //#define USE_SSL           // uncomment this line if using SSL secure connection
-#if USE_SSL && defined SIMPLE_NB_SUPPORT_SSL
+#if USE_SSL
 const int port = 443;
 #else
 const int port = 80;
@@ -77,7 +77,7 @@ void loop() {
       return;   // can't connect to the data network, check your APN and sim setup
     }
 
-#if USE_SSL && defined SIMPLE_NB_SUPPORT_SSL
+#ifdef USE_SSL
     SimpleNBClientSecure client(modem, 0);
 #else
     SimpleNBClient client(modem,0);
