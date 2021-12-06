@@ -20,14 +20,17 @@
 #include "SimpleNBClientSIM70xx.h"
 #include "SimpleNBTCP.tpp"
 #include "SimpleNBGPS.tpp"
+#include "SimpleNBSSL.tpp"
 
 class SimpleNBSim7000
   : public SimpleNBSim70xx<SimpleNBSim7000>,
     public SimpleNBTCP<SimpleNBSim7000, SIMPLE_NB_MUX_COUNT>,
-    public SimpleNBGPS<SimpleNBSim7000> {
+    public SimpleNBGPS<SimpleNBSim7000>,
+    public SimpleNBSSL<SimpleNBSim7000> {
   friend class SimpleNBSim70xx<SimpleNBSim7000>;
   friend class SimpleNBTCP<SimpleNBSim7000, SIMPLE_NB_MUX_COUNT>;
   friend class SimpleNBGPS<SimpleNBSim7000>;
+  friend class SimpleNBSSL<SimpleNBSim7000>;
 
   /*
    * Inner Client
@@ -36,7 +39,7 @@ class SimpleNBSim7000
   class GsmClientSim7000 : public GsmClient {
     friend class SimpleNBSim7000;
 
-   public:
+  public:
     GsmClientSim7000() {}
 
     explicit GsmClientSim7000(SimpleNBSim7000& modem, uint8_t mux = 0) {
@@ -60,7 +63,7 @@ class SimpleNBSim7000
       return true;
     }
 
-   public:
+  public:
     virtual int connect(const char* host, uint16_t port, int timeout_s) {
       //stop();
       SIMPLE_NB_YIELD();
@@ -91,7 +94,29 @@ class SimpleNBSim7000
   /*
    * Inner Secure Client
    */
-  // NOTE:  Use modem SIMPLENBSIM7000SSL for a secure client!
+
+  class GsmClientSecureSIM7000 : public GsmClientSim7000 {
+   public:
+    GsmClientSecureSIM7000() {}
+
+    explicit GsmClientSecureSIM7000(SimpleNBSim7000& modem, uint8_t mux = 0)
+        : GsmClientSim7000(modem, mux) {}
+
+   public:
+    bool setCertificate(const String& certificateName) {
+      return at->setCertificate(certificateName, mux);
+    }
+
+    virtual int connect(const char* host, uint16_t port,
+                        int timeout_s) override {
+      stop();
+      SIMPLE_NB_YIELD();
+      rx.clear();
+      sock_connected = at->modemConnect(host, port, mux, true, timeout_s);
+      return sock_connected;
+    }
+    SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
+  };
 
   /*
    * Constructor
@@ -249,6 +274,16 @@ class SimpleNBSim7000
      // n: whether to automatically report the system mode info
      sendAT(GF("+CNSMOD="), int8_t(n));
      return waitResponse() == 1;
+   }
+
+  /*
+   * Secure socket layer functions
+   */
+  protected:
+   bool setCertificate(const String& certificateName, const uint8_t mux = 0) {
+     if (mux >= SIMPLE_NB_MUX_COUNT) return false;
+     certificates[mux] = certificateName;
+     return true;
    }
 
   /*
@@ -449,8 +484,13 @@ protected:
  protected:
   bool modemConnect(const char* host, uint16_t port, uint8_t mux,
                     bool ssl = false, int timeout_s = 75) {
-    if (ssl) { DBG("SSL only supported using application on SIM7000!"); }
+
     uint32_t timeout_ms = ((uint32_t)timeout_s) * 1000;
+
+    if (ssl) {
+      DBG("SSL only supported using application on SIM7000!");
+      return false;
+    }
 
     // Set multiple connection mode
     sendAT(GF("+CIPMUX=1"));
@@ -716,6 +756,7 @@ protected:
 
  protected:
   GsmClientSim7000* sockets[SIMPLE_NB_MUX_COUNT];
+  String            certificates[SIMPLE_NB_MUX_COUNT];
 };
 
 #endif  // SRC_SIMPLE_NB_CLIENTSIM7000_H_

@@ -22,6 +22,7 @@
 
 #define PWRKEY   23       // GPIO pin used for PWRKEY
 #define BAUD_RATE 115200  // Baud rate to be used for communicating with the modem
+
 //#define USE_SSL           // uncomment this line if using SSL secure connection
 #if USE_SSL
 const int port = 443;

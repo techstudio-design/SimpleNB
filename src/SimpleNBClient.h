@@ -15,6 +15,7 @@
 #include "SimpleNBClientSIM7000.h"
 typedef SimpleNBSim7000                   SimpleNB;
 typedef SimpleNBSim7000::GsmClientSim7000 SimpleNBClient;
+typedef SimpleNBSim7000::GsmClientSecureSIM7000 SimpleNBClientSecure;
 
 #elif defined(SIMPLE_NB_MODEM_SIM7000SSL)
 #include "SimpleNBClientSIM7000SSL.h"
