@@ -112,7 +112,7 @@ class SimpleNBSim7080 : public SimpleNBSim70xx<SimpleNBSim7080>,
 
     virtual int connect(const char* host, uint16_t port,
                         int timeout_s) override {
-      stop();
+      // stop();
       SIMPLE_NB_YIELD();
       rx.clear();
       sock_connected = at->modemConnect(host, port, mux, true, timeout_s);
