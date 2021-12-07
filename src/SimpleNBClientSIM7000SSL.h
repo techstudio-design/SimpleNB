@@ -157,8 +157,10 @@ class SimpleNBSim7000SSL
     if (waitResponse(10000L) != 1) { return false; }
 
     // Enable battery checks
-    sendAT(GF("+CBATCHK=1"));
-    if (waitResponse() != 1) { return false; }
+    // This command return +CME ERROR: Call index error
+    // Battery Status is available even without this command
+    // sendAT(GF("+CBATCHK=1"));
+    // if (waitResponse() != 1) { return false; }
 
     SimStatus ret = getSimStatus();
     // if the sim isn't ready and a pin has been provided, try to unlock the sim
@@ -209,7 +211,7 @@ public:
    bool res    = false;
    int  ntries = 0;
    while (!res && ntries < 5) {
-     sendAT(GF("+CNACT=0,1"));
+     sendAT(GF("+CNACT=1,\""), _apn, GF("\""));
      res = waitResponse(60000L, GF(ACK_NL "+APP PDP: 0,ACTIVE"), GF(ACK_NL "+APP PDP: 0,DEACTIVE"));
      waitResponse();
      ntries++;
@@ -218,7 +220,7 @@ public:
   }
 
   bool deactivateDataNetwork() {
-   sendAT(GF("+CNACT=0,0"));
+   sendAT(GF("+CNACT=0"));
    if (waitResponse(60000L) != 1) { return false; }
    return true;
   }
@@ -885,6 +887,7 @@ protected:
  protected:
   GsmClientSim7000SSL* sockets[SIMPLE_NB_MUX_COUNT];
   String               certificates[SIMPLE_NB_MUX_COUNT];
+  String               _apn = "stmiot";  //TO-DO: remove hardcoded apn
 };
 
 #endif  // SRC_SIMPLE_NB_CLIENTSIM7000SSL_H_

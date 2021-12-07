@@ -109,7 +109,7 @@ class SimpleNBSim7000
 
     virtual int connect(const char* host, uint16_t port,
                         int timeout_s) override {
-      stop();
+      //stop();
       SIMPLE_NB_YIELD();
       rx.clear();
       sock_connected = at->modemConnect(host, port, mux, true, timeout_s);
@@ -183,19 +183,45 @@ class SimpleNBSim7000
  public:
    bool activateDataNetwork() {
      // Activate application network connection
-     // AT+CNACT=<pdpidx>,<action>
-     // <pdpidx> PDP Context Identifier. i.e. mux
-     // <action> 0: Deactive
-     //          1: Active
-     //          2: Auto Active
+     // AT+CNACT=<mode>[, <apn>]
+     // <mode> 0: Deactive
+     //        1: Active
+     //        2: Auto Active
+
      bool res    = false;
      int  ntries = 0;
      while (!res && ntries < 5) {
-       sendAT(GF("+CNACT=1"));
+       sendAT(GF("+CNACT=1,\""), _apn, GF("\""));
        res = waitResponse(60000L, GF(ACK_NL "+APP PDP: ACTIVE"), GF(ACK_NL "+APP PDP: DEACTIVE"));
        waitResponse();
        ntries++;
      }
+
+     // Set multiple connection mode
+     sendAT(GF("+CIPMUX=1"));
+     if (waitResponse() != 1) { return false; }
+
+     // Set "quick send" mode, CIPSEND will response with "DATA ACCEPT: <mux>, <len>"
+     // instead of ""<mux>, Send OK"
+     sendAT(GF("+CIPQSEND=1"));
+     if (waitResponse() != 1) { return false; }
+
+     // Set the TCP application toolkit to get data manually
+     sendAT(GF("+CIPRXGET=1"));
+     if (waitResponse() != 1) { return false; }
+
+     // Start the TCP application toolkit task and set APN, USER NAME, PASSWORD
+     sendAT(GF("+CSTT=\""), _apn, GF("\""));
+     if (waitResponse() != 1) { return false; }
+
+     // Bring up wireless connection with GPRS
+     sendAT(GF("+CIICR"));
+     if (waitResponse() != 1) { return false; }
+
+     // Get local IP address (this can't be skipt as it moves from one state to another)
+     sendAT(GF("+CIFSR;E0"));
+     if (waitResponse(10000L) != 1) { return false; }
+
      return res;
    }
 
@@ -206,74 +232,6 @@ class SimpleNBSim7000
      waitResponse(60000L, GF(ACK_NL "+APP PDP: DEACTIVE"));
      waitResponse();
      return true;
-   }
-
-   String getNetworkModes() {
-     // Get the help string, not the setting value
-     sendAT(GF("+CNMP=?"));
-     if (waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return ""; }
-     String res = stream.readStringUntil('\n');
-     waitResponse();
-     return res;
-   }
-
-   int16_t getNetworkMode() {
-     sendAT(GF("+CNMP?"));
-     if (waitResponse(GF(ACK_NL "+CNMP:")) != 1) { return false; }
-     int16_t mode = streamGetIntBefore('\n');
-     waitResponse();
-     return mode;
-   }
-
-   bool setNetworkMode(uint8_t mode) {
-     // 2 Automatic
-     // 13 GSM only
-     // 38 LTE only
-     // 51 GSM and LTE only
-     sendAT(GF("+CNMP="), mode);
-     return waitResponse() == 1;
-   }
-
-   String getPreferredModes() {
-     // Get the help string, not the setting value
-     sendAT(GF("+CMNB=?"));
-     if (waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return ""; }
-     String res = stream.readStringUntil('\n');
-     waitResponse();
-     return res;
-   }
-
-   int16_t getPreferredMode() {
-     sendAT(GF("+CMNB?"));
-     if (waitResponse(GF(ACK_NL "+CMNB:")) != 1) { return false; }
-     int16_t mode = streamGetIntBefore('\n');
-     waitResponse();
-     return mode;
-   }
-
-   bool setPreferredMode(uint8_t mode) {
-     // 1 CAT-M
-     // 2 NB-IoT
-     // 3 CAT-M and NB-IoT
-     sendAT(GF("+CMNB="), mode);
-     return waitResponse() == 1;
-   }
-
-   bool getNetworkSystemMode(bool& n, int16_t& stat) {
-     // n: whether to automatically report the system mode info
-     // stat: the current service. 0 if it not connected
-     sendAT(GF("+CNSMOD?"));
-     if (waitResponse(GF(ACK_NL "+CNSMOD:")) != 1) { return false; }
-     n    = streamGetIntBefore(',') != 0;
-     stat = streamGetIntBefore('\n');
-     waitResponse();
-     return true;
-   }
-
-   bool setNetworkSystemMode(bool n) {
-     // n: whether to automatically report the system mode info
-     sendAT(GF("+CNSMOD="), int8_t(n));
-     return waitResponse() == 1;
    }
 
   /*
@@ -491,31 +449,6 @@ protected:
       DBG("SSL only supported using application on SIM7000!");
       return false;
     }
-
-    // Set multiple connection mode
-    sendAT(GF("+CIPMUX=1"));
-    if (waitResponse() != 1) { return false; }
-
-    // Set "quick send" mode, CIPSEND will response with "DATA ACCEPT: <mux>, <len>"
-    // instead of ""<mux>, Send OK"
-    sendAT(GF("+CIPQSEND=1"));
-    if (waitResponse() != 1) { return false; }
-
-    // Set the TCP application toolkit to get data manually
-    sendAT(GF("+CIPRXGET=1"));
-    if (waitResponse() != 1) { return false; }
-
-    // Start the TCP application toolkit task and set APN, USER NAME, PASSWORD
-    sendAT(GF("+CSTT=\"stmiot\""));    //TO-DO: temperary hardcoded APN
-    if (waitResponse() != 1) { return false; }
-
-    // Bring up wireless connection with GPRS
-    sendAT(GF("+CIICR"));
-    if (waitResponse() != 1) { return false; }
-
-    // Get local IP address (this can't be skipt as it moves from one state to another)
-    sendAT(GF("+CIFSR;E0"));
-    if (waitResponse(10000L) != 1) { return false; }
 
     sendAT(GF("+CIPSTART="), mux, GF(",\"TCP\",\""), host, GF("\",\""), port, GF("\""));
     return (1 == waitResponse(timeout_ms, GF("CONNECT OK" ACK_NL),
@@ -757,6 +690,7 @@ protected:
  protected:
   GsmClientSim7000* sockets[SIMPLE_NB_MUX_COUNT];
   String            certificates[SIMPLE_NB_MUX_COUNT];
+  String            _apn = "stmiot";  //TO-DO: remove hardcoded apn
 };
 
 #endif  // SRC_SIMPLE_NB_CLIENTSIM7000_H_

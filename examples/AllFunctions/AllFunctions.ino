@@ -86,6 +86,8 @@ bool res = false;
 
 #include <SimpleNBClient.h>
 
+// uncomment the following line for dumping all AT commands to erial Monitor
+// #define DUMP_AT_COMMANDS
 #ifdef DUMP_AT_COMMANDS
 #include <StreamDebugger.h>
 StreamDebugger debugger(SerialAT, Serial);
