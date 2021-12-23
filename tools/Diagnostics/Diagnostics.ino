@@ -83,7 +83,7 @@ const char gprsPass[] = "";
 const char server[]   = "postman-echo.com";
 const char resource[] = "/ip";
 
-#if USE_SSL && defined SIMPLE_NB_SUPPORT_SSL
+#ifdef USE_SSL
 SimpleNBClientSecure client(modem);
 const int port = 443;
 #else
@@ -208,7 +208,7 @@ void loop() {
     Serial.println(F(" [fail]"));
     Serial.println(F("************************"));
     Serial.println(F(" Are the server url and port correct?"));
-#if USE_SSL && defined SIMPLE_NB_SUPPORT_SSL
+#ifdef USE_SSL
     Serial.println(F(" Make sure that the root CA cert is setup correctly? (see tools/ca_upload)"));
 #endif
     Serial.println(F("************************"));
