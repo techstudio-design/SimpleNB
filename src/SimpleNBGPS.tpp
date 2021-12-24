@@ -43,11 +43,11 @@ class SimpleNBGPS {
   bool disableGPS() {
     return thisModem().disableGPSImpl();
   }
-  String getGPS() {
-    return thisModem().getGPSImpl();
+  String getGPS(unsigned long gps_timeout=120000L) {
+    return thisModem().getGPSImpl(gps_timeout);
   }
-  bool getGPS(GPS_t& gps) {
-    return thisModem().getGPSImpl(gps);
+  bool getGPS(GPS_t& gps, unsigned long gps_timeout=120000L) {
+    return thisModem().getGPSImpl(gps, gps_timeout);
   }
 
   /*
@@ -67,8 +67,8 @@ class SimpleNBGPS {
 
   bool    enableGPSImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
   bool    disableGPSImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
-  String  getGPSImpl() SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
-  bool    getGPSImpl(GPS_t& gps) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
+  String  getGPSImpl(unsigned long gps_timeout) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
+  bool    getGPSImpl(GPS_t& gps, unsigned long gps_timeout) SIMPLE_NB_ATTR_NOT_IMPLEMENTED;
 };
 
 

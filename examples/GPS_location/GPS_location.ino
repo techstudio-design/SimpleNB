@@ -78,7 +78,7 @@ void loop() {
 
     // Getting GPS data as a String
     // DBG("Requesting current GPS location and GMT time");
-    // String gpsData = modem.getGPS();
+    // String gpsData = modem.getGPS(60000L);
     // if (gpsData != "") {
     //   DBG(gpsData);
     // } else {
@@ -90,7 +90,9 @@ void loop() {
     GPS_t gps;
     for (int8_t i = 0; i < 3; i++) {
       DBG("Requesting current GPS location and GMT time");
-      if (modem.getGPS(gps)) {
+      // if timeout value does not provided when calling getGPS(), the default
+      // timeout will be 120000L (i.e. 2 minutes)
+      if (modem.getGPS(gps, 60000L)) {
         DBG("Latitude:", String(gps.lat, 8), "\tLongitude:", String(gps.lon, 8));
         DBG("Accuracy:", gps.accuracy);
         DBG("Year:", gps.year, "\tMonth:", gps.month, "\tDay:", gps.day);

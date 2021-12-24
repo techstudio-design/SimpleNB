@@ -99,7 +99,6 @@ void loop() {
 
 #if defined(SIMPLE_NB_SUPPORT_SSL)
   // modem.addCertificate();  // not yet impemented
-  // modem.deleteCertificate();  // not yet impemented
   SimpleNBClientSecure client_secure(modem);
   SimpleNBClientSecure client_secure2(modem);
   SimpleNBClientSecure client_secure3(modem, 1);
@@ -161,23 +160,9 @@ void loop() {
 // Test the GPS functions
 #if defined(SIMPLE_NB_SUPPORT_GPS) && not defined(__AVR_ATmega32U4__)
   modem.enableGPS();
-  modem.getGPSraw();
-  float latitude  = -9999;
-  float longitude = -9999;
-  float speed     = 0;
-  float alt       = 0;
-  int   vsat      = 0;
-  int   usat      = 0;
-  float acc       = 0;
-  int   year      = 0;
-  int   month     = 0;
-  int   day       = 0;
-  int   hour      = 0;
-  int   minute    = 0;
-  int   second    = 0;
-  modem.getGPS(&latitude, &longitude);
-  modem.getGPS(&latitude, &longitude, &speed, &alt, &vsat, &usat, &acc, &year,
-               &month, &day, &hour, &minute, &second);
+  modem.getGPS();
+  GPS_t gps;
+  modem.getGPS(gps);
   modem.disableGPS();
 #endif
 

@@ -408,9 +408,9 @@ protected:
  }
 
  // get the RAW GPS output
- String getGPSImpl() {
+ String getGPSImpl(unsigned long gps_timeout) {
    sendAT(GF("+CGNSINF"));
-   if (waitResponse(120000L, GF(ACK_NL "+CGNSINF:")) != 1) {
+   if (waitResponse(gps_timeout, GF(ACK_NL "+CGNSINF:")) != 1) {
      return "";
    }
    String res = stream.readStringUntil('\n');
@@ -420,9 +420,9 @@ protected:
  }
 
  // get GPS informations
- bool getGPSImpl(GPS_t gps) {
+ bool getGPSImpl(GPS_t gps, unsigned long gps_timeout) {
    sendAT(GF("+CGNSINF"));
-   if (waitResponse(120000L, GF(ACK_NL "+CGNSINF:")) != 1) {
+   if (waitResponse(gps_timeout, GF(ACK_NL "+CGNSINF:")) != 1) {
      return false;
    }
 

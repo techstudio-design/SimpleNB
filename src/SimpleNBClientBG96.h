@@ -379,9 +379,9 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   }
 
   // get the GPS output as a string
-  String getGPSImpl() {
+  String getGPSImpl(unsigned long gps_timeout) {
     sendAT(GF("+QGPSLOC=2"));
-    if (waitResponse(10000L, GF(ACK_NL "+QGPSLOC:")) != 1) { return ""; }
+    if (waitResponse(gps_timeout, GF(ACK_NL "+QGPSLOC:")) != 1) { return ""; }
     String res = stream.readStringUntil('\n');
     waitResponse();
     res.trim();
@@ -389,9 +389,9 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
   }
 
   // get GPS informations
-  bool getGPSImpl(GPS_t& gps) {
+  bool getGPSImpl(GPS_t& gps, unsigned long gps_timeout) {
     sendAT(GF("+QGPSLOC=2"));
-    if (waitResponse(10000L, GF(ACK_NL "+QGPSLOC:")) != 1) {
+    if (waitResponse(gps_timeout, GF(ACK_NL "+QGPSLOC:")) != 1) {
       // NOTE:  Will return an error if the position isn't fixed
       return false;
     }

@@ -447,7 +447,7 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
     if (waitResponse(10000L, GF(ACK_NL "+UGPS:")) != 1) { return false; }
     return waitResponse(10000L) == 1;
   }
-  String inline getUbloxLocationRaw(int8_t sensor) {
+  String inline getUbloxLocationRaw(int8_t sensor, unsigned long gps_timeout) {
     // AT+ULOC=<mode>,<sensor>,<response_type>,<timeout>,<accuracy>
     // <mode> - 2: single shot position
     // <sensor> - 0: use the last fix in the internal database and stop the GNSS
@@ -464,17 +464,17 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
     // wait for first "OK"
     if (waitResponse(10000L) != 1) { return ""; }
     // wait for the final result - wait full timeout time
-    if (waitResponse(120000L, GF(ACK_NL "+UULOC:")) != 1) { return ""; }
+    if (waitResponse(gps_timeout, GF(ACK_NL "+UULOC:")) != 1) { return ""; }
     String res = stream.readStringUntil('\n');
     waitResponse();
     res.trim();
     return res;
   }
   String getGsmLocationImpl() {
-    return getUbloxLocationRaw(2);
+    return getUbloxLocationRaw(2, 30000L);
   }
-  String getGPSImpl() {
-    return getUbloxLocationRaw(1);
+  String getGPSImpl(unsigned long gps_timeout) {
+    return getUbloxLocationRaw(1, gps_timeout);
   }
 
   bool getGsmLocationImpl(CellLBS_t lbs) {
@@ -517,7 +517,7 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
     return true;
   }
 
-  bool getGPSImpl(GPS_t gps) {
+  bool getGPSImpl(GPS_t gps, unsigned long gps_timeout) {
     // AT+ULOC=<mode>,<sensor>,<response_type>,<timeout>,<accuracy>
     // <mode> - 2: single shot position
     // <sensor> - 2: use cellular CellLocate location information
@@ -534,7 +534,7 @@ class SimpleNBUBLOX : public SimpleNBModem<SimpleNBUBLOX>,
     // wait for first "OK"
     if (waitResponse(10000L) != 1) { return false; }
     // wait for the final result - wait full timeout time
-    if (waitResponse(120000L, GF(ACK_NL "+UULOC: ")) != 1) { return false; }
+    if (waitResponse(gps_timeout, GF(ACK_NL "+UULOC: ")) != 1) { return false; }
 
     // +UULOC: <date>, <time>, <lat>, <long>, <alt>, <uncertainty>, <speed>,
     // <direction>, <vertical_acc>, <sensor_used>, <SV_used>, <antenna_status>,

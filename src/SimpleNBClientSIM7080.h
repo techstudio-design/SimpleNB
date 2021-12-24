@@ -342,9 +342,9 @@ protected:
   // 1,05:29:31,31.22213,121.35575,16.62,40.15,30.69,0.0,0.0,0x16dfc3dca78,311
   // known issue:   from our experience, if this +SGNSCMD is called too early from power on
   //                (before 9 seconds), the command will be lost without any response.
-  String getGPSImpl() {
+  String getGPSImpl(unsigned long gps_timeout) {
     sendAT(GF("+SGNSCMD=1,0"));
-    if (waitResponse(120000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
+    if (waitResponse(gps_timeout, GF(ACK_NL "+SGNSCMD:")) != 1) {
       waitResponse();
       return "";
     }
@@ -379,9 +379,9 @@ protected:
   // return:        +SGNSERR: <erro code> or  ERROR
   // known issue:   from our experience, if this +SGNSCMD is called too early from power on
   //                (before 9 seconds), the command will be lost without any response.
-  bool getGPSImpl(GPS_t& gps) {
+  bool getGPSImpl(GPS_t& gps, unsigned long gps_timeout) {
     sendAT(GF("+SGNSCMD=1,0"));
-    if (waitResponse(120000L, GF(ACK_NL "+SGNSCMD:")) != 1) {
+    if (waitResponse(gps_timeout, GF(ACK_NL "+SGNSCMD:")) != 1) {
       waitResponse();
       return false;
     }
