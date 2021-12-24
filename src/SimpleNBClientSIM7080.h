@@ -412,6 +412,52 @@ protected:
     return true;
   }
 
+public:
+
+  // This command will return CME_ERROR "Operation not allowed" if the Xtra file
+  // never been downloaded before
+  void enableXtraMode() {
+    sendAT(GF("+CGNSXTRA=1"));
+    waitResponse();
+  }
+
+  // Download GNSS Xtra file from Qualcomm server
+  // if success, it return +HTTPTOFS: <resCode>,<fileSize>
+  int downloadXtraFile(const char* xtraServer, const char* xtraFile) {
+
+    sendAT(GF("+HTTPTOFS=\"" + String(xtraServer) + GF("/") + String(xtraFile) + GF("\",\"/customer/Xtra3.bin\"") ));
+    if (waitResponse(10000L, "+HTTPTOFS: ") != 1) return -1;
+    int resCode = streamGetIntBefore(',');
+    if (resCode == 200) {
+      sendAT(GF("+CGNSCPY"));
+      waitResponse();
+      xtraFileValidity();
+    }
+    return resCode;
+  }
+
+  // The Xtra file updated every 12 hours, and valid for 72 hours, it
+  // remain very accurate with 24 hours. This function check if Xtra file
+  // is available and if it is still valid
+  // return -1 if ERROR or file does not exist, or
+  // return the hour elapsed since previous update time
+  int xtraFileValidity() {
+
+    //this command take about 1s to get the result back
+    sendAT(GF("+CGNSXTRA"));
+    if (waitResponse(1500L, GF(ACK_NL)) != 1) return -1;
+
+    // this command does not return a "+CGNSXTRA:" as said in documentation, it return:
+    // <ellapsed_hour>,<valid_hour>,<gps_time_of_the_file_been_updated>\r\nOK\r\n
+    // e.g. x,72,2021/10/20,10:00:00 means last update was 4 hours ago, at 10:00:00
+    //      if x=-1, which means that file has never been downloaded before
+
+    int x = streamGetIntBefore(',');
+    waitResponse();
+    return x;
+
+  }
+
   /*
    * Time functions
    */
