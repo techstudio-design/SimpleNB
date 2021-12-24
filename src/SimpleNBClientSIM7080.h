@@ -340,16 +340,14 @@ protected:
 
   // get GPS output as a String, data format like this:
   // 1,05:29:31,31.22213,121.35575,16.62,40.15,30.69,0.0,0.0,0x16dfc3dca78,311
-  // known issue:   from our experience, if this +SGNSCMD is called too early from power on
-  //                (before 9 seconds), the command will be lost without any response.
   String getGPSImpl(unsigned long gps_timeout) {
     sendAT(GF("+SGNSCMD=1,0"));
-    if (waitResponse(gps_timeout, GF(ACK_NL "+SGNSCMD:")) != 1) {
-      waitResponse();
+    waitResponse();
+    if (waitResponse(gps_timeout, GF(ACK_NL "+SGNSCMD:"), GF(ACK_NL "+SGNSERR:")) != 1) {
       return "";
     }
+
     String res = stream.readStringUntil('\n');
-    waitResponse();
     res.trim();
     return res;
   }
@@ -377,12 +375,10 @@ protected:
   //                2 - Medium accuracy for location is acceptable
   //                3 - Only high accuracy for location is acceptable
   // return:        +SGNSERR: <erro code> or  ERROR
-  // known issue:   from our experience, if this +SGNSCMD is called too early from power on
-  //                (before 9 seconds), the command will be lost without any response.
   bool getGPSImpl(GPS_t& gps, unsigned long gps_timeout) {
     sendAT(GF("+SGNSCMD=1,0"));
-    if (waitResponse(gps_timeout, GF(ACK_NL "+SGNSCMD:")) != 1) {
-      waitResponse();
+    waitResponse();
+    if (waitResponse(gps_timeout, GF(ACK_NL "+SGNSCMD:"), GF(ACK_NL "+SGNSERR:")) != 1) {
       return false;
     }
 
@@ -410,7 +406,7 @@ protected:
 
     streamSkipUntil('\n');  // flag
     gps.vsat = 0;           // AT+SGNSCMD does not provide vsat value
-    gps.usat = 0;           // AT_SGNSCMD does not provide usat value
+    gps.usat = 0;           // AT+SGNSCMD does not provide usat value
 
     waitResponse();
     return true;
