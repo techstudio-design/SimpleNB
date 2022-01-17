@@ -449,7 +449,7 @@ public:
 
     // this command does not return a "+CGNSXTRA:" as said in documentation, it return:
     // <ellapsed_hour>,<valid_hour>,<gps_time_of_the_file_been_updated>\r\nOK\r\n
-    // e.g. x,72,2021/10/20,10:00:00 means last update was 4 hours ago, at 10:00:00
+    // e.g. x,72,2021/10/20,10:00:00 means last update was x hours ago, at 10:00:00
     //      if x=-1, which means that file has never been downloaded before
 
     int x = streamGetIntBefore(',');
