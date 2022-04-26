@@ -39,7 +39,7 @@ Serial/**************************************************************
 // #define SIMPLE_NB_MODEM_SEQUANS_MONARCH
 
 #include <SimpleNBClient.h>
-#include <BlynkSimpleSimpleNB.h>
+#include <BlynkSimpleTinyGSM.h>
 
 // Hardware Serial on Mega, Leonardo, Micro
 #ifndef __AVR_ATmega328P__
