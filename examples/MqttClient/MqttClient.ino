@@ -43,25 +43,32 @@ const char* broker      = "broker.hivemq.com";
 const char* topicLed    = "SimpleNB/led";
 const char* topicStatus = "SimpleNB/status";
 
+int count = 0;
+unsigned long mqttStart = 0;
+
 SimpleNB       modem(SerialAT);
 SimpleNBClient client(modem);
 PubSubClient   mqtt(client);
 
 void mqttCallback(char* topic, byte* payload, unsigned int len) {
+
+    char payloadStr[len+1] = {0};
+    strncpy(payloadStr, (char*) payload, len);
     Serial.print("Message arrived [");
     Serial.print(topic);
     Serial.print("]: ");
-    for (int i = 0; i < len; i++) {
-      Serial.print((char)payload[i]);
-    }
-    Serial.println();
+    Serial.println(payloadStr);
 
     // Only proceed if incoming message's topic matches
     if (String(topic) == topicLed) {
-      uint8_t ledStatus = !digitalRead(LED_PIN);
-      digitalWrite(LED_PIN, ledStatus);
-      mqtt.publish(topicStatus, ledStatus ? "status=1" : "status=0");
+      if (payloadStr[0] == '0')
+        digitalWrite(LED_PIN, LOW);
+      else
+        digitalWrite(LED_PIN, HIGH);
+      // optional send back the status
+      // mqtt.publish(topicStatus, digitalRead(LED_PIN) ? "LED is ON" : "LED is OFF");
     }
+
 }
 
 void mqttConnect() {
@@ -139,6 +146,8 @@ void setup() {
     mqtt.setServer(broker, 1883);
     mqtt.setCallback(mqttCallback);
     mqtt.setKeepAlive(60);
+
+    mqttStart = millis();
 }
 
 void loop() {
@@ -151,4 +160,15 @@ void loop() {
     }
 
     mqtt.loop();
+
+    // Sending a message "Hello World #xxxx" every 30 seconds
+    if (millis() - mqttStart > 30000) {
+        mqttStart = millis();
+        String outgoingMsg = "Hello World #" + String(count++);
+        mqtt.publish(topicStatus, outgoingMsg.c_str());
+        Serial.print("MQTT Sent: ");
+        Serial.println(outgoingMsg);
+    }
+
+    yield();
 }
