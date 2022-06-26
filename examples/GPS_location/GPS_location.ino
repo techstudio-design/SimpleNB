@@ -109,7 +109,7 @@ void loop() {
     digitalWrite(ANT_CTRL, LOW);
 
     DBG("Powering Off...");
-    powerOff();
+    modem.powerOff();
     DBG("Done!\n\n");
 
     delay(120000);  //wait for 2 minutes

@@ -90,7 +90,7 @@ void loop() {
     // DBG("GSM Based Location String:", location);
 
     DBG("Powering Off...");
-    powerOff();
+    modem.powerOff();
     DBG("Done!\n\n");
 
     delay(120000);  //wait for 2 minutes
