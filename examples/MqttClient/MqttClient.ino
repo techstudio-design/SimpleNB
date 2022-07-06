@@ -151,7 +151,7 @@ void setup() {
 }
 
 void loop() {
-    if ( !(client.connected() || modem.isNetworkRegistered()) ) {
+    if ( !(client.connected() || !modem.isNetworkRegistered()) ) {
       modemConnect();
     }
 
