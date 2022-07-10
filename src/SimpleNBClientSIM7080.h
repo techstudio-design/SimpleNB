@@ -224,6 +224,16 @@ public:
     return true;
   }
 
+  // Checks if current attached to GPRS/EPS service
+  bool isDataActive() {
+    sendAT(GF("+CGATT?"));
+    if (waitResponse(GF("+CGATT:")) != 1) { return false; }
+    int8_t res = streamGetIntBefore('\n');
+    waitResponse();
+    if (res != 1) { return false; }
+    return localIP() != IPAddress(0, 0, 0, 0);
+  }
+
   int16_t getNetworkMode() {
     // 2 Automatic
     // 13 GSM only
