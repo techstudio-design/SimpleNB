@@ -75,8 +75,10 @@ void mqttConnect() {
     while (!client.connected()) {
       Serial.print("Connecting to ");
       Serial.print(broker);
-      if (mqtt.connect("SimpleNBClient")) {
-      // if (mqtt.connect("SimpleNBClient", "mqtt_user", "mqtt_pass")) {
+      String clientId = "ESP8266Client-";
+      clientId += String(random(0xffff), HEX);
+      if (mqtt.connect(clientId.c_str())) {
+      // if (mqtt.connect(clientId.c_str(), "mqtt_user", "mqtt_pass")) {
         Serial.println(" connected");
 
         const char* initMsg = "MQTT Started";
@@ -141,6 +143,8 @@ void setup() {
     modem.init();
 
     modemConnect();
+
+    randomSeed(micros());
 
     // MQTT Broker setup
     mqtt.setServer(broker, 1883);
