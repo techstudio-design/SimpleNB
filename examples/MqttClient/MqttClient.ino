@@ -38,6 +38,9 @@
 #define PWRKEY    23      // GPIO pin used for PWRKEY
 #define BAUD_RATE 115200  // Baud rate to be used for communicating with the modem
 
+#define PUBLISH_INTERVAL 30000  // publish data every 30s
+#define KEEP_ALIVE       60     // MQTT KeepAlive value (default=15s), set it to twice of PUBLISH_INTERVAL
+
 // MQTT details
 const char* broker      = "broker.hivemq.com";
 const char* topicLed    = "SimpleNB/led";
@@ -117,9 +120,11 @@ void modemConnect() {
       return;
     }
     Serial.println("success");
+}
 
+void activateDataConnection() {
     Serial.print("Activate Data Network... ");
-    modem.deactivateDataNetwork();    // disconnect any broken connection if there is one
+    modem.deactivateDataNetwork();
     if (!modem.activateDataNetwork()) {
       Serial.println("fail");
       delay(1000);
@@ -149,7 +154,7 @@ void setup() {
     // MQTT Broker setup
     mqtt.setServer(broker, 1883);
     mqtt.setCallback(mqttCallback);
-    mqtt.setKeepAlive(60);
+    mqtt.setKeepAlive(KEEP_ALIVE);
 
     mqttStart = millis();
 }
@@ -159,14 +164,15 @@ void loop() {
       modemConnect();
     }
 
-    if (!mqtt.connected()) {
-      mqttConnect();
+    if (!mqtt.connected() || !modem.isDataActive()) {
+        activateDataConnection();
+        mqttConnect();
     }
 
     mqtt.loop();
 
     // Sending a message "Hello World #xxxx" every 30 seconds
-    if (millis() - mqttStart > 30000) {
+    if (millis() - mqttStart > PUBLISH_INTERVAL) {
         mqttStart = millis();
         String outgoingMsg = "Hello World #" + String(count++);
         mqtt.publish(topicStatus, outgoingMsg.c_str());
