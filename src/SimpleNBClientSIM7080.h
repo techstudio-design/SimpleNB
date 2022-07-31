@@ -408,7 +408,7 @@ protected:
 
     // timestamp is in the form of a string representation of a hex value '0x17ce3f579c0'
     String tStr = stream.readStringUntil(',');
-    const long tstmp = strtoll(tStr.c_str(), (char**)0, 0)/1000;
+    time_t tstmp = strtoll(tStr.c_str(), (char**)0, 0)/1000;
     tm *t = gmtime(&tstmp);
     gps.year = t->tm_year + 1900;
     gps.month = t->tm_mon + 1;
