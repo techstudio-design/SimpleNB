@@ -10,6 +10,7 @@
 *.log
 *.bak
 */.DS_Store
+*.docx
 
 # IDE project files
 .cproject

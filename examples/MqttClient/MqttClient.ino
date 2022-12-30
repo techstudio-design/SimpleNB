@@ -10,10 +10,9 @@
  * MQTT examples, see PubSubClient library.
  *
  **************************************************************
- * This example connects to HiveMQ's showcase broker.
- *
- * Test sending and receiving messages from the HiveMQ webclient
- * available at http://www.hivemq.com/demos/websocket-client/.
+ * This example connects to test.mosquitto.org broker either via
+ * port 1883 (non-secure) or port 8883 (secure) by comment in/out
+ * the USING_SECURE_SSL macro defined below.
  *
  * Publish anything to the topic SimpleNB/led will toggle the
  * on-board LED,
@@ -31,6 +30,9 @@
 // Select your Serial port for AT interface (See AllFunctions example for other port settings)
 #define SerialAT Serial2
 
+// USING_SECURE_SSL for secure connection via port 8883, comment out if using non-secure port 1883
+#define USING_SECURE_MQTT
+
 #include <SimpleNBClient.h>
 #include <PubSubClient.h>
 
@@ -42,16 +44,50 @@
 #define KEEP_ALIVE       60     // MQTT KeepAlive value (default=15s), set it to twice of PUBLISH_INTERVAL
 
 // MQTT details
-const char* broker      = "broker.hivemq.com";
+const char* broker      = "test.mosquitto.org";
 const char* topicLed    = "SimpleNB/led";
 const char* topicStatus = "SimpleNB/status";
+
+SimpleNB modem(SerialAT);
+
+#ifndef USING_SECURE_MQTT
+const int port = 1883;
+SimpleNBClient client(modem);
+#else
+const int port = 8883;
+SimpleNBClientSecure client(modem);
+// The CA is downloaded from https://test.mosquitto.org web page
+static const char mqtt_ca[] PROGMEM = "-----BEGIN CERTIFICATE-----\n" \
+"MIIEAzCCAuugAwIBAgIUBY1hlCGvdj4NhBXkZ/uLUZNILAwwDQYJKoZIhvcNAQEL\n" \
+"BQAwgZAxCzAJBgNVBAYTAkdCMRcwFQYDVQQIDA5Vbml0ZWQgS2luZ2RvbTEOMAwG\n" \
+"A1UEBwwFRGVyYnkxEjAQBgNVBAoMCU1vc3F1aXR0bzELMAkGA1UECwwCQ0ExFjAU\n" \
+"BgNVBAMMDW1vc3F1aXR0by5vcmcxHzAdBgkqhkiG9w0BCQEWEHJvZ2VyQGF0Y2hv\n" \
+"by5vcmcwHhcNMjAwNjA5MTEwNjM5WhcNMzAwNjA3MTEwNjM5WjCBkDELMAkGA1UE\n" \
+"BhMCR0IxFzAVBgNVBAgMDlVuaXRlZCBLaW5nZG9tMQ4wDAYDVQQHDAVEZXJieTES\n" \
+"MBAGA1UECgwJTW9zcXVpdHRvMQswCQYDVQQLDAJDQTEWMBQGA1UEAwwNbW9zcXVp\n" \
+"dHRvLm9yZzEfMB0GCSqGSIb3DQEJARYQcm9nZXJAYXRjaG9vLm9yZzCCASIwDQYJ\n" \
+"KoZIhvcNAQEBBQADggEPADCCAQoCggEBAME0HKmIzfTOwkKLT3THHe+ObdizamPg\n" \
+"UZmD64Tf3zJdNeYGYn4CEXbyP6fy3tWc8S2boW6dzrH8SdFf9uo320GJA9B7U1FW\n" \
+"Te3xda/Lm3JFfaHjkWw7jBwcauQZjpGINHapHRlpiCZsquAthOgxW9SgDgYlGzEA\n" \
+"s06pkEFiMw+qDfLo/sxFKB6vQlFekMeCymjLCbNwPJyqyhFmPWwio/PDMruBTzPH\n" \
+"3cioBnrJWKXc3OjXdLGFJOfj7pP0j/dr2LH72eSvv3PQQFl90CZPFhrCUcRHSSxo\n" \
+"E6yjGOdnz7f6PveLIB574kQORwt8ePn0yidrTC1ictikED3nHYhMUOUCAwEAAaNT\n" \
+"MFEwHQYDVR0OBBYEFPVV6xBUFPiGKDyo5V3+Hbh4N9YSMB8GA1UdIwQYMBaAFPVV\n" \
+"6xBUFPiGKDyo5V3+Hbh4N9YSMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQEL\n" \
+"BQADggEBAGa9kS21N70ThM6/Hj9D7mbVxKLBjVWe2TPsGfbl3rEDfZ+OKRZ2j6AC\n" \
+"6r7jb4TZO3dzF2p6dgbrlU71Y/4K0TdzIjRj3cQ3KSm41JvUQ0hZ/c04iGDg/xWf\n" \
+"+pp58nfPAYwuerruPNWmlStWAXf0UTqRtg4hQDWBuUFDJTuWuuBvEXudz74eh/wK\n" \
+"sMwfu1HFvjy5Z0iMDU8PUDepjVolOCue9ashlS4EB5IECdSR2TItnAIiIwimx839\n" \
+"LdUdRudafMu5T5Xma182OC0/u/xRlEm+tvKGGmfFcN0piqVl8OrSPBgIlb+1IKJE\n" \
+"m/XriWr/Cq4h/JfB7NTsezVslgkBaoU=\n" \
+"-----END CERTIFICATE-----\n";
+#endif
+
+PubSubClient mqtt(client);
 
 int count = 0;
 unsigned long mqttStart = 0;
 
-SimpleNB       modem(SerialAT);
-SimpleNBClient client(modem);
-PubSubClient   mqtt(client);
 
 void mqttCallback(char* topic, byte* payload, unsigned int len) {
 
@@ -152,7 +188,7 @@ void setup() {
     randomSeed(micros());
 
     // MQTT Broker setup
-    mqtt.setServer(broker, 1883);
+    mqtt.setServer(broker, port);
     mqtt.setCallback(mqttCallback);
     mqtt.setKeepAlive(KEEP_ALIVE);
 
