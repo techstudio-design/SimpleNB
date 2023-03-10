@@ -10,8 +10,6 @@
  * SimpleNB Readme:
  *   https://github.com/techstudio-design/SimpleNB/blob/master/README.md
  *
- * SSL/TLS is not yet supported on the Quectel modems
- * The A6/A7/A20 and M590 are not capable of SSL/TLS
  *
  * For more HTTP API examples, see ArduinoHttpClient library
  *
@@ -46,8 +44,6 @@ SoftwareSerial SerialAT(2, 3);  // RX, TX
 #endif
 
 // Increase RX buffer to capture the entire response
-// Chips without internal buffering (A6/A7, ESP8266, M590)
-// need enough space in the buffer for the entire response
 // else data will be lost (and the http library will fail).
 #if !defined(SIMPLE_NB_RX_BUFFER)
 #define SIMPLE_NB_RX_BUFFER 650
@@ -65,6 +61,15 @@ const char resource[] = "/post";
 const int  port       = 443;
 
 #include <SimpleNBClient.h>
+#include <ArduinoHttpClient.h>
+
+#ifdef DUMP_AT_COMMANDS
+#include <StreamDebugger.h>
+StreamDebugger debugger(SerialAT, SerialMon);
+SimpleNB        modem(debugger);
+#else
+SimpleNB        modem(SerialAT);
+#endif
 
 SimpleNBClientSecure client(modem);
 HttpClient http(client, server, port);
@@ -110,20 +115,6 @@ void loop() {
     return;
   }
 
-// #if SIMPLE_NB_USE_GPRS
-//   // GPRS connection parameters are usually set after network registration
-//   Serial.print(F("Connecting to "));
-//   Serial.print(apn);
-//   if (!modem.gprsConnect(apn, gprsUser, gprsPass)) {
-//     Serial.println(" fail");
-//     delay(10000);
-//     return;
-//   }
-//   Serial.println(" success");
-//
-//   if (modem.isGprsConnected()) { Serial.println("GPRS connected"); }
-// #endif
-
   Serial.print(F("Performing HTTPS GET request... "));
   http.connectionKeepAlive();  // Currently, this is needed for HTTPS
   int err = http.get(resource);
@@ -165,14 +156,8 @@ void loop() {
   Serial.println(body.length());
 
   // Shutdown
-
   http.stop();
   Serial.println(F("Server disconnected"));
-
-#if SIMPLE_NB_USE_GPRS
-  modem.gprsDisconnect();
-  Serial.println(F("GPRS disconnected"));
-#endif
 
   delay(120000);
 }
