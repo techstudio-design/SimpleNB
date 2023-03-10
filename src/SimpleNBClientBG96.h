@@ -98,7 +98,6 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
       return true;
     }
 
-   public:
     virtual int connect(const char* host, uint16_t port, int timeout_s) {
       stop();
       SIMPLE_NB_YIELD();
@@ -106,6 +105,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
       sock_connected = at->modemConnect(host, port, mux, false, timeout_s);
       return sock_connected;
     }
+
     SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
 
     void stop(uint32_t maxWaitMs) {
@@ -115,6 +115,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
       sock_connected = false;
       at->waitResponse((maxWaitMs - (millis() - startMillis)));
     }
+
     void stop() override {
       stop(15000L);
     }
@@ -136,7 +137,6 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
 
     explicit GsmClientSecureBG96(SimpleNBBG96& modem, uint8_t mux = 0) : GsmClientBG96(modem, mux) {}
 
-   public:
     bool setCertificate(const String& certificateName) {
       return at->setCertificate(certificateName, mux);
     }
@@ -148,7 +148,20 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
       sock_connected = at->modemConnect(host, port, mux, true, timeout_s);
       return sock_connected;
     }
+
     SIMPLE_NB_CLIENT_CONNECT_OVERRIDES
+
+    void stop(uint32_t maxWaitMs) {
+      uint32_t startMillis = millis();
+      dumpModemBuffer(maxWaitMs);
+      at->sendAT(GF("+QSSLCLOSE="), mux);
+      sock_connected = false;
+      at->waitResponse((maxWaitMs - (millis() - startMillis)));
+    }
+
+    void stop() override {
+      stop(15000L);
+    }
   };
 
   /*
@@ -514,7 +527,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
     uint32_t timeout_ms = ((uint32_t)timeout_s) * 1000;
     _ssl = ssl;
 
-    if (ssl) {
+    if (_ssl) {
       // set the ssl version
       // AT+QSSLCFG="sslversion",<SSL_ctxID>[,<SSL_version>]
       // <SSL_ctxID>  SSL context ID. The range is 0-5.
