@@ -651,7 +651,7 @@ class SimpleNBBG96 : public SimpleNBModem<SimpleNBBG96>,
     waitResponse();
 
     if (!result) { sockets[mux]->sock_connected = modemGetConnected(mux); }
-    if (result >= 0 && result <= 1500) {
+    if (result && result <= 1500) {
       sockets[mux]->sock_available = result;
     }
 
